@@ -70,6 +70,47 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-erlang-rebar3-start" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/24/erlang-rebar3-start/" class="article-date">
+  <time datetime="2018-07-24T12:09:43.000Z" itemprop="datePublished">2018-07-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><h5 id="方法一：源码安装"><a href="#方法一：源码安装" class="headerlink" title="方法一：源码安装"></a>方法一：源码安装</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> git <span class="built_in">clone</span> https://github.com/erlang/rebar3.git</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> rebar3</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ./bootstrap</span></span><br></pre></td></tr></table></figure>
+<h5 id="方法二：点击「链接」直接下载"><a href="#方法二：点击「链接」直接下载" class="headerlink" title="方法二：点击「链接」直接下载"></a>方法二：点击「链接」直接下载</h5><p><a href="https://s3.amazonaws.com/rebar3/rebar3" target="_blank" rel="noopener">https://s3.amazonaws.com/rebar3/rebar3</a></p>
+<h5 id="方法三：直接从其他项目中拷贝"><a href="#方法三：直接从其他项目中拷贝" class="headerlink" title="方法三：直接从其他项目中拷贝"></a>方法三：直接从其他项目中拷贝</h5><h3 id="项目说明"><a href="#项目说明" class="headerlink" title="项目说明"></a>项目说明</h3><h5 id="新建项目命令"><a href="#新建项目命令" class="headerlink" title="新建项目命令"></a>新建项目命令</h5><figure class="highlight haxe"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1新建一个简单app项目</span></span><br><span class="line">$ rebar3 <span class="keyword">new</span> <span class="type">app</span> &lt;projName&gt;</span><br><span class="line"><span class="comment">//2新建一个多app项目</span></span><br><span class="line">$ rebar3 <span class="keyword">new</span> <span class="type">release</span> &lt;projName&gt;</span><br><span class="line"><span class="comment">//3新建一个简单app项目</span></span><br><span class="line">$ rebar3 <span class="keyword">new</span> <span class="type">lib</span> &lt;projName&gt;</span><br><span class="line"><span class="comment">//4新建一个rebar插件</span></span><br><span class="line">$ rebar3 <span class="keyword">new</span> <span class="type">plugin</span> &lt;projName&gt;</span><br></pre></td></tr></table></figure>
+<h5 id="app项目结构"><a href="#app项目结构" class="headerlink" title="app项目结构"></a>app项目结构</h5><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$&gt; rebar3 new app projApp</span><br><span class="line"></span><br><span class="line">├── LICENSE</span><br><span class="line">├── README.md</span><br><span class="line">├── rebar.config</span><br><span class="line">└── src</span><br><span class="line">    ├── projApp<span class="selector-class">.app</span><span class="selector-class">.src</span></span><br><span class="line">    ├── projApp_app.erl</span><br><span class="line">    └── projApp_sup.erl</span><br></pre></td></tr></table></figure>
+<h5 id="release项目结构"><a href="#release项目结构" class="headerlink" title="release项目结构"></a>release项目结构</h5><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$&gt; rebar3 new release projRel</span><br><span class="line"></span><br><span class="line">├── LICENSE</span><br><span class="line">├── README.md</span><br><span class="line">├── apps</span><br><span class="line">│   └── projRel</span><br><span class="line">│       └── src</span><br><span class="line">│             ├── projRel<span class="selector-class">.app</span><span class="selector-class">.src</span></span><br><span class="line">│             ├── projRel_app.erl</span><br><span class="line">│             └── projRel_sup.erl</span><br><span class="line">├── config</span><br><span class="line">│   ├── sys.config</span><br><span class="line">│   └── vm.args</span><br><span class="line">└── rebar.config</span><br></pre></td></tr></table></figure>
+<p>PS:看文件目录就能大体看出，这两个的区别，app类型项目主要是简单的项目，而release项目多了个apps目录，此目录下可以有多个Erlang的application，可以处理复杂项目</p>
+<h5 id="lib项目"><a href="#lib项目" class="headerlink" title="lib项目"></a>lib项目</h5><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">├── LICENSE</span><br><span class="line">├── README.md</span><br><span class="line">├── rebar.config</span><br><span class="line">└── src</span><br><span class="line">    ├── projLib<span class="selector-class">.app</span><span class="selector-class">.src</span></span><br><span class="line">    └── projLib.erl</span><br></pre></td></tr></table></figure>
+<h5 id="plugin项目"><a href="#plugin项目" class="headerlink" title="plugin项目"></a>plugin项目</h5><p>说明:代码格式与app相同，但它有一套它自己的实现方式，具体实现留到以后来做</p>
+<h5 id="编译运行"><a href="#编译运行" class="headerlink" title="编译运行"></a>编译运行</h5><p>以上把新建这块大体说完了，下面以release类项目为实例，具体分析<br>执行<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash">&gt; rebar3 compile</span></span><br></pre></td></tr></table></figure></p>
+<p>编译成功，会生成一个新文件夹_build<br><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">├── _build</span><br><span class="line">│   └── default</span><br><span class="line">│       └── lib</span><br><span class="line">│           └── projRel</span><br><span class="line">│               ├── ebin</span><br><span class="line">│               │   ├── projRel.app</span><br><span class="line">│               │   ├── projRel_app.beam</span><br><span class="line">│               │   └── projRel_sup.beam</span><br><span class="line">│               ├── include -&gt; <span class="built_in">..</span>/<span class="built_in">..</span>/<span class="built_in">..</span>/<span class="built_in">..</span>/apps/projRel/include</span><br><span class="line">│               ├── priv -&gt; <span class="built_in">..</span>/<span class="built_in">..</span>/<span class="built_in">..</span>/<span class="built_in">..</span>/apps/projRel/priv</span><br><span class="line">│               └── src -&gt; <span class="built_in">..</span>/<span class="built_in">..</span>/<span class="built_in">..</span>/<span class="built_in">..</span>/apps/projRel/src</span><br></pre></td></tr></table></figure></p>
+<h5 id="文件目录说明"><a href="#文件目录说明" class="headerlink" title="文件目录说明"></a>文件目录说明</h5><figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">deps默认目录:</span><br><span class="line">_build/default/<span class="class"><span class="keyword">lib</span></span></span><br><span class="line">release默认目录:</span><br><span class="line">_build/default/rel</span><br><span class="line">test默认目录:</span><br><span class="line">_build/test/<span class="class"><span class="keyword">lib</span></span></span><br></pre></td></tr></table></figure>
+<h3 id="常见命令"><a href="#常见命令" class="headerlink" title="常见命令"></a>常见命令</h3><figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//查看依赖树</span></span><br><span class="line"><span class="symbol">$</span> rebar3 tree</span><br><span class="line"><span class="comment">//查看依赖 $ rebar3 deps</span></span><br><span class="line"><span class="comment">//release所有app</span></span><br><span class="line"><span class="symbol">$</span> rebar release</span><br><span class="line"></span><br><span class="line"><span class="comment">//release指定app</span></span><br><span class="line"><span class="symbol">$</span> rebar3 release -n &lt;release_name&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment">//按指定配置release</span></span><br><span class="line"><span class="symbol">$</span> rebar3 as <span class="keyword">prod</span> tar</span><br></pre></td></tr></table></figure>
+<h3 id="配置文件实例"><a href="#配置文件实例" class="headerlink" title="配置文件实例"></a>配置文件实例</h3><figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">&#123;erl_opts, [</span><br><span class="line">  debug_info</span><br><span class="line">  ,&#123;i, <span class="string">"./include"</span>&#125;  % 指定include文件目录</span><br><span class="line">  ,&#123;d, <span class="string">'NOTEST'</span>, true&#125;   %</span><br><span class="line">  ,&#123;parse_transform, lager_transform&#125;  <span class="meta">%lager</span>专用</span><br><span class="line"> </span><br><span class="line">]&#125;.</span><br><span class="line"> </span><br><span class="line">% &#123;deps_error_on_conflict, true&#125;. // 增加这句，依赖有冲突时，会中止</span><br><span class="line">&#123;rebar_packages_cdn, <span class="string">"https://hexpm.upyun.com"</span>&#125;.  % package中国镜像</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">&#123;plugins, [  %% 插件</span><br><span class="line">  % .dtl格式文件插件</span><br><span class="line">  &#123;rebar3_erlydtl_plugin, <span class="string">".*"</span>,</span><br><span class="line">    &#123;git, <span class="string">"https://github.com/tsloughter/rebar3_erlydtl_plugin.git"</span>, &#123;branch, <span class="string">"master"</span>&#125;&#125;&#125;</span><br><span class="line">]&#125;.</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">&#123;deps, [</span><br><span class="line">  &#123;apns,    &#123;git, <span class="string">"git@github:zhaoweiguo/apns.git"</span>&#125;&#125;,</span><br><span class="line">  &#123;eredis, &#123;git, <span class="string">"https://github.com/wooga/eredis.git"</span>, &#123;tag, <span class="string">"v1.1.0"</span>&#125;&#125;&#125;,</span><br><span class="line">  &#123;brod, &#123;git, <span class="string">"https://github.com/klarna/brod.git"</span>, &#123;tag, <span class="string">"3.4.0"</span>&#125;&#125;&#125;</span><br><span class="line">  ... ...</span><br><span class="line">]&#125;.</span><br><span class="line"> </span><br><span class="line">&#123;erlydtl_opts,[ % erlydtl插件相关配置</span><br><span class="line">  &#123;doc_root, <span class="string">"templates"</span>&#125;</span><br><span class="line">  %,&#123;compiler_options, [report, return, debug_info]&#125;</span><br><span class="line">]&#125;.</span><br><span class="line">&#123;provider_hooks, [  %% hook钩子</span><br><span class="line">  &#123;pre, [&#123;compile, &#123;erlydtl, compile&#125;&#125;]&#125;  % 执行rebar3 compile时先执行rebar3 plugin compile</span><br><span class="line">]&#125;.</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">&#123;relx, [&#123;</span><br><span class="line">  release, &#123;</span><br><span class="line">    octopus, <span class="string">"0.1.0"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  [octopus,</span><br><span class="line">    ... ...</span><br><span class="line">    sasl]&#125;,</span><br><span class="line"> </span><br><span class="line">  &#123;sys_config, <span class="string">"./config/octopus.config"</span>&#125;,</span><br><span class="line">  &#123;vm_args, <span class="string">"./config/vm.args"</span>&#125;,</span><br><span class="line"> </span><br><span class="line">  &#123;dev_mode, false&#125;, % 开发模式</span><br><span class="line">  &#123;include_erts, false&#125;,  % 编译时是否包含erts库</span><br><span class="line">%%  &#123;exclude_modules, [&#123;</span><br><span class="line">%%    syntax_tools, [merl, merl_transform]</span><br><span class="line">%%  &#125;]&#125;,</span><br><span class="line"> </span><br><span class="line">  &#123;extended_start_script, true&#125;</span><br><span class="line">]&#125;.</span><br><span class="line"> </span><br><span class="line">&#123;profiles, [&#123; % 配置相关，同一rebar.config可以生成多种不同版本,如release, default, debug等</span><br><span class="line">  prod, [</span><br><span class="line">    &#123;</span><br><span class="line">      erl_opts</span><br><span class="line">%      ,[no_debug_info, warnings_as_errors]   % [注意]加此句,有warning不能通过</span><br><span class="line">      ,[no_debug_info]</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;relx, [</span><br><span class="line">      &#123;dev_mode, false&#125;,    % 用于修改上面relx顶层目录的配置</span><br><span class="line">      &#123;include_erts, true&#125;</span><br><span class="line">    ]&#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;]</span><br><span class="line">&#125;.</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/07/24/erlang-rebar3-start/" data-id="cjjzo6yo60003dpfymabzc5pi" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rebar3/">rebar3</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-blockchain-collect" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/05/24/blockchain-collect/" class="article-date">
@@ -106,7 +147,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/24/blockchain-collect/" data-id="cjhk7uoai0000vq6gi0wbmuz4" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/24/blockchain-collect/" data-id="cjjzo6yoa0005dpfy1ab79tdk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/收集/">收集</a></li></ul>
@@ -144,51 +185,9 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/24/news-sino-us-trade-war-md/" data-id="cjhk7sdtd0001tu6gcyfur2xn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/24/news-sino-us-trade-war-md/" data-id="cjjzo6yod0006dpfyuyjpwtwx" class="article-share-link">Share</a>
       
       
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-blockchain-cluster" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/22/blockchain-cluster/" class="article-date">
-  <time datetime="2018-05-22T03:46:32.000Z" itemprop="datePublished">2018-05-22</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/blockchain/">blockchain</a>►<a class="article-category-link" href="/categories/blockchain/以太坊/">以太坊</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/22/blockchain-cluster/">blockchain-cluster</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/22/blockchain-cluster/" data-id="cjhk7sdt40000tu6gmd1s007p" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/以太坊/">以太坊</a></li></ul>
-
     </footer>
   </div>
   
@@ -246,7 +245,49 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/22/blockchain-start/" data-id="cjhk7sdtm0003tu6g2xfu53cb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/22/blockchain-start/" data-id="cjjzo6ynu0000dpfymboo5422" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/以太坊/">以太坊</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-blockchain-cluster" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/22/blockchain-cluster/" class="article-date">
+  <time datetime="2018-05-22T03:46:32.000Z" itemprop="datePublished">2018-05-22</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/blockchain/">blockchain</a>►<a class="article-category-link" href="/categories/blockchain/以太坊/">以太坊</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/05/22/blockchain-cluster/">blockchain-cluster</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/05/22/blockchain-cluster/" data-id="cjjzo6yo00001dpfyme912a1d" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/以太坊/">以太坊</a></li></ul>
@@ -278,7 +319,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/以太坊/">以太坊</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/收集/">收集</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/erlang/">erlang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rebar3/">rebar3</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/以太坊/">以太坊</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/收集/">收集</a></li></ul>
     </div>
   </div>
 
@@ -288,7 +329,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 20px;">blockchain</a> <a href="/tags/以太坊/" style="font-size: 15px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
+      <a href="/tags/blockchain/" style="font-size: 20px;">blockchain</a> <a href="/tags/erlang/" style="font-size: 10px;">erlang</a> <a href="/tags/rebar3/" style="font-size: 10px;">rebar3</a> <a href="/tags/以太坊/" style="font-size: 15px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
     </div>
   </div>
 
@@ -297,7 +338,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a></li></ul>
     </div>
   </div>
 
@@ -310,6 +351,10 @@
       <ul>
         
           <li>
+            <a href="/2018/07/24/erlang-rebar3-start/">(no title)</a>
+          </li>
+        
+          <li>
             <a href="/2018/05/24/blockchain-collect/">区块链技术相关收集（长期）</a>
           </li>
         
@@ -318,11 +363,11 @@
           </li>
         
           <li>
-            <a href="/2018/05/22/blockchain-cluster/">blockchain-cluster</a>
+            <a href="/2018/05/22/blockchain-start/">从零开始创建专属自己的以太坊</a>
           </li>
         
           <li>
-            <a href="/2018/05/22/blockchain-start/">从零开始创建专属自己的以太坊</a>
+            <a href="/2018/05/22/blockchain-cluster/">blockchain-cluster</a>
           </li>
         
       </ul>

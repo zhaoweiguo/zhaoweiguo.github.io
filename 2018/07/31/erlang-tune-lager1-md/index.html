@@ -7,18 +7,18 @@
   
   <title>实战1:对lager测试来分析Erlang的一些特性 | 新溪blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="目的通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响 系统资源一台服务器: 16CPU 64G内存 系统环境: $ cat /etc/security/limits.conf * soft nofile 300000 * hard nofile 300000 测试方案总体说明:   supervisor: 重启机制为simple_one_for_one">
+  <meta name="description" content="目的通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响 系统资源一台服务器: 16CPU 64G内存 系统环境: $ cat /etc/security/limits.conf * soft nofile 300000 * hard nofile 300000 测试方案总体说明: supervisor: 重启机制为simple_one_for_one 启动命">
 <meta name="keywords" content="erlang,tune,lager">
 <meta property="og:type" content="article">
 <meta property="og:title" content="实战1:对lager测试来分析Erlang的一些特性">
 <meta property="og:url" content="http://yoursite.com/2018/07/31/erlang-tune-lager1-md/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="目的通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响 系统资源一台服务器: 16CPU 64G内存 系统环境: $ cat /etc/security/limits.conf * soft nofile 300000 * hard nofile 300000 测试方案总体说明:   supervisor: 重启机制为simple_one_for_one">
+<meta property="og:description" content="目的通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响 系统资源一台服务器: 16CPU 64G内存 系统环境: $ cat /etc/security/limits.conf * soft nofile 300000 * hard nofile 300000 测试方案总体说明: supervisor: 重启机制为simple_one_for_one 启动命">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-07-31T08:09:20.650Z">
+<meta property="og:updated_time" content="2018-07-31T08:12:34.061Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="实战1:对lager测试来分析Erlang的一些特性">
-<meta name="twitter:description" content="目的通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响 系统资源一台服务器: 16CPU 64G内存 系统环境: $ cat /etc/security/limits.conf * soft nofile 300000 * hard nofile 300000 测试方案总体说明:   supervisor: 重启机制为simple_one_for_one">
+<meta name="twitter:description" content="目的通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响 系统资源一台服务器: 16CPU 64G内存 系统环境: $ cat /etc/security/limits.conf * soft nofile 300000 * hard nofile 300000 测试方案总体说明: supervisor: 重启机制为simple_one_for_one 启动命">
   
     <link rel="alternate" href="/atom.xml" title="新溪blog" type="application/atom+xml">
   
@@ -104,10 +104,16 @@
 * soft nofile 300000
 * hard nofile 300000
 </code></pre><h3 id="测试方案"><a href="#测试方案" class="headerlink" title="测试方案"></a>测试方案</h3><p>总体说明:</p>
-<p>  supervisor: 重启机制为simple_one_for_one<br>  启动命令: erl +P 1002400 …</p>
-<p>测试代码:</p>
-<p>  F = fun(_Num,Acc)-&gt;<br>    supervisor:start_child(demo_lager_sup,[]),<br>    1+Acc<br>      end,<br>  // 这儿的N是变化的进程数<br>  lists:foldl(F,0,lists:seq(1,N)).</p>
-<p>测试步骤:</p>
+<pre><code>supervisor: 重启机制为simple_one_for_one
+启动命令: erl +P 1002400 ...
+</code></pre><p>测试代码:</p>
+<pre><code>F = fun(_Num,Acc)-&gt;
+  supervisor:start_child(demo_lager_sup,[]),
+  1+Acc
+    end,
+// 这儿的N是变化的进程数
+lists:foldl(F,0,lists:seq(1,N)).
+</code></pre><p>测试步骤:</p>
 <pre><code>分别测试以下几类情形下的情况
 1.没有启动进程
 2.1万进程
@@ -115,19 +121,31 @@
 4.50万进程
 5.100万进程
 </code></pre><p>常用命令::</p>
-<p>  erlang:process_info(pid(0,346,0), message_queue_len).</p>
-<h3 id="操作1-100万进程-普通gen-server"><a href="#操作1-100万进程-普通gen-server" class="headerlink" title="操作1:100万进程, 普通gen_server"></a>操作1:100万进程, 普通gen_server</h3><p>资源占用:</p>
-<p>  系统占内存约70M<br>  2万进程:170M<br>  10万进程:520M<br>  50万进程:2.26G，用时70s<br>  100万进程:5.7G-&gt;4.6G</p>
-<p>超出进程数时，报以下错误:</p>
+<pre><code>erlang:process_info(pid(0,346,0), message_queue_len).
+</code></pre><h3 id="操作1-100万进程-普通gen-server"><a href="#操作1-100万进程-普通gen-server" class="headerlink" title="操作1:100万进程, 普通gen_server"></a>操作1:100万进程, 普通gen_server</h3><p>资源占用:</p>
+<pre><code>系统占内存约70M
+2万进程:170M
+10万进程:520M
+50万进程:2.26G，用时70s
+100万进程:5.7G-&gt;4.6G
+</code></pre><p>超出进程数时，报以下错误:</p>
 <pre><code>Eshell V8.3.5.4  (abort with ^G)
 *** ERROR: Shell process terminated! ***
 </code></pre><p>错误原因:</p>
-<p>  需要增加最大并发进程数了</p>
-<h3 id="操作2-100万进程-每10秒请求一次lager"><a href="#操作2-100万进程-每10秒请求一次lager" class="headerlink" title="操作2:100万进程,每10秒请求一次lager"></a>操作2:100万进程,每10秒请求一次lager</h3><p>变动部分:</p>
-<p>  增加:每秒每进程打印10次lager日志</p>
-<p>关键代码:</p>
-<p>  init([]) -&gt;<br>    lager:info(“client process start”),<br>    {ok, #state{},1000}.<br>  handle_info(<em>Info, State) -&gt;<br>  F = fun(</em>)-&gt;<br>    lager:info(“=======&gt;&gt; handle_info _Info = ~p”,[_Info]),<br>  end,<br>  lists:foreach(F,lists:seq(1,10)),<br>  {noreply, State,1000}.</p>
-<p>1万进程:</p>
+<pre><code>需要增加最大并发进程数了
+</code></pre><h3 id="操作2-100万进程-每10秒请求一次lager"><a href="#操作2-100万进程-每10秒请求一次lager" class="headerlink" title="操作2:100万进程,每10秒请求一次lager"></a>操作2:100万进程,每10秒请求一次lager</h3><p>变动部分:</p>
+<pre><code>增加:每秒每进程打印10次lager日志
+</code></pre><p>关键代码:</p>
+<pre><code>init([]) -&gt;
+  lager:info(&quot;client process start&quot;),
+  {ok, #state{},1000}.
+handle_info(_Info, State) -&gt;
+F = fun(_)-&gt;
+  lager:info(&quot;=======&gt;&gt; handle_info _Info = ~p&quot;,[_Info]),
+end,
+lists:foreach(F,lists:seq(1,10)),
+{noreply, State,1000}.
+</code></pre><p>1万进程:</p>
 <pre><code>从Erlang层面:
   1.内存: 281M, 200M; 一段时间后稳定在: 390M, 285M; 
   2.CPU: 一个CPU已经占满

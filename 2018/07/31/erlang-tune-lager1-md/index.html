@@ -7,18 +7,18 @@
   
   <title>实战1:对lager测试来分析Erlang的一些特性 | 新溪blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="目的通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响 系统资源一台服务器: 16CPU 64G内存 系统环境: $ cat /etc/security/limits.conf * soft nofile 300000 * hard nofile 300000 测试方案总体说明: supervisor: 重启机制为simple_one_for_one 启动命">
+  <meta name="description" content="目的通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响 系统资源一台服务器: 16CPU 64G内存 系统环境: OS: CentOS 7.4.1708 $ cat /etc/security/limits.conf * soft nofile 300000 * hard nofile 300000 测试方案总体说明: supervisor: 重启机制为si">
 <meta name="keywords" content="erlang,tune,lager">
 <meta property="og:type" content="article">
 <meta property="og:title" content="实战1:对lager测试来分析Erlang的一些特性">
 <meta property="og:url" content="http://yoursite.com/2018/07/31/erlang-tune-lager1-md/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="目的通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响 系统资源一台服务器: 16CPU 64G内存 系统环境: $ cat /etc/security/limits.conf * soft nofile 300000 * hard nofile 300000 测试方案总体说明: supervisor: 重启机制为simple_one_for_one 启动命">
+<meta property="og:description" content="目的通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响 系统资源一台服务器: 16CPU 64G内存 系统环境: OS: CentOS 7.4.1708 $ cat /etc/security/limits.conf * soft nofile 300000 * hard nofile 300000 测试方案总体说明: supervisor: 重启机制为si">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-07-31T08:12:34.061Z">
+<meta property="og:updated_time" content="2018-07-31T08:31:00.052Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="实战1:对lager测试来分析Erlang的一些特性">
-<meta name="twitter:description" content="目的通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响 系统资源一台服务器: 16CPU 64G内存 系统环境: $ cat /etc/security/limits.conf * soft nofile 300000 * hard nofile 300000 测试方案总体说明: supervisor: 重启机制为simple_one_for_one 启动命">
+<meta name="twitter:description" content="目的通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响 系统资源一台服务器: 16CPU 64G内存 系统环境: OS: CentOS 7.4.1708 $ cat /etc/security/limits.conf * soft nofile 300000 * hard nofile 300000 测试方案总体说明: supervisor: 重启机制为si">
   
     <link rel="alternate" href="/atom.xml" title="新溪blog" type="application/atom+xml">
   
@@ -100,7 +100,8 @@
 <pre><code>16CPU
 64G内存
 </code></pre><p>系统环境:</p>
-<pre><code>$ cat /etc/security/limits.conf
+<pre><code>OS: CentOS 7.4.1708
+$ cat /etc/security/limits.conf
 * soft nofile 300000
 * hard nofile 300000
 </code></pre><h3 id="测试方案"><a href="#测试方案" class="headerlink" title="测试方案"></a>测试方案</h3><p>总体说明:</p>

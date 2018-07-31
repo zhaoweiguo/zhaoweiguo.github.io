@@ -96,33 +96,69 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>目的<br>‘’’’’’’’’<br>通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响</p>
-<p>系统资源<br>‘’’’’’’’’’<br>一台服务器::</p>
+        <h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><p>通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响</p>
+<h3 id="系统资源"><a href="#系统资源" class="headerlink" title="系统资源"></a>系统资源</h3><p>一台服务器:</p>
 <pre><code>16CPU
 64G内存
-</code></pre><p>系统环境::</p>
+</code></pre><p>系统环境:</p>
 <pre><code>$ cat /etc/security/limits.conf
 * soft nofile 300000
 * hard nofile 300000
-</code></pre><p>100万进程,没有打印<br>‘’’’’’’’’’’’’’’’’’’’<br>操作: +P 1002400</p>
-<p>系统占内存约70M<br>2万进程:170M<br>10万进程:520M<br>50万进程:2.26G，用时70s<br>100万进程:5.7G-&gt;4.6G</p>
-<p>超出进程数时，报::</p>
+</code></pre><h3 id="测试方案"><a href="#测试方案" class="headerlink" title="测试方案"></a>测试方案</h3><p>总体说明:</p>
+<p>  supervisor: 重启机制为simple_one_for_one<br>  启动命令: erl +P 1002400 …</p>
+<p>测试代码:</p>
+<p>  F = fun(_Num,Acc)-&gt;<br>    supervisor:start_child(demo_lager_sup,[]),<br>    1+Acc<br>      end,<br>  // 这儿的N是变化的进程数<br>  lists:foldl(F,0,lists:seq(1,N)).</p>
+<p>测试步骤:</p>
+<pre><code>分别测试以下几类情形下的情况
+1.没有启动进程
+2.1万进程
+3.10万进程
+4.50万进程
+5.100万进程
+</code></pre><p>常用命令::</p>
+<p>  erlang:process_info(pid(0,346,0), message_queue_len).</p>
+<h3 id="操作1-100万进程-普通gen-server"><a href="#操作1-100万进程-普通gen-server" class="headerlink" title="操作1:100万进程, 普通gen_server"></a>操作1:100万进程, 普通gen_server</h3><p>资源占用:</p>
+<p>  系统占内存约70M<br>  2万进程:170M<br>  10万进程:520M<br>  50万进程:2.26G，用时70s<br>  100万进程:5.7G-&gt;4.6G</p>
+<p>超出进程数时，报以下错误:</p>
 <pre><code>Eshell V8.3.5.4  (abort with ^G)
 *** ERROR: Shell process terminated! ***
-</code></pre><p>100万进程,每10秒请求一次info<br>‘’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’’<br>操作: +P 1002400<br>增加:gen_server,10s超时功能；超时后打印10次所有类型日志<br>::</p>
-<pre><code>系统占: 73M 48M
-1万进程:236M 187M,
-一段时间后323M,240M
-lager_event消息队列从很快变成10000,消耗到10000就停止消耗,当前进程为:prim_file:drv_get_response/1
-这时再启动1进程，都启动不了，这时lager写入速度:3000/s
-
-
-稳定时分配850M内存，使用630M
-单CPU:12%
-//erlang:process_info(pid(0,346,0), message_queue_len).
-lager_event，MsgQueue，维持在9999
-</code></pre><p>932345请求/34s,27421请求/s,100M/34s<br>基本在压力的边缘上, MsgQueue大部分时间稳定在50以下<br>io:9MB的io output; 730KB的io input<br>::</p>
-<pre><code>[root@idc-iot-pr-server-15 hello]# iostat -x -d -k 1 10 | grep vda
+</code></pre><p>错误原因:</p>
+<p>  需要增加最大并发进程数了</p>
+<h3 id="操作2-100万进程-每10秒请求一次lager"><a href="#操作2-100万进程-每10秒请求一次lager" class="headerlink" title="操作2:100万进程,每10秒请求一次lager"></a>操作2:100万进程,每10秒请求一次lager</h3><p>变动部分:</p>
+<p>  增加:每秒每进程打印10次lager日志</p>
+<p>关键代码:</p>
+<p>  init([]) -&gt;<br>    lager:info(“client process start”),<br>    {ok, #state{},1000}.<br>  handle_info(<em>Info, State) -&gt;<br>  F = fun(</em>)-&gt;<br>    lager:info(“=======&gt;&gt; handle_info _Info = ~p”,[_Info]),<br>  end,<br>  lists:foreach(F,lists:seq(1,10)),<br>  {noreply, State,1000}.</p>
+<p>1万进程:</p>
+<pre><code>从Erlang层面:
+  1.内存: 281M, 200M; 一段时间后稳定在: 390M, 285M; 
+  2.CPU: 一个CPU已经占满
+  3.MsgQueue: 稳定在10000(短暂时间会消耗到8000)
+从系统层面:
+  负载: 0.80, 0.53, 0.26
+  CPU: 单cpu跑满,具体哪个CPU是变化的;短暂会出现1cpu75%,3-4cpu有5%-20%不等的占用
+  内存: -&gt;4G
+其他:
+  这是不能再增加哪怕一个新进程(原因应该是MsgQueue导致)
+  还不准确,大约6,7s后,1个新进程创建成功.测试了下,10个新进程大约需要1分钟
+</code></pre><p>10万进程:</p>
+<pre><code>重启后重新执行
+现象:
+  进程新增到13958后,新增速度极其缓慢,大约12s新增1个
+Erlang层面:
+  1.内存:557M, 430M(一直在很缓慢的增加)
+  2.MsgQueue已经到了13000左右了
+  3.Current Function固定在lager_event的{prim_file,drv_get_response,1}
+系统级别:
+  负载: 1万进程相同
+  CPU: 1万进程基本相同
+  内存: 与1万进程相同
+日志写入速度:
+  406秒写入了783600条日志
+  每秒965条日志
+说明:
+  没必要再继续测试50万、100万进程了
+磁盘:
+[root@idc-iot-pr-server-15 hello]# iostat -x -d -k 1 10 | grep vda
 Device:         rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s avgrq-sz avgqu-sz   await r_await w_await  svctm  %util
 vda               0.00     5.64    0.01   15.55     0.47   243.28    31.33     0.16   10.52   11.86   10.52   2.45   3.82
 vda               0.00     5.00    0.00    3.00     0.00    32.00    21.33     0.01    2.00    0.00    2.00   2.00   0.60
@@ -134,7 +170,8 @@ vda               0.00     0.00    0.00    0.00     0.00     0.00     0.00     0
 vda               0.00     0.00    0.00    0.00     0.00     0.00     0.00     0.00    0.00    0.00    0.00   0.00   0.00
 vda               0.00     0.00    0.00    0.00     0.00     0.00     0.00     0.00    0.00    0.00    0.00   0.00   0.00
 vda               0.00     0.00    0.00    0.00     0.00     0.00     0.00     0.00    0.00    0.00    0.00   0.00   0.00
-</code></pre><p>When the high-water mark is exceeded, lager can be configured to flush all event notifications in the message queue. This can have unintended consequences for other handlers in the same event manager (in e.g. the error_logger’), as events they rely on may be wrongly discarded. By default, this behavior is enabled<br>这也许是为啥MsgQueue能维持在9999</p>
+</code></pre><h3 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h3><p>暂封存,有点别的事忙,此事回头再议:</p>
+<p>  When the high-water mark is exceeded, lager can be configured to flush all event notifications in the message queue. This can have unintended consequences for other handlers in the same event manager (in e.g. the error_logger’), as events they rely on may be wrongly discarded. By default, this behavior is enabled<br>  这也许是为啥MsgQueue能维持在9999</p>
 
       
     </div>

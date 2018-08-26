@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>源码分析:开源项目lager源码分析 | 新溪blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能 看源码前需要看lager文档显示以下几个主要参数: {async_threshold, 20}, {async_thr">
+<meta name="keywords" content="erlang,source-analysis,lager">
+<meta property="og:type" content="article">
+<meta property="og:title" content="源码分析:开源项目lager源码分析">
+<meta property="og:url" content="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能 看源码前需要看lager文档显示以下几个主要参数: {async_threshold, 20}, {async_thr">
+<meta property="og:locale" content="zh-tw">
+<meta property="og:updated_time" content="2018-08-26T14:08:33.614Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="源码分析:开源项目lager源码分析">
+<meta name="twitter:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能 看源码前需要看lager文档显示以下几个主要参数: {async_threshold, 20}, {async_thr">
+  
+    <link rel="alternate" href="/atom.xml" title="新溪blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">新溪blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Erlang——新溪-gordon之胡写乱画</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-erlang-source-analysis-lager1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/23/erlang-source-analysis-lager1/" class="article-date">
+  <time datetime="2018-08-23T09:19:11.000Z" itemprop="datePublished">2018-08-23</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/source-analysis/">source-analysis</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      源码分析:开源项目lager源码分析
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><p>项目使用lager打印日志很多时，会造成以下2个主要问题:</p>
+<pre><code>1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能
+2.有时会丢失部分日志
+</code></pre><p>目的:</p>
+<pre><code>1.通过源码分析找到这2个问题的原因
+2.是否可以找到一些方法解决这个问题
+3.看是否可以重写部分代码来提升性能
+</code></pre><h3 id="看源码前需要"><a href="#看源码前需要" class="headerlink" title="看源码前需要"></a>看源码前需要</h3><p>看lager文档显示以下几个主要参数:</p>
+<pre><code>{async_threshold, 20},
+{async_threshold_window, 5}
+小于20使用异步,超过20切换回同步,小于20-5再切换回异步
+
+{error_logger_hwm, 50}
+每秒最大日志数
+
+{error_logger_flush_queue, true | false}
+% 超过戒备线,会flush all event notifications in the message queue
+% 而这会对other handlers in the same event manager造成意外后果
+% 默认是true,可以关闭
+
+{flush_queue, true | false}
+% flush_queue为true时可以设置threshold
+
+{error_logger_flush_threshold, 1000}
+% 设定error_logger sink的阀值
+
+
+{flush_threshold, 1000}
+% 对所有的sinks
+
+{killer_hwm, 1000},
+{killer_reinstall_after, 5000}
+// 有时你需要丢弃所有pending日志消息而不是让他耗光时间
+// if the gen_event mailbox exceeds a configurable high water mark,
+// the sink will be killed and reinstalled after a configurable cool down time
+% This means if the sink&apos;s mailbox size exceeds 1000 messages, kill the entire sink and reload it after 5000 milliseconds
+% By default, the manager killer is not installed into any sink. If the killer_reinstall_after cool down time is not specified it defaults to 5000.
+</code></pre><h3 id="parse-transform模式"><a href="#parse-transform模式" class="headerlink" title="parse_transform模式"></a>parse_transform模式</h3><p>获取parse_transform模式源码:</p>
+<pre><code>Beam = &quot;./_build/default/lib/demo/ebin/demo_server.beam&quot;.
+{ok, {_, [{abstract_code, {_,Abs}}]}} =  beam_lib:chunks(
+  Beam, [abstract_code]).
+io:fwrite(&quot;~s~n&quot;, [erl_prettypr:format(erl_syntax:form_list(Abs))]).
+% 通过以上命令得到parse_transform后的源码
+</code></pre><p>原始使用:</p>
+<pre><code>lager:info(&quot;handle_call _Request = ~p&quot;,[_Request]),
+</code></pre><p>parse_transform模式转化后:</p>
+<pre><code>lager:do_log(info,
+   [{application, demo_lager}, {module, demo_lager_server},
+    {function, handle_call}, {line, 42},
+    {pid, pid_to_list(self())}, {node, node()}
+    | lager:md()],
+   &quot;handle_call _Request = ~p&quot;, [_Request], 4096, 64,
+   __Leveldemo_lager_server42, __Tracesdemo_lager_server42,
+   lager_event, __Piddemo_lager_server42)
+</code></pre><h3 id="lager-sup"><a href="#lager-sup" class="headerlink" title="lager_sup"></a>lager_sup</h3><p>1.ets表:lager_config:</p>
+<pre><code>% 初使化时往表里增加3条数据
+{lager_event, loglevel} &lt;=  {Sink, loglevel}
+{Int, []}: 其中Int为8位的整形
+  -define(DEBUG, 128).
+  -define(INFO, 64).
+  -define(NOTICE, 32).
+  -define(WARNING, 16).
+  -define(ERROR, 8).
+  -define(CRITICAL, 4).
+  -define(ALERT, 2).
+  -define(EMERGENCY, 1).
+  -define(LOG_NONE, 0).
+{_global, handlers}
+</code></pre><p>2.三个子进程one_for_one:</p>
+<pre><code>{lager, {gen_event, start_link, [{local, lager_event}]},
+        permanent, 5000, worker, dynamic}
+{lager_handler_watcher_sup, {lager_handler_watcher_sup, start_link, []},
+        permanent, 5000, supervisor, [lager_handler_watcher_sup]}
+//可选
+{lager_crash_log, {lager_crash_log, start_link, [File, MaxBytes,
+  RotationSize, RotationDate, RotationCount, RotationMod]},
+  permanent, 5000, worker, [lager_crash_log]}
+</code></pre><p>3.lager_event.erl:</p>
+<pre><code>% @todo  后面通过  增加事件
+</code></pre><p>4.lager_handler_watcher_sup.erl:</p>
+<pre><code>% @todo 后面通过start_child增加
+simple_one_for_one:
+{lager_handler_watcher, {lager_handler_watcher, start_link, []},
+    temporary, 5000, worker, [lager_handler_watcher]}
+</code></pre><p>5.lager_crash_log.erl:</p>
+<pre><code>% 配置文件如果没有配置crash_log,则不启动
+File: {crash_log, &quot;log/crash.log&quot;},
+MaxBytes:{crash_log_msg_size, 65536},
+RotationSize:{crash_log_size, 10485760},
+RotationCount:{crash_log_count, 5},
+RotationDate:{crash_log_date, &quot;$D0&quot;}, =&gt; Res ++ [{hour ,0}]
+RotationMod:{crash_log_rotator, lager_rotator_default},
+
+% 启动命令
+{lager_crash_log, {lager_crash_log, start_link, [File, MaxBytes,
+    RotationSize, RotationDate, RotationCount, RotationMod]},
+    permanent, 5000, worker, [lager_crash_log]}
+
+% 启动内容
+1.打开文件log/crash.log
+2.RotationDate指定时间后发消息rotate
+3.进程收到消息rotate后, 执行Rotator:rotate_logfile(Name, Count). 
+    % 这儿的Rotator从配置文件中取出值为:lager_rotator_default
+4.级联处理crash.log.x文件:把.0=&gt;.1, .1=&gt;.2 ... .5删除(配置文件crash_log_count)
+</code></pre><h3 id="同步、异步相关"><a href="#同步、异步相关" class="headerlink" title="同步、异步相关"></a>同步、异步相关</h3><p>启动过程:</p>
+<pre><code>% 相关参数
+{async_threshold, 20},
+{async_threshold_window, 5}
+
+% a.如没设定async_threshold
+不执行以下操作
+
+% b.如没设定async_threshold_window
+async_threshold_window = async_threshold * 0.2(向下取整)
+
+% c.两参数不为整数
+throw异常
+
+% d. 都正常
+% Sink=lager_event
+% Threshold=env(async_threshold)
+% Window=env(async_threshold_window)
+supervisor:start_child(lager_handler_watcher_sup, [Sink, lager_backend_throttle, [Threshold, Window]])
+</code></pre><h3 id="超过mailbox警戒线的情况"><a href="#超过mailbox警戒线的情况" class="headerlink" title="超过mailbox警戒线的情况"></a>超过mailbox警戒线的情况</h3><p>参数:</p>
+<pre><code>{killer_hwm, 1000}
+{killer_reinstall_after, 5000}
+% This means if the sink&apos;s mailbox size exceeds 1000 messages,
+% kill the entire sink and reload it after 5000 milliseconds.
+</code></pre><p>步骤:</p>
+<pre><code>% a. 没有配置killer_hwm参数
+不执行以下操作
+
+% b.没有配置killer_reinstall_after参数
+默认为5000
+
+% c.两参数不是大于0整数
+throw异常
+
+% d.一切正常
+% Sink: lager_event
+% HWM: env(killer_hwm)
+% ReinstallTimer: env(killer_reinstall_after)
+supervisor:start_child(lager_handler_watcher_sup, [Sink, lager_manager_killer, [HWM, ReinstallTimer]])
+</code></pre><h3 id="handlers相关"><a href="#handlers相关" class="headerlink" title="handlers相关"></a>handlers相关</h3><p>配置文件:</p>
+<pre><code>{handlers, [
+  {lager_console_backend, [{level, info}]},
+  {lager_file_backend, [{file, &quot;error.log&quot;}, {level, error}]},
+  {lager_file_backend, [{file, &quot;console.log&quot;}, {level, info}]}
+ ]},
+</code></pre><p>步骤:</p>
+<pre><code>% a.没有设备配置文件
+不执行以下操作
+
+% b.handlers不是列表
+throw异常
+
+% c.一切正常
+1. 把配件文件转为格式:{Module, Config}，即:
+  [
+    {lager_console_backend, [{level, info}]},
+    {{lager_file_backend, "error.log"}, [{file, "error.log"}, {level, error}]},
+        {{lager_file_backend, "console.log", [{file, "console.log"}, {level, info}]}
+      ]
+    2.对配置文件handlers列表中的每个handler，执行:check_handler_config(Module, Config)
+      2.1 如果不是lager_file_backend类型:
+        ignore
+      2.2 如果是lager_file_backend类型:
+        a. get(__lager_file_backend_filenames) % 进程字典
+          有些字典: 返回值
+          无字典: 返回ordsets:new()
+        b. put(__lager_file_backend_filenames, ordsets:add_element(F, Fs))
+          F: "error.log" | "console.log"
+          Fs: 进程字典指针
+    3. 对配置文件handlers列表中的每个handler，再执行:start_handler(Sink, Module, Config)
+      % Sink: lager_event
+      % Module: 
+        % lager_console_backend | 
+        % {lager_file_backend, "error.log"} | 
+        % {lager_file_backend, "console.log"}
+      % Config: [{file, "error.log"}, {level, error}]
+      % 说明: handlers配置,对list中的每一项启动一个child
+      {ok, Watcher} = supervisor:start_child(lager_handler_watcher_sup, [Sink, Module, Config])
+
+    4.往表lager_config中插入数据:
+      {{_global, handlers}, [{Module, Watcher, Sink} | _OtherList]}
+      其中:
+      % Module: {lager_file_backend, "error.log"}
+      % Watcher: 上一步start_child的pid
+      % Sink: lager_event
+
+### update_loglevel_config
+
+    一、lager:update_loglevel_config(error_logger)
+      ignore
+    二、lager:update_loglevel_config(lager_event)
+    1.从表lager_config中按key:{lager_event, loglevel}取数据
+      a.未取到返回: {ignore_me, []}
+      b.取到返回:   取到的值{_, Traces}
+    2.get_loglevels(lager_event):
+      对名为lager_event的gen_event,对它所有的handlers,执行call/4(request:get_loglevel)
+          即对前面的3个Module请求得到logevel
+    3.minimum_loglevel/1: 合并得到最小log级别
+    4.往表lager_config中插入数据:
+        key: {lager_event, loglevel}
+        value: {MinLog, Traces}   
+          % MinLog: 日志的二进制
+          % Traces: 上面取到的值
+
+
+### start_error_logger_handler
+
+参数:
+
+    {error_logger_redirect, true}
+    {error_logger_hwm, 50}
+    {error_logger_whitelist, [Logger.ErrorHandler]} %  Stop lager removing Logger's:error_logger handler
+
+步骤:
+
+    start_error_logger_handler/3: 参数为上面的3个值
+    1.如配置error_logger_redirect为false:
+      ignore
+    2.取配置文件:
+      {error_logger_groupleader_strategy, }
+      2.1 如为: undefined:
+        返回: handle
+      2.2 如为: handle | ignore | mirror
+        返回: 此值
+      2.3 throw 异常
+
+    3.supervisor:start_child(lager_handler_watcher_sup, [error_logger, error_logger_lager_h, [HWM, GlStrategy]])
+      HWM: 配置error_logger_hwm的值
+      GlStrategy: 配置error_logger_groupleader_strategy的值
+
+
+### trace相关
+
+执行lager_util:trace_filter(none):
+
+    glc:compile(lager_default_tracer, glc:null(false))
+
+add_configured_traces:
+
+    配置文件:
+    {traces, [
+      %% handler,                         filter,        message level (defaults to debug)
+      {lager_console_backend,             [{module, foo}],       info },
+      {{lager_file_backend, "trace.log"}, [{request, '>', 120}], error},
+      {{lager_file_backend, "event.log"}, [{module, bar}]   } %% implied debug level here
+    ]}
+
+    1.取出配置文件traces的值,对此列表每个item执行
+      lager:trace(Handler, Filter)
+      or
+      lager:trace(Handler, Filter, Level)
+    2.Handler!={lager_file_backend, X}:
+      2.proplists:get_value(sink, Filters, lager_event)得<sink>
+      3.查看lager_util:validate_trace_filter/1 = > true | false
+      4.算出level的二进制值<bin>,然后:
+        4.1 如上面返回false: {error, invalid_trace}
+        4.2 Filter是个列表: {ok, {glc:all(trace_acc(Query)), <bin>, Handler}}
+    4.3 其他: {ok, {Filter, &lt;Bin&gt;, Handler}}
+  5.add_trace_to_loglevel_config({Filter, &lt;Bin&gt;, Handler}, &lt;Sink&gt;)
+    5.1 从表lager_config通过key:{&lt;Sink&gt;, loglevel})取值
+    5.2 即从前面handler里面取的值,如没有还要增加handler（增加的这块无需看了）
+</bin></bin></sink></code></pre><h3 id="extra-sinks相关"><a href="#extra-sinks相关" class="headerlink" title="extra_sinks相关"></a>extra_sinks相关</h3><p>配置文件:</p>
+<pre><code>{extra_sinks,
+ [{audit_lager_event,
+   [
+    {handlers,
+     [{lager_file_backend,
+       [{file, &quot;sink1.log&quot;},
+        {level, info}
+       ]
+      }]
+    },
+    {async_threshold, 500},
+    {async_threshold_window, 50}
+    ]
+  }]
+}
+</code></pre><p>步骤:</p>
+<pre><code>1.往表lager_config中插入数据:
+    key:{audit_lager_event, loglevel}
+    value:{&lt;Bin&gt;, []}
+2.
+supervisor:start_child(lager_sup,
+   {audit_lager_event_lager_event,
+    {gen_event, start_link, [{local, audit_lager_event}]},
+    permanent, 5000, worker, dynamic})
+3.如这儿配置文件值都为正常的,如
+    {async_threshold, 500},
+    {async_threshold_window, 50}
+  则:
+  supervisor:start_child(lager_handler_watcher_sup,
+      [audit_lager_event, lager_backend_throttle, [500, 50]]),
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/" data-id="cjlaxdziv0005496gj5h4lkue" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/07/31/erlang-tune-lager1-md/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">实战1:对lager测试来分析Erlang的一些特性</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/blockchain/">blockchain</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/erlang/">erlang</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/source-analysis/">source-analysis</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/tune/">tune</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/erlang/">erlang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lager/">lager</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rebar3/">rebar3</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/source-analysis/">source-analysis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tune/">tune</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/以太坊/">以太坊</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/收集/">收集</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/erlang/" style="font-size: 20px;">erlang</a> <a href="/tags/lager/" style="font-size: 15px;">lager</a> <a href="/tags/rebar3/" style="font-size: 10px;">rebar3</a> <a href="/tags/source-analysis/" style="font-size: 10px;">source-analysis</a> <a href="/tags/tune/" style="font-size: 10px;">tune</a> <a href="/tags/以太坊/" style="font-size: 10px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/08/23/erlang-source-analysis-lager1/">源码分析:开源项目lager源码分析</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/31/erlang-tune-lager1-md/">实战1:对lager测试来分析Erlang的一些特性</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/24/erlang-rebar3-start/">Erlang：Rebar3的简单使用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/05/24/blockchain-collect/">区块链技术相关收集（长期）</a>
+          </li>
+        
+          <li>
+            <a href="/2018/05/22/blockchain-start/">从零开始创建专属自己的以太坊</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 赵卫国<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

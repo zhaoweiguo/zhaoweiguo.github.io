@@ -103,7 +103,7 @@
 <pre><code>1.通过源码分析找到这2个问题的原因
 2.是否可以找到一些方法解决这个问题
 3.看是否可以重写部分代码来提升性能
-</code></pre><h3 id="看源码前需要"><a href="#看源码前需要" class="headerlink" title="看源码前需要"></a>看源码前需要</h3><p>看lager文档显示以下几个主要参数:</p>
+</code></pre><h3 id="看源码前工作"><a href="#看源码前工作" class="headerlink" title="看源码前工作"></a>看源码前工作</h3><p>看lager文档显示以下几个主要参数:</p>
 <pre><code>{async_threshold, 20},
 {async_threshold_window, 5}
 小于20使用异步,超过20切换回同步,小于20-5再切换回异步
@@ -133,13 +133,39 @@
 // the sink will be killed and reinstalled after a configurable cool down time
 % This means if the sink&apos;s mailbox size exceeds 1000 messages, kill the entire sink and reload it after 5000 milliseconds
 % By default, the manager killer is not installed into any sink. If the killer_reinstall_after cool down time is not specified it defaults to 5000.
-</code></pre><h3 id="parse-transform模式"><a href="#parse-transform模式" class="headerlink" title="parse_transform模式"></a>parse_transform模式</h3><p>获取parse_transform模式源码:</p>
-<pre><code>Beam = &quot;./_build/default/lib/demo/ebin/demo_server.beam&quot;.
-{ok, {_, [{abstract_code, {_,Abs}}]}} =  beam_lib:chunks(
+</code></pre><p>ets表lager_config内容:</p>
+<pre><code>[
+  {
+    {lager_event,loglevel}, {255,[]}
+  },
+  {{lager_event,async}, true},
+      {
+        {'_global',handlers},
+        [
+          {lager_console_backend,<0.148.0>,lager_event},
+          {{lager_file_backend,"log/info.log"},<0.150.0>,lager_event},
+          {{lager_file_backend,"log/notice.log"},<0.152.0>,lager_event},
+          {{lager_file_backend,"log/warning.log"},<0.154.0>,lager_event},
+          {{lager_file_backend,"log/error.log"},<0.156.0>,lager_event},
+          {{lager_file_backend,"log/critical.log"},<0.158.0>,lager_event},
+          {{lager_file_backend,"log/alert.log"},<0.160.0>,lager_event},
+          {{lager_file_backend,"log/emergency.log"},<0.162.0>,lager_event},
+          {{lager_file_backend,"console.log"},<0.164.0>,lager_event}
+        ]
+      }
+    ]
+
+
+### parse_transform模式
+
+获取parse_transform模式源码:
+
+    Beam = "./_build/default/lib/demo/ebin/demo_server.beam".
+    {ok, {_, [{abstract_code, {_,Abs}}]}} =  beam_lib:chunks(
   Beam, [abstract_code]).
 io:fwrite(&quot;~s~n&quot;, [erl_prettypr:format(erl_syntax:form_list(Abs))]).
 % 通过以上命令得到parse_transform后的源码
-</code></pre><p>原始使用:</p>
+</0.164.0></0.162.0></0.160.0></0.158.0></0.156.0></0.154.0></0.152.0></0.150.0></0.148.0></code></pre><p>原始使用:</p>
 <pre><code>lager:info(&quot;handle_call _Request = ~p&quot;,[_Request]),
 </code></pre><p>parse_transform模式转化后:</p>
 <pre><code>lager:do_log(info,
@@ -174,38 +200,49 @@ io:fwrite(&quot;~s~n&quot;, [erl_prettypr:format(erl_syntax:form_list(Abs))]).
   RotationSize, RotationDate, RotationCount, RotationMod]},
   permanent, 5000, worker, [lager_crash_log]}
 </code></pre><p>3.lager_event.erl:</p>
-<pre><code>% @todo  后面通过  增加事件
+<pre><code>% 后面操作中增加事件
 </code></pre><p>4.lager_handler_watcher_sup.erl:</p>
-<pre><code>% @todo 后面通过start_child增加
+<pre><code>% 后面通过start_child增加
 simple_one_for_one:
 {lager_handler_watcher, {lager_handler_watcher, start_link, []},
     temporary, 5000, worker, [lager_handler_watcher]}
 </code></pre><p>5.lager_crash_log.erl:</p>
-<pre><code>% 配置文件如果没有配置crash_log,则不启动
+<pre><code>% a.没有配置crash_log参数
+则不启动
 File: {crash_log, &quot;log/crash.log&quot;},
+% b.相关参数
 MaxBytes:{crash_log_msg_size, 65536},
 RotationSize:{crash_log_size, 10485760},
 RotationCount:{crash_log_count, 5},
 RotationDate:{crash_log_date, &quot;$D0&quot;}, =&gt; Res ++ [{hour ,0}]
 RotationMod:{crash_log_rotator, lager_rotator_default},
 
-% 启动命令
-{lager_crash_log, {lager_crash_log, start_link, [File, MaxBytes,
-    RotationSize, RotationDate, RotationCount, RotationMod]},
+% c.启动命令
+{lager_crash_log, {lager_crash_log, start_link, 
+    [File, MaxBytes, RotationSize, RotationDate, RotationCount, RotationMod]},
     permanent, 5000, worker, [lager_crash_log]}
-
-% 启动内容
-1.打开文件log/crash.log
-2.RotationDate指定时间后发消息rotate
-3.进程收到消息rotate后, 执行Rotator:rotate_logfile(Name, Count). 
-    % 这儿的Rotator从配置文件中取出值为:lager_rotator_default
-4.级联处理crash.log.x文件:把.0=&gt;.1, .1=&gt;.2 ... .5删除(配置文件crash_log_count)
-</code></pre><h3 id="同步、异步相关"><a href="#同步、异步相关" class="headerlink" title="同步、异步相关"></a>同步、异步相关</h3><p>启动过程:</p>
+</code></pre><h3 id="lager-crash-log-erl"><a href="#lager-crash-log-erl" class="headerlink" title="lager_crash_log.erl"></a>lager_crash_log.erl</h3><p>init/1:</p>
+<pre><code>1.lager_util:expand_path/1
+  确定crash.log路径
+2.lager_rotator_default:open_logfile/2
+  a.打开文件log/crash.log
+  b.返回FD, &lt;inode&gt;,更新到state中
+3.schedule_rotation(Date)
+  RotationDate指定时间后发消息rotate
+</code></pre><p>handle_info(rotate:</p>
+<pre><code>进程收到消息rotate后, 执行
+  a. 执行:Rotator:rotate_logfile(Name, Count). 
+  % 这儿的Rotator从配置文件中取出值为:lager_rotator_default
+  即:lager_rotator_default:rotate_logfile(Name, Count).
+  作用: 级联处理crash.log.x文件:把.0=&gt;.1, .1=&gt;.2 ... .5删除(配置文件crash_log_count)
+  b. schedule_rotation(Date)
+    重新进入timer中
+</code></pre><h3 id="同步、异步相关lager-app-boot-0"><a href="#同步、异步相关lager-app-boot-0" class="headerlink" title="同步、异步相关lager_app:boot/0"></a>同步、异步相关lager_app:boot/0</h3><p>参数:</p>
 <pre><code>% 相关参数
 {async_threshold, 20},
 {async_threshold_window, 5}
-
-% a.如没设定async_threshold
+</code></pre><p>启动过程:</p>
+<pre><code>% a.如没设定async_threshold
 不执行以下操作
 
 % b.如没设定async_threshold_window
@@ -259,10 +296,13 @@ throw异常
     {{lager_file_backend, "error.log"}, [{file, "error.log"}, {level, error}]},
         {{lager_file_backend, "console.log", [{file, "console.log"}, {level, info}]}
       ]
-    2.对配置文件handlers列表中的每个handler，执行:check_handler_config(Module, Config)
-      2.1 如果不是lager_file_backend类型:
+    2.对上面配置文件handlers列表中的每个handler，执行:
+      lager_app:check_handler_config(Module, Config)
+      2.1 如果Config不是List或atom
+        throw 异常
+      2.2 如果不是lager_file_backend类型:
         ignore
-      2.2 如果是lager_file_backend类型:
+      2.3 如果是lager_file_backend类型:
         a. get(__lager_file_backend_filenames) % 进程字典
           有些字典: 返回值
           无字典: 返回ordsets:new()
@@ -286,26 +326,43 @@ throw异常
       % Watcher: 上一步start_child的pid
       % Sink: lager_event
 
+
 ### update_loglevel_config
 
-    一、lager:update_loglevel_config(error_logger)
+ 一、获取Traces:
+
+    1.lager:update_loglevel_config(error_logger)
       ignore
-    二、lager:update_loglevel_config(lager_event)
-    1.从表lager_config中按key:{lager_event, loglevel}取数据
+    2.lager:update_loglevel_config(lager_event)
+      从表lager_config中按key:{lager_event, loglevel}取数据
       a.未取到返回: {ignore_me, []}
       b.取到返回:   取到的值{_, Traces}
-    2.get_loglevels(lager_event):
-      对名为lager_event的gen_event,对它所有的handlers,执行call/4(request:get_loglevel)
+
+二、get_loglevels(lager_event):
+
+    1.获取所有handlers:
+      gen_event:which_handlers(Sink)
+
+    2.执行call/4
+      对名为lager_event的gen_event,对它所有的handlers,执行:
+          call/4(request:get_loglevel)
           即对前面的3个Module请求得到logevel
-    3.minimum_loglevel/1: 合并得到最小log级别
-    4.往表lager_config中插入数据:
-        key: {lager_event, loglevel}
-        value: {MinLog, Traces}   
-          % MinLog: 日志的二进制
-          % Traces: 上面取到的值
+
+三、minimum_loglevel/1:
+
+    合并得到最小log级别
+
+四、往表lager_config中插入数据::
+
+    key: {lager_event, loglevel}
+    value: {MinLog, Traces}   
+      % MinLog: 日志的二进制
+      % Traces: 上面取到的值
+    如:
+    {lager_event,loglevel}, {255,[]}
 
 
-### start_error_logger_handler
+### start_error_logger_handler/3
 
 参数:
 
@@ -330,6 +387,10 @@ throw异常
       HWM: 配置error_logger_hwm的值
       GlStrategy: 配置error_logger_groupleader_strategy的值
 
+其他:
+
+  此函数返回值是application的State，后用于lager_app:stop/1函数做停止前的后续处理
+
 
 ### trace相关
 
@@ -337,7 +398,7 @@ throw异常
 
     glc:compile(lager_default_tracer, glc:null(false))
 
-add_configured_traces:
+lager_app:add_configured_traces/1:
 
     配置文件:
     {traces, [
@@ -348,20 +409,48 @@ add_configured_traces:
     ]}
 
     1.取出配置文件traces的值,对此列表每个item执行
-      lager:trace(Handler, Filter)
+      lager:trace(Handler, Filter) =>lager:trace(Handler, Filter, debug)
       or
       lager:trace(Handler, Filter, Level)
-    2.Handler!={lager_file_backend, X}:
-      2.proplists:get_value(sink, Filters, lager_event)得<sink>
-      3.查看lager_util:validate_trace_filter/1 = > true | false
-      4.算出level的二进制值<bin>,然后:
-        4.1 如上面返回false: {error, invalid_trace}
-        4.2 Filter是个列表: {ok, {glc:all(trace_acc(Query)), <bin>, Handler}}
-    4.3 其他: {ok, {Filter, &lt;Bin&gt;, Handler}}
-  5.add_trace_to_loglevel_config({Filter, &lt;Bin&gt;, Handler}, &lt;Sink&gt;)
-    5.1 从表lager_config通过key:{&lt;Sink&gt;, loglevel})取值
-    5.2 即从前面handler里面取的值,如没有还要增加handler（增加的这块无需看了）
-</bin></bin></sink></code></pre><h3 id="extra-sinks相关"><a href="#extra-sinks相关" class="headerlink" title="extra_sinks相关"></a>extra_sinks相关</h3><p>配置文件:</p>
+
+
+lager:trace({lager_file_backend, File}, Filter, Level):
+
+    =>lager:trace_file(File, Filter, Level)
+      a.从配置文件Filter里按key取值sink,如没配置默认为:lager_event
+      @todo
+
+lager:trace(Backend, Filter, Level):
+
+    1.lager:validate_trace_filters(Filter, Level, Backend):
+
+      a.<sink> = proplists:get_value(sink, Filters, lager_event)
+      b.<validfilter> = lager_util:validate_trace({
+                                 proplists:delete(sink, Filters),
+                                 Level,
+                                 Backend
+                               })
+      c.返回{<sink>, <validfilter>}
+    2.lager:add_trace_to_loglevel_config({Filter, <bin>, Handler}, <sink>)
+        1. {MinLevel, Traces} = 从表lager_config通过key:{<sink>, loglevel})取值
+        2. Traces中是否包含{Filter, <bin>, Handler}:
+          1.1.包含=> ignore
+          1.2 不包含:
+            NewTraces = [{Filter, <bin>, Handler}|Traces]
+            对NewTraces的每个item执行:
+              lager_util:trace_filter(Filter).
+              即:glc:compile(lager_default_tracer, glc_lib:reduce(trace_any(Filter))).
+            更新表lager_config的key:{<sink>, loglevel})对应的值
+
+lager_util:validate_trace({Filter, Level, Destination}):
+
+    1.<validfilter> = lager_util:validate_trace_filter(Filter)=> true | false
+    2.<levelbin> = level的二进制值<bin>
+    3.判断
+      1. if <validfilter> == false => {error, invalid_trace}
+      2. if Filter是个列表=> {ok, {glc:all(trace_acc(Query)), <levelbin>, Handler}}
+  3. 其他: {ok, {Filter, &lt;LevelBin&gt;, Handler}}
+</levelbin></validfilter></bin></levelbin></validfilter></sink></bin></bin></sink></sink></bin></validfilter></sink></validfilter></sink></code></pre><h3 id="extra-sinks相关"><a href="#extra-sinks相关" class="headerlink" title="extra_sinks相关"></a>extra_sinks相关</h3><p>配置文件:</p>
 <pre><code>{extra_sinks,
  [{audit_lager_event,
    [

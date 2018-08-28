@@ -290,27 +290,31 @@ supervisor:start_child(lager_handler_watcher_sup, [Sink, lager_manager_killer, [
 throw异常
 
 % c.一切正常
-</code></pre><p>一切正常的情况:</p>
-<pre><code>1.把配件文件转为格式:{Module, Config}，即:
-  [
-    {lager_console_backend, [{level, info}]},
-    {{lager_file_backend, "error.log"}, [{file, "error.log"}, {level, error}]},
-        {{lager_file_backend, "console.log", [{file, "console.log"}, {level, info}]}
-      ]
-    2.对上面配置文件handlers列表中的每个handler，执行:
-      lager_app:check_handler_config(Module, Config)
-      2.1 如果Config不是List或atom
-        throw 异常
-      2.2 如果不是lager_file_backend类型:
-        ignore
-      2.3 如果是lager_file_backend类型:
-        a. get(__lager_file_backend_filenames) % 进程字典
-          有些字典: 返回值
-          无字典: 返回ordsets:new()
-        b. put(__lager_file_backend_filenames, ordsets:add_element(F, Fs))
-          F: "error.log" | "console.log"
-          Fs: 进程字典指针
-    3.对配置文件handlers列表中的每个handler，再执行:start_handler(Sink, Module, Config)
+</code></pre><h5 id="一切正常的情况"><a href="#一切正常的情况" class="headerlink" title="一切正常的情况:"></a>一切正常的情况:</h5><p>1.把配件文件转为格式:{Module, Config}，即:</p>
+<pre><code>[
+  {lager_console_backend, [{level, info}]},
+  {{lager_file_backend, "error.log"}, [{file, "error.log"}, {level, error}]},
+      {{lager_file_backend, "console.log", [{file, "console.log"}, {level, info}]}
+    ]
+
+2.对上面配置文件handlers列表中的每个handler，执行:
+
+    lager_app:check_handler_config(Module, Config)
+    2.1 如果Config不是List或atom
+      throw 异常
+    2.2 如果不是lager_file_backend类型:
+      ignore
+    2.3 如果是lager_file_backend类型:
+      a. get(__lager_file_backend_filenames) % 进程字典
+        有些字典: 返回值
+        无字典: 返回ordsets:new()
+      b. put(__lager_file_backend_filenames, ordsets:add_element(F, Fs))
+        F: "error.log" | "console.log"
+        Fs: 进程字典指针
+
+3.对配置文件handlers列表中的每个handler，再执行:
+
+    start_handler(Sink, Module, Config)
       % Sink: lager_event
       % Module: 
         % lager_console_backend | 
@@ -319,14 +323,17 @@ throw异常
       % Config: [{file, "error.log"}, {level, error}]
       % 说明: handlers配置,对list中的每一项启动一个child
       {ok, Watcher} = supervisor:start_child(lager_handler_watcher_sup, [Sink, Module, Config])
-    4.往表lager_config中插入数据:
-      {{_global, handlers}, [{Module, Watcher, Sink} | _OtherList]}
-      其中:
-      Module: {lager_file_backend, "error.log"}
-      Watcher: 上一步start_child的pid
-      Sink: lager_event
+
+4.往表lager_config中插入数据:
+
+    {{_global, handlers}, [{Module, Watcher, Sink} | _OtherList]}
+    其中:
+    Module: {lager_file_backend, "error.log"}
+    Watcher: 上一步start_child的pid
+    Sink: lager_event
 
 ### update_loglevel_config模块
+
 获取Traces:
 
     1.lager:update_loglevel_config(error_logger)
@@ -387,8 +394,7 @@ minimum_loglevel/1:
 
 其他:
 
-  此函数返回值是application的State，后用于lager_app:stop/1函数做停止前的后续处理
-
+    此函数返回值是application的State，后用于lager_app:stop/1函数做停止前的后续处理
 
 ### trace相关
 

@@ -291,7 +291,7 @@ throw异常
 
 % c.一切正常
 </code></pre><p>一切正常的情况:</p>
-<pre><code>1. 把配件文件转为格式:{Module, Config}，即:
+<pre><code>1.把配件文件转为格式:{Module, Config}，即:
   [
     {lager_console_backend, [{level, info}]},
     {{lager_file_backend, "error.log"}, [{file, "error.log"}, {level, error}]},
@@ -310,7 +310,7 @@ throw异常
         b. put(__lager_file_backend_filenames, ordsets:add_element(F, Fs))
           F: "error.log" | "console.log"
           Fs: 进程字典指针
-    3. 对配置文件handlers列表中的每个handler，再执行:start_handler(Sink, Module, Config)
+    3.对配置文件handlers列表中的每个handler，再执行:start_handler(Sink, Module, Config)
       % Sink: lager_event
       % Module: 
         % lager_console_backend | 

@@ -329,7 +329,7 @@ throw异常
 
 ### update_loglevel_config
 
- 一、获取Traces:
+ 获取Traces:
 
     1.lager:update_loglevel_config(error_logger)
       ignore
@@ -338,7 +338,7 @@ throw异常
       a.未取到返回: {ignore_me, []}
       b.取到返回:   取到的值{_, Traces}
 
-二、get_loglevels(lager_event):
+get_loglevels(lager_event):
 
     1.获取所有handlers:
       gen_event:which_handlers(Sink)
@@ -348,11 +348,11 @@ throw异常
           call/4(request:get_loglevel)
           即对前面的3个Module请求得到logevel
 
-三、minimum_loglevel/1:
+minimum_loglevel/1:
 
     合并得到最小log级别
 
-四、往表lager_config中插入数据::
+往表lager_config中插入数据::
 
     key: {lager_event, loglevel}
     value: {MinLog, Traces}   

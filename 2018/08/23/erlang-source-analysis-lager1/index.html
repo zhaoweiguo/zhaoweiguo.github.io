@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能 看源码前工作看lager文档显示以下几个主要参数: {async_threshold, 20}, {async_thr">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-08-28T05:39:10.401Z">
+<meta property="og:updated_time" content="2018-08-28T05:40:57.602Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="源码分析:开源项目lager源码分析">
 <meta name="twitter:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能 看源码前工作看lager文档显示以下几个主要参数: {async_threshold, 20}, {async_thr">
@@ -289,7 +289,8 @@ supervisor:start_child(lager_handler_watcher_sup, [Sink, lager_manager_killer, [
 throw异常
 
 % c.一切正常
-1. 把配件文件转为格式:{Module, Config}，即:
+</code></pre><p>一切正常的情况:</p>
+<pre><code>1. 把配件文件转为格式:{Module, Config}，即:
   [
     {lager_console_backend, [{level, info}]},
     {{lager_file_backend, "error.log"}, [{file, "error.log"}, {level, error}]},
@@ -317,7 +318,6 @@ throw异常
       % Config: [{file, "error.log"}, {level, error}]
       % 说明: handlers配置,对list中的每一项启动一个child
       {ok, Watcher} = supervisor:start_child(lager_handler_watcher_sup, [Sink, Module, Config])
-
     4.往表lager_config中插入数据:
       {{_global, handlers}, [{Module, Watcher, Sink} | _OtherList]}
       其中:

@@ -290,7 +290,8 @@ supervisor:start_child(lager_handler_watcher_sup, [Sink, lager_manager_killer, [
 throw异常
 
 % c.一切正常
-1. 把配件文件转为格式:{Module, Config}，即:
+</code></pre><p>一切正常的情况:</p>
+<pre><code>1. 把配件文件转为格式:{Module, Config}，即:
   [
     {lager_console_backend, [{level, info}]},
     {{lager_file_backend, "error.log"}, [{file, "error.log"}, {level, error}]},
@@ -318,7 +319,6 @@ throw异常
       % Config: [{file, "error.log"}, {level, error}]
       % 说明: handlers配置,对list中的每一项启动一个child
       {ok, Watcher} = supervisor:start_child(lager_handler_watcher_sup, [Sink, Module, Config])
-
     4.往表lager_config中插入数据:
       {{_global, handlers}, [{Module, Watcher, Sink} | _OtherList]}
       其中:

@@ -322,9 +322,9 @@ throw异常
     4.往表lager_config中插入数据:
       {{_global, handlers}, [{Module, Watcher, Sink} | _OtherList]}
       其中:
-      % Module: {lager_file_backend, "error.log"}
-      % Watcher: 上一步start_child的pid
-      % Sink: lager_event
+      Module: {lager_file_backend, "error.log"}
+      Watcher: 上一步start_child的pid
+      Sink: lager_event
 
 
 ### update_loglevel_config模块

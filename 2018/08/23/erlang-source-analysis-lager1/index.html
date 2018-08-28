@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能 看源码前工作看lager文档显示以下几个主要参数: {async_threshold, 20}, {async_thr">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-08-28T05:57:31.231Z">
+<meta property="og:updated_time" content="2018-08-28T06:01:44.372Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="源码分析:开源项目lager源码分析">
 <meta name="twitter:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能 看源码前工作看lager文档显示以下几个主要参数: {async_threshold, 20}, {async_thr">
@@ -290,11 +290,10 @@ throw异常
 
 % c.一切正常
 </code></pre><h5 id="一切正常的情况"><a href="#一切正常的情况" class="headerlink" title="一切正常的情况:"></a>一切正常的情况:</h5><p>1.把配件文件转为格式:{Module, Config}，即:</p>
-<pre><code>[
-  {lager_console_backend, [{level, info}]},
+<pre><code>[{lager_console_backend, [{level, info}]},
   {{lager_file_backend, "error.log"}, [{file, "error.log"}, {level, error}]},
-      {{lager_file_backend, "console.log", [{file, "console.log"}, {level, info}]}
-    ]
+      {{lager_file_backend, "console.log", [{file, "console.log"}, {level, info}]}]
+
 
 2.对上面配置文件handlers列表中的每个handler，执行:
 

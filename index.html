@@ -291,11 +291,10 @@ throw异常
 
 % c.一切正常
 </code></pre><h5 id="一切正常的情况"><a href="#一切正常的情况" class="headerlink" title="一切正常的情况:"></a>一切正常的情况:</h5><p>1.把配件文件转为格式:{Module, Config}，即:</p>
-<pre><code>[
-  {lager_console_backend, [{level, info}]},
+<pre><code>[{lager_console_backend, [{level, info}]},
   {{lager_file_backend, "error.log"}, [{file, "error.log"}, {level, error}]},
-      {{lager_file_backend, "console.log", [{file, "console.log"}, {level, info}]}
-    ]
+      {{lager_file_backend, "console.log", [{file, "console.log"}, {level, info}]}]
+
 
 2.对上面配置文件handlers列表中的每个handler，执行:
 

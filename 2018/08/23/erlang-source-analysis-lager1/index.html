@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能 看源码前工作看lager文档显示以下几个主要参数: {async_threshold, 20}, {async_thr">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-08-28T05:44:17.485Z">
+<meta property="og:updated_time" content="2018-08-28T05:44:39.037Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="源码分析:开源项目lager源码分析">
 <meta name="twitter:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能 看源码前工作看lager文档显示以下几个主要参数: {async_threshold, 20}, {async_thr">
@@ -326,7 +326,7 @@ throw异常
       % Sink: lager_event
 
 
-### update_loglevel_config
+### update_loglevel_config模块
 
 获取Traces:
 

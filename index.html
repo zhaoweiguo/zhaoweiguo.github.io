@@ -70,6 +70,474 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-erlang-release-updowngrade-rebar3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/04/erlang-release-updowngrade-rebar3/" class="article-date">
+  <time datetime="2018-09-04T10:01:18.000Z" itemprop="datePublished">2018-09-04</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/erlang/">erlang</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/04/erlang-release-updowngrade-rebar3/">使用rebar3的方法对release版本升降级</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/09/04/erlang-release-updowngrade-rebar3/" data-id="cjlot5nd90004zt6gy1lil1ex" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rebar3/">rebar3</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-erlang-release-updowngrade-normal" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/04/erlang-release-updowngrade-normal/" class="article-date">
+  <time datetime="2018-09-04T10:01:11.000Z" itemprop="datePublished">2018-09-04</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/erlang/">erlang</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/04/erlang-release-updowngrade-normal/">使用Erlang原生方法对release版本升降级</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="创建Target-System"><a href="#创建Target-System" class="headerlink" title="创建Target System"></a>创建Target System</h3><p>创建一个符合OTP架构的项目ch3:</p>
+<pre><code>├── LICENSE
+├── README.md
+├── rebar.config
+├── rebar.lock
+└── src
+    ├── ch3.app.src
+    ├── ch3.erl
+    ├── ch3_app.erl
+    ├── ch3_sup.erl
+    └── target_system.er
+</code></pre><p>ch_rel-1.rel文件:</p>
+<pre><code>{release,
+   {&quot;ch_rel&quot;, &quot;A&quot;},
+   {erts, &quot;8.3.5.4&quot;},
+   [
+      {kernel, &quot;5.2.0.1&quot;},
+      {stdlib, &quot;3.3&quot;},
+      {sasl, &quot;3.0.3&quot;},
+      {ch3, &quot;0.1.0&quot;}
+   ]
+}.
+</code></pre><p>生成Target System:</p>
+<pre><code>os&gt; erl -pa /home/user/target_system/myapps/ch3-0.1.0/ebin
+
+% 1.这儿的ch_rel-1就是ch_rel-1.rel文件名
+% 2.target_system.erl文件在sasl项目的example中
+% 3.此命令会生成以下几个文件:
+%     plain.rel,plain.script, plain.boot
+%     ch_rel-1.script, ch_rel-1.boot
+%     ch_rel-1.tar.gz
+1&gt; target_system:create(&quot;ch_rel-1&quot;).
+</code></pre><p>安装Target System:</p>
+<pre><code>% 1.会把ch_rel-1.tar.gz文件解压到目录/usr/local/erl-target中
+% 2.文件releases/start_erl.data中有erts版本
+% 3.文件releases/RELEASES中存放所有的release版本信息
+2&gt; target_system:install(&quot;ch3&quot;, &quot;/usr/local/erl-target&quot;).
+</code></pre><h3 id="启动Target-System"><a href="#启动Target-System" class="headerlink" title="启动Target System"></a>启动Target System</h3><pre><code>% 使用interactive方式启动
+os&gt; /usr/local/erl-target/bin/erl -boot /usr/local/erl-target/releases/A/start
+
+run_erl: 提供日志输出从runtime system到文件系统的封装
+start_erl: 
+  需要:
+  1.The root directory (&quot;/usr/local/erl-target&quot;)
+  2.The releases directory (&quot;/usr/local/erl-target/releases&quot;
+  3.The location of the file start_erl.data
+  4.有文件releases/A/sys.config
+  功能:
+  1.读文件start_erl.data,取得runtime system version「8.3.5.4」和release version「A」
+  2.启动找到的这个runtime system
+  3.提供给标识-boot的文件releases/A/start.boot
+  4.没有releases/A/sys.config文件，会启动失败
+to_erl: attach到Erlang shell的命令
+</code></pre><h3 id="创建Next-Version"><a href="#创建Next-Version" class="headerlink" title="创建Next Version"></a>创建Next Version</h3><p>ch_rel-2.rel文件:</p>
+<pre><code>{release,
+ {&quot;ch_rel&quot;, &quot;B&quot;},
+ {erts, &quot;8.3.5.4&quot;},
+ [{kernel, &quot;5.2.0.1&quot;},
+  {stdlib, &quot;3.3&quot;},
+  {sasl, &quot;3.0.3&quot;},
+  {ch3, &quot;0.2.0&quot;}]
+}.
+</code></pre><p>ch3.appup:</p>
+<pre><code>{&quot;0.2.0&quot;,
+   [{&quot;0.1.0&quot;, [{load_module, ch3}]}],
+   [{&quot;0.1.0&quot;, [{load_module, ch3}]}]
+}.
+</code></pre><p>打包version 2:</p>
+<pre><code>// 在version 2上启动erlang
+os&gt; erl -pa /home/user/target_system/myapps/ch3-2.0/ebin
+
+% 生成version 2的.boot文件和.script文件
+1&gt; systools:make_relup(&quot;ch_rel-2&quot;,[&quot;ch_rel-1&quot;],[&quot;ch_rel-1&quot;],
+[{path,[&quot;/home/user/target_system/myapps/ch3-1.0/ebin&quot;,
+&quot;/my/old/erlang/lib/*/ebin&quot;]}]).
+
+// 创建新的release
+2&gt; target_system:create(&quot;ch_rel-2&quot;).
+% 生成文件:ch_rel-2.tar.gz
+</code></pre><h3 id="更新Target-System"><a href="#更新Target-System" class="headerlink" title="更新Target System"></a>更新Target System</h3><p>修改bin/start增加-heart:</p>
+<pre><code>#!/bin/sh
+ROOTDIR=/usr/local/erl-target/
+
+if [ -z &quot;$RELDIR&quot; ]
+then
+   RELDIR=$ROOTDIR/releases
+fi
+
+START_ERL_DATA=${1:-$RELDIR/start_erl.data}
+
+$ROOTDIR/bin/run_erl -daemon /tmp/ $ROOTDIR/log &quot;exec $ROOTDIR/bin/start_erl $ROOTDIR\
+$RELDIR $START_ERL_DATA -heart
+</code></pre><p>假设原version 1通过以下命令启动:</p>
+<pre><code>// 启动
+os&gt; /usr/local/erl-target/bin/start
+// attach
+os&gt; /usr/local/erl-target/bin/to_erl /tmp/erlang.pipe.1
+</code></pre><p>copy上面生成的ch_rel-2.tar.gz文件到version 1的releases目录中:</p>
+<pre><code>os&gt; cp ch_rel-2.tar.gz /usr/local/erl-target/releases
+</code></pre><p>解压、安装:</p>
+<pre><code>% 解压
+1&gt; {ok,Vsn} = release_handler:unpack_release(&quot;ch_rel-2&quot;).
+
+% 安装
+% 因为有-heart选项,结点已经重启
+2&gt; release_handler:install_release(Vsn).
+  {continue_after_restart,&quot;A&quot;,[]}
+  heart: Tue Apr  1 12:15:10 2014: Erlang has closed.
+  heart: Tue Apr  1 12:15:11 2014: Executed &quot;/usr/local/erl-target/bin/start /usr/local/erl-target/releases/new_start_erl.data&quot; -&gt; 0. Terminating.
+  [End]
+</code></pre><p>重新attach到node:</p>
+<pre><code>os&gt; /usr/local/erl-target/bin/to_erl /tmp/erlang.pipe.2
+</code></pre><p>查看release:</p>
+<pre><code>1&gt; release_handler:which_releases().
+[{&quot;ch_rel&quot;,&quot;B&quot;,
+  [&quot;kernel-5.2.0.1&quot;,&quot;stdlib-3.3&quot;,&quot;sasl-3.0.3&quot;,&quot;ch3-0.2.0&quot;],
+  current},
+ {&quot;ch_rel&quot;,&quot;A&quot;,
+  [&quot;kernel-5.2.0.1&quot;,&quot;stdlib-3.3&quot;,&quot;sasl-3.0.3&quot;,&quot;ch3-0.1.0&quot;],
+  permanent}]
+</code></pre><p>Make the new release permanent:</p>
+<pre><code>2&gt; release_handler:make_permanent(&quot;SECOND&quot;).
+
+3&gt; release_handler:which_releases().
+[{&quot;ch_rel&quot;,&quot;B&quot;,
+  [&quot;kernel-5.2.0.1&quot;,&quot;stdlib-3.3&quot;,&quot;sasl-3.0.3&quot;,&quot;ch3-0.2.0&quot;],
+  permanent},
+ {&quot;ch_rel&quot;,&quot;A&quot;,
+  [&quot;kernel-5.2.0.1&quot;,&quot;stdlib-3.3&quot;,&quot;sasl-3.0.3&quot;,&quot;ch3-0.1.0&quot;],
+  old}]
+</code></pre><h3 id="target-system-erl"><a href="#target-system-erl" class="headerlink" title="target_system.erl"></a>target_system.erl</h3><pre><code>-module(target_system).
+-export([create/1, create/2, install/2]).
+
+%% Note: RelFileName below is the *stem* without trailing .rel,
+%% .script etc.
+%%
+
+%% create(RelFileName)
+%%
+create(RelFileName) -&gt;
+    create(RelFileName,[]).
+
+create(RelFileName,SystoolsOpts) -&gt;
+    RelFile = RelFileName ++ &quot;.rel&quot;, 
+    Dir = filename:dirname(RelFileName),
+    PlainRelFileName = filename:join(Dir,&quot;plain&quot;),
+    PlainRelFile = PlainRelFileName ++ &quot;.rel&quot;,
+    io:fwrite(&quot;Reading file: ~tp ...~n&quot;, [RelFile]),
+    {ok, [RelSpec]} = file:consult(RelFile),
+    io:fwrite(&quot;Creating file: ~tp from ~tp ...~n&quot;,
+              [PlainRelFile, RelFile]),
+    {release,
+     {RelName, RelVsn},
+     {erts, ErtsVsn},
+     AppVsns} = RelSpec,
+    PlainRelSpec = {release, 
+                    {RelName, RelVsn},
+                    {erts, ErtsVsn},
+                    lists:filter(fun({kernel, _}) -&gt; 
+                                         true;
+                                    ({stdlib, _}) -&gt;
+                                         true;
+                                    (_) -&gt;
+                                         false
+                                 end, AppVsns)
+                   },
+    {ok, Fd} = file:open(PlainRelFile, [write]),
+    io:fwrite(Fd, &quot;~p.~n&quot;, [PlainRelSpec]),
+    file:close(Fd),
+
+    io:fwrite(&quot;Making \&quot;~ts.script\&quot; and \&quot;~ts.boot\&quot; files ...~n&quot;,
+        [PlainRelFileName,PlainRelFileName]),
+    make_script(PlainRelFileName,SystoolsOpts),
+
+    io:fwrite(&quot;Making \&quot;~ts.script\&quot; and \&quot;~ts.boot\&quot; files ...~n&quot;,
+              [RelFileName, RelFileName]),
+    make_script(RelFileName,SystoolsOpts),
+
+    TarFileName = RelFileName ++ &quot;.tar.gz&quot;,
+    io:fwrite(&quot;Creating tar file ~tp ...~n&quot;, [TarFileName]),
+    make_tar(RelFileName,SystoolsOpts),
+
+    TmpDir = filename:join(Dir,&quot;tmp&quot;),
+    io:fwrite(&quot;Creating directory ~tp ...~n&quot;,[TmpDir]),
+    file:make_dir(TmpDir), 
+
+    io:fwrite(&quot;Extracting ~tp into directory ~tp ...~n&quot;, [TarFileName,TmpDir]),
+    extract_tar(TarFileName, TmpDir),
+
+    TmpBinDir = filename:join([TmpDir, &quot;bin&quot;]),
+    ErtsBinDir = filename:join([TmpDir, &quot;erts-&quot; ++ ErtsVsn, &quot;bin&quot;]),
+    io:fwrite(&quot;Deleting \&quot;erl\&quot; and \&quot;start\&quot; in directory ~tp ...~n&quot;,
+              [ErtsBinDir]),
+    file:delete(filename:join([ErtsBinDir, &quot;erl&quot;])),
+    file:delete(filename:join([ErtsBinDir, &quot;start&quot;])),
+
+    io:fwrite(&quot;Creating temporary directory ~tp ...~n&quot;, [TmpBinDir]),
+    file:make_dir(TmpBinDir),
+
+    io:fwrite(&quot;Copying file \&quot;~ts.boot\&quot; to ~tp ...~n&quot;,
+              [PlainRelFileName, filename:join([TmpBinDir, &quot;start.boot&quot;])]),
+    copy_file(PlainRelFileName++&quot;.boot&quot;,filename:join([TmpBinDir, &quot;start.boot&quot;])),
+
+    io:fwrite(&quot;Copying files \&quot;epmd\&quot;, \&quot;run_erl\&quot; and \&quot;to_erl\&quot; from \n&quot;
+              &quot;~tp to ~tp ...~n&quot;,
+              [ErtsBinDir, TmpBinDir]),
+    copy_file(filename:join([ErtsBinDir, &quot;epmd&quot;]), 
+              filename:join([TmpBinDir, &quot;epmd&quot;]), [preserve]),
+    copy_file(filename:join([ErtsBinDir, &quot;run_erl&quot;]), 
+              filename:join([TmpBinDir, &quot;run_erl&quot;]), [preserve]),
+    copy_file(filename:join([ErtsBinDir, &quot;to_erl&quot;]), 
+              filename:join([TmpBinDir, &quot;to_erl&quot;]), [preserve]),
+
+    %% This is needed if &apos;start&apos; script created from &apos;start.src&apos; shall
+    %% be used as it points out this directory as log dir for &apos;run_erl&apos;
+    TmpLogDir = filename:join([TmpDir, &quot;log&quot;]),
+    io:fwrite(&quot;Creating temporary directory ~tp ...~n&quot;, [TmpLogDir]),
+    ok = file:make_dir(TmpLogDir),
+
+    StartErlDataFile = filename:join([TmpDir, &quot;releases&quot;, &quot;start_erl.data&quot;]),
+    io:fwrite(&quot;Creating ~tp ...~n&quot;, [StartErlDataFile]),
+    StartErlData = io_lib:fwrite(&quot;~s ~s~n&quot;, [ErtsVsn, RelVsn]),
+    write_file(StartErlDataFile, StartErlData),
+
+    io:fwrite(&quot;Recreating tar file ~tp from contents in directory ~tp ...~n&quot;,
+        [TarFileName,TmpDir]),
+    {ok, Tar} = erl_tar:open(TarFileName, [write, compressed]),
+    %% {ok, Cwd} = file:get_cwd(),
+    %% file:set_cwd(&quot;tmp&quot;),
+    ErtsDir = &quot;erts-&quot;++ErtsVsn,
+    erl_tar:add(Tar, filename:join(TmpDir,&quot;bin&quot;), &quot;bin&quot;, []),
+    erl_tar:add(Tar, filename:join(TmpDir,ErtsDir), ErtsDir, []),
+    erl_tar:add(Tar, filename:join(TmpDir,&quot;releases&quot;), &quot;releases&quot;, []),
+    erl_tar:add(Tar, filename:join(TmpDir,&quot;lib&quot;), &quot;lib&quot;, []),
+    erl_tar:add(Tar, filename:join(TmpDir,&quot;log&quot;), &quot;log&quot;, []),
+    erl_tar:close(Tar),
+    %% file:set_cwd(Cwd),
+    io:fwrite(&quot;Removing directory ~tp ...~n&quot;,[TmpDir]),
+    remove_dir_tree(TmpDir),
+    ok.
+
+
+install(RelFileName, RootDir) -&gt;
+    TarFile = RelFileName ++ &quot;.tar.gz&quot;, 
+    io:fwrite(&quot;Extracting ~tp ...~n&quot;, [TarFile]),
+    extract_tar(TarFile, RootDir),
+    StartErlDataFile = filename:join([RootDir, &quot;releases&quot;, &quot;start_erl.data&quot;]),
+    {ok, StartErlData} = read_txt_file(StartErlDataFile),
+    [ErlVsn, _RelVsn| _] = string:tokens(StartErlData, &quot; \n&quot;),
+    ErtsBinDir = filename:join([RootDir, &quot;erts-&quot; ++ ErlVsn, &quot;bin&quot;]),
+    BinDir = filename:join([RootDir, &quot;bin&quot;]),
+    io:fwrite(&quot;Substituting in erl.src, start.src and start_erl.src to &quot;
+              &quot;form erl, start and start_erl ...\n&quot;),
+    subst_src_scripts([&quot;erl&quot;, &quot;start&quot;, &quot;start_erl&quot;], ErtsBinDir, BinDir, 
+                      [{&quot;FINAL_ROOTDIR&quot;, RootDir}, {&quot;EMU&quot;, &quot;beam&quot;}],
+                      [preserve]),
+    %%! Workaround for pre OTP 17.0: start.src and start_erl.src did
+    %%! not have correct permissions, so the above &apos;preserve&apos; option did not help
+    ok = file:change_mode(filename:join(BinDir,&quot;start&quot;),8#0755),
+    ok = file:change_mode(filename:join(BinDir,&quot;start_erl&quot;),8#0755),
+
+    io:fwrite(&quot;Creating the RELEASES file ...\n&quot;),
+    create_RELEASES(RootDir, filename:join([RootDir, &quot;releases&quot;,
+              filename:basename(RelFileName)])).
+
+%% LOCALS 
+
+%% make_script(RelFileName,Opts)
+%%
+make_script(RelFileName,Opts) -&gt;
+    systools:make_script(RelFileName, [no_module_tests,
+               {outdir,filename:dirname(RelFileName)}
+               |Opts]).
+
+%% make_tar(RelFileName,Opts)
+%%
+make_tar(RelFileName,Opts) -&gt;
+    RootDir = code:root_dir(),
+    systools:make_tar(RelFileName, [{erts, RootDir},
+            {outdir,filename:dirname(RelFileName)}
+            |Opts]).
+
+%% extract_tar(TarFile, DestDir)
+%%
+extract_tar(TarFile, DestDir) -&gt;
+    erl_tar:extract(TarFile, [{cwd, DestDir}, compressed]).
+
+create_RELEASES(DestDir, RelFileName) -&gt;
+    release_handler:create_RELEASES(DestDir, RelFileName ++ &quot;.rel&quot;).
+
+subst_src_scripts(Scripts, SrcDir, DestDir, Vars, Opts) -&gt; 
+    lists:foreach(fun(Script) -&gt;
+                          subst_src_script(Script, SrcDir, DestDir, 
+                                           Vars, Opts)
+                  end, Scripts).
+
+subst_src_script(Script, SrcDir, DestDir, Vars, Opts) -&gt; 
+    subst_file(filename:join([SrcDir, Script ++ &quot;.src&quot;]),
+               filename:join([DestDir, Script]),
+               Vars, Opts).
+
+subst_file(Src, Dest, Vars, Opts) -&gt;
+    {ok, Conts} = read_txt_file(Src),
+    NConts = subst(Conts, Vars),
+    write_file(Dest, NConts),
+    case lists:member(preserve, Opts) of
+        true -&gt;
+            {ok, FileInfo} = file:read_file_info(Src),
+            file:write_file_info(Dest, FileInfo);
+        false -&gt;
+            ok
+    end.
+
+%% subst(Str, Vars)
+%% Vars = [{Var, Val}]
+%% Var = Val = string()
+%% Substitute all occurrences of %Var% for Val in Str, using the list
+%% of variables in Vars.
+%%
+subst(Str, Vars) -&gt;
+    subst(Str, Vars, []).
+
+subst([$%, C| Rest], Vars, Result) when $A =&lt; C, C =&lt; $Z -&gt;
+    subst_var([C| Rest], Vars, Result, []);
+subst([$%, C| Rest], Vars, Result) when $a =&lt; C, C =&lt; $z -&gt;
+    subst_var([C| Rest], Vars, Result, []);
+subst([$%, C| Rest], Vars, Result) when  C == $_ -&gt;
+    subst_var([C| Rest], Vars, Result, []);
+subst([C| Rest], Vars, Result) -&gt;
+    subst(Rest, Vars, [C| Result]);
+subst([], _Vars, Result) -&gt;
+    lists:reverse(Result).
+
+subst_var([$%| Rest], Vars, Result, VarAcc) -&gt;
+    Key = lists:reverse(VarAcc),
+    case lists:keysearch(Key, 1, Vars) of
+        {value, {Key, Value}} -&gt;
+            subst(Rest, Vars, lists:reverse(Value, Result));
+        false -&gt;
+            subst(Rest, Vars, [$%| VarAcc ++ [$%| Result]])
+    end;
+subst_var([C| Rest], Vars, Result, VarAcc) -&gt;
+    subst_var(Rest, Vars, Result, [C| VarAcc]);
+subst_var([], Vars, Result, VarAcc) -&gt;
+    subst([], Vars, [VarAcc ++ [$%| Result]]).
+
+copy_file(Src, Dest) -&gt;
+    copy_file(Src, Dest, []).
+
+copy_file(Src, Dest, Opts) -&gt;
+    {ok,_} = file:copy(Src, Dest),
+    case lists:member(preserve, Opts) of
+        true -&gt;
+            {ok, FileInfo} = file:read_file_info(Src),
+            file:write_file_info(Dest, FileInfo);
+        false -&gt;
+            ok
+    end.
+
+write_file(FName, Conts) -&gt;
+    Enc = file:native_name_encoding(),
+    {ok, Fd} = file:open(FName, [write]),
+    file:write(Fd, unicode:characters_to_binary(Conts,Enc,Enc)),
+    file:close(Fd).
+
+read_txt_file(File) -&gt;
+    {ok, Bin} = file:read_file(File),
+    {ok, binary_to_list(Bin)}.
+
+remove_dir_tree(Dir) -&gt;
+    remove_all_files(&quot;.&quot;, [Dir]).
+
+remove_all_files(Dir, Files) -&gt;
+    lists:foreach(fun(File) -&gt;
+                          FilePath = filename:join([Dir, File]),
+                          case filelib:is_dir(FilePath) of
+                              true -&gt;
+                                  {ok, DirFiles} = file:list_dir(FilePath), 
+                                  remove_all_files(FilePath, DirFiles),
+                                  file:del_dir(FilePath);
+                              _ -&gt;
+                                  file:delete(FilePath)
+                          end
+                  end, Files).
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/09/04/erlang-release-updowngrade-normal/" data-id="cjlot5ncz0000zt6gl1ej5zlm" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-erlang-source-analysis-lager1" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/08/23/erlang-source-analysis-lager1/" class="article-date">
@@ -488,7 +956,7 @@ supervisor:start_child(lager_sup,
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/" data-id="cjlaxdziv0005496gj5h4lkue" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/" data-id="cjlot5ndd000azt6gkl4vnih3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li></ul>
@@ -625,7 +1093,7 @@ vda               0.00     0.00    0.00    0.00     0.00     0.00     0.00     0
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/31/erlang-tune-lager1-md/" data-id="cjlaxdziw0006496ggtj8qb6h" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/31/erlang-tune-lager1-md/" data-id="cjlot5ndf000bzt6gk7zzq2lp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tune/">tune</a></li></ul>
@@ -680,7 +1148,7 @@ vda               0.00     0.00    0.00    0.00     0.00     0.00     0.00     0
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/24/erlang-rebar3-start/" data-id="cjlaxdziu0004496gfwfc2lht" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/24/erlang-rebar3-start/" data-id="cjlot5nda0005zt6gsdqrhwfd" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rebar3/">rebar3</a></li></ul>
@@ -728,7 +1196,7 @@ vda               0.00     0.00    0.00    0.00     0.00     0.00     0.00     0
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/24/blockchain-collect/" data-id="cjlaxdzii0000496ghemgyn6h" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/24/blockchain-collect/" data-id="cjlot5ndb0006zt6gft1njlkm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/收集/">收集</a></li></ul>
@@ -790,7 +1258,7 @@ vda               0.00     0.00    0.00    0.00     0.00     0.00     0.00     0
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/22/blockchain-start/" data-id="cjlaxdzip0001496gxid31oex" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/22/blockchain-start/" data-id="cjlot5nd40001zt6gvr0qk9cv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/以太坊/">以太坊</a></li></ul>
@@ -832,7 +1300,7 @@ vda               0.00     0.00    0.00    0.00     0.00     0.00     0.00     0
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/erlang/" style="font-size: 20px;">erlang</a> <a href="/tags/lager/" style="font-size: 15px;">lager</a> <a href="/tags/rebar3/" style="font-size: 10px;">rebar3</a> <a href="/tags/source-analysis/" style="font-size: 10px;">source-analysis</a> <a href="/tags/tune/" style="font-size: 10px;">tune</a> <a href="/tags/以太坊/" style="font-size: 10px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/erlang/" style="font-size: 20px;">erlang</a> <a href="/tags/lager/" style="font-size: 15px;">lager</a> <a href="/tags/rebar3/" style="font-size: 15px;">rebar3</a> <a href="/tags/source-analysis/" style="font-size: 10px;">source-analysis</a> <a href="/tags/tune/" style="font-size: 10px;">tune</a> <a href="/tags/以太坊/" style="font-size: 10px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
     </div>
   </div>
 
@@ -841,7 +1309,7 @@ vda               0.00     0.00    0.00    0.00     0.00     0.00     0.00     0
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a></li></ul>
     </div>
   </div>
 
@@ -854,6 +1322,14 @@ vda               0.00     0.00    0.00    0.00     0.00     0.00     0.00     0
       <ul>
         
           <li>
+            <a href="/2018/09/04/erlang-release-updowngrade-rebar3/">使用rebar3的方法对release版本升降级</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/04/erlang-release-updowngrade-normal/">使用Erlang原生方法对release版本升降级</a>
+          </li>
+        
+          <li>
             <a href="/2018/08/23/erlang-source-analysis-lager1/">源码分析:开源项目lager源码分析</a>
           </li>
         
@@ -863,14 +1339,6 @@ vda               0.00     0.00    0.00    0.00     0.00     0.00     0.00     0
         
           <li>
             <a href="/2018/07/24/erlang-rebar3-start/">Erlang：Rebar3的简单使用</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/24/blockchain-collect/">区块链技术相关收集（长期）</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/22/blockchain-start/">从零开始创建专属自己的以太坊</a>
           </li>
         
       </ul>

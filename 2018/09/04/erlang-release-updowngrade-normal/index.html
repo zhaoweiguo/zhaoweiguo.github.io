@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="创建Target System创建一个符合OTP架构的项目ch3: ├── LICENSE ├── README.md ├── rebar.config ├── rebar.lock └── src     ├── ch3.app.src     ├── ch3.erl     ├── ch3_app.erl     ├── ch3_sup.erl     └── target_system.er">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-09-05T07:14:45.562Z">
+<meta property="og:updated_time" content="2018-09-05T07:22:38.503Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Erlang原生方法对release版本升降级">
 <meta name="twitter:description" content="创建Target System创建一个符合OTP架构的项目ch3: ├── LICENSE ├── README.md ├── rebar.config ├── rebar.lock └── src     ├── ch3.app.src     ├── ch3.erl     ├── ch3_app.erl     ├── ch3_sup.erl     └── target_system.er">
@@ -117,7 +117,8 @@
       {ch3, &quot;0.1.0&quot;}
    ]
 }.
-</code></pre><p>生成Target System:</p>
+</code></pre><a id="more"></a>
+<p>生成Target System:</p>
 <pre><code>os&gt; erl -pa /home/user/target_system/myapps/ch3-0.1.0/ebin
 
 % 1.这儿的ch_rel-1就是ch_rel-1.rel文件名

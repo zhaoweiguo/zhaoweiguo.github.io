@@ -7,18 +7,18 @@
   
   <title>源码分析:开源项目lager源码分析 | 新溪blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能 看源码前工作看lager文档显示以下几个主要参数: {async_threshold, 20}, {async_thr">
+  <meta name="description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
 <meta name="keywords" content="erlang,source-analysis,lager">
 <meta property="og:type" content="article">
 <meta property="og:title" content="源码分析:开源项目lager源码分析">
 <meta property="og:url" content="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能 看源码前工作看lager文档显示以下几个主要参数: {async_threshold, 20}, {async_thr">
+<meta property="og:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-08-28T06:01:44.372Z">
+<meta property="og:updated_time" content="2018-09-05T07:40:17.156Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="源码分析:开源项目lager源码分析">
-<meta name="twitter:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能 看源码前工作看lager文档显示以下几个主要参数: {async_threshold, 20}, {async_thr">
+<meta name="twitter:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
   
     <link rel="alternate" href="/atom.xml" title="新溪blog" type="application/atom+xml">
   
@@ -102,7 +102,8 @@
 <pre><code>1.通过源码分析找到这2个问题的原因
 2.是否可以找到一些方法解决这个问题
 3.看是否可以重写部分代码来提升性能
-</code></pre><h3 id="看源码前工作"><a href="#看源码前工作" class="headerlink" title="看源码前工作"></a>看源码前工作</h3><p>看lager文档显示以下几个主要参数:</p>
+</code></pre><a id="more"></a>
+<h3 id="看源码前工作"><a href="#看源码前工作" class="headerlink" title="看源码前工作"></a>看源码前工作</h3><p>看lager文档显示以下几个主要参数:</p>
 <pre><code>{async_threshold, 20},
 {async_threshold_window, 5}
 小于20使用异步,超过20切换回同步,小于20-5再切换回异步

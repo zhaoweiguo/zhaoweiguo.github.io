@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>看源码前准备工作 | 新溪blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="tsung start真实执行命令查看/usr/local/bin/tsung文件: 此文件是sh文件，tsung start实际执行的是start方法 当我们执行tsung -f fetch_user_key.xml start时,我们实际执行: /usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000 -- -">
+<meta name="keywords" content="erlang,tsung,source-analysis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="看源码前准备工作">
+<meta property="og:url" content="http://yoursite.com/2018/09/29/erlang-source-analysis-tsung1/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="tsung start真实执行命令查看/usr/local/bin/tsung文件: 此文件是sh文件，tsung start实际执行的是start方法 当我们执行tsung -f fetch_user_key.xml start时,我们实际执行: /usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000 -- -">
+<meta property="og:locale" content="zh-tw">
+<meta property="og:updated_time" content="2018-10-08T03:18:31.876Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="看源码前准备工作">
+<meta name="twitter:description" content="tsung start真实执行命令查看/usr/local/bin/tsung文件: 此文件是sh文件，tsung start实际执行的是start方法 当我们执行tsung -f fetch_user_key.xml start时,我们实际执行: /usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000 -- -">
+  
+    <link rel="alternate" href="/atom.xml" title="新溪blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">新溪blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Erlang——新溪-gordon之胡写乱画</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-erlang-source-analysis-tsung1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/29/erlang-source-analysis-tsung1/" class="article-date">
+  <time datetime="2018-09-29T03:46:03.000Z" itemprop="datePublished">2018-09-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/source-analysis/">source-analysis</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      看源码前准备工作
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="tsung-start真实执行命令"><a href="#tsung-start真实执行命令" class="headerlink" title="tsung start真实执行命令"></a>tsung start真实执行命令</h3><p>查看/usr/local/bin/tsung文件:</p>
+<pre><code>此文件是sh文件，tsung start实际执行的是start方法
+</code></pre><p>当我们执行tsung -f fetch_user_key.xml start时,我们实际执行:</p>
+<pre><code>/usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000 -- -root /usr/local/lib/erlang -progname erl -- -home /root -- -smp auto -rsh ssh -noshell -proto_dist inet_tcp 
+
+-sname tsung_controller 
+-setcookie tsung 
+
+-kernel inet_dist_listen_min 64000 
+-kernel inet_dist_listen_max 65500 
+
+-s tsung_controller
+
+-pa /usr/local/lib/tsung/tsung-1.7.0/ebin 
+-pa /usr/local/lib/tsung/tsung_controller-1.7.0/ebin 
+
+-ssl session_cb ts_ssl_session_cache 
+-ssl session_lifetime 600 
+-sasl sasl_error_logger false 
+
+-tsung_controller web_gui true 
+-tsung_controller keep_web_gui false 
+-tsung_controller smp_disable true 
+-tsung_controller debug_level 5 
+-tsung_controller warm_time 1 
+-tsung_controller exclude_tag &quot;&quot; 
+-tsung_controller config_file &quot;fetch_user_key.xml&quot; 
+-tsung_controller log_dir &quot;/root/.tsung/log/&quot; 
+-tsung_controller mon_file &quot;tsung.log&quot;
+</code></pre><h5 id="配置选项"><a href="#配置选项" class="headerlink" title="配置选项"></a>配置选项</h5><p>tsung_controller.app:</p>
+<pre><code>{debug_level, 6},
+{smp_disable, true}, % disable smp on clients
+{ts_cookie, &quot;humhum&quot;},
+{clients_timeout, 60000},    % timeout for global synchro
+{file_server_timeout, 30000},% timeout for reading file
+{warm_time, 1}, % (seconds) initial waiting time when launching clients
+
+{thinktime_value, &quot;5&quot;}, % default value = 5sec
+{thinktime_override, &quot;false&quot;},
+{thinktime_random, &quot;false&quot;},
+
+{global_number, 100},
+{global_ack_timeout, 3600000}, %in msec
+
+{munin_port, 4949},
+
+{snmp_port, 161},
+{snmp_version, v2},
+{snmp_community, &quot;public&quot;},
+
+{mysql_port, 3306},
+{mysql_user, &quot;root&quot;},
+{mysql_password, false},
+
+{dumpstats_interval, 10000},
+{dump, none},          %% full or light or none
+{stats_backend, none}, %% text|rrdtool
+
+{nclients, 10},        %% number of clients
+{nclients_deb, 1},     %% beginning of interval
+{nclients_fin, 2000},     %% end of interval
+{config_file, &quot;./tsung.xml&quot;},
+{log_file, &quot;./tsung.log&quot;},
+{match_log_file, &quot;./match.log&quot;},
+{exclude_tag, &quot;&quot;},
+{template_path, beam_relative}
+</code></pre><p>tsung.app:</p>
+<pre><code>{debug_level, 2},
+{snd_size, 32768},      % send buffer size
+{rcv_size, 32768},      % receive buffer size
+{idle_timeout, 600000},  % 10min timeout
+{global_ack_timeout, infinity}, % global ack timeout
+{connect_timeout, 30000},
+{max_warm_delay, 15000},
+{dump, full},           % full or light
+{parse_type, noparse},
+{persistent, true},  % persistent connection: true or false
+{mes_type, dynamic}, % dynamic or static
+{nclients, 10},      % number of client to connect
+{log_file, &quot;./tsung.log&quot;}, % log file name
+%% use for IMS GET :
+{http_modified_since_date, &quot;Fri, 14 Nov 2003 02:43:31 GMT&quot;},
+{client_retry_timeout, 10}, % retry sending (in microsec.)
+{max_retries, 3},        % number of max retries
+{ssl_ciphers, negotiate},
+{ssl_versions, negotiate},
+
+{jabber_users, 2000000},
+{jabber_username, &quot;c&quot;},
+{jabber_password, &quot;pas&quot;},
+{jabber_domain, &quot;mydomain.com&quot;},
+
+{websocket_path, &quot;/chat&quot;}
+</code></pre><p>表:</p>
+<pre><code>2&gt; ets:i().
+ id              name              type  size   mem      owner
+ ----------------------------------------------------------------------------
+ 1               code              set   411    25810    code_server
+ 4098            code_names        set   51     6739     code_server
+ 8206            cookies           set   0      298      auth
+ 12305           shell_records     ordered_set 0      88       &lt;0.58.0&gt;
+ 20499           ssl_otp_cacertificate_db set   0      298      ssl_manager
+ 24596           ssl_otp_ca_file_ref set   0      298      ssl_manager
+ 28693           ssl_otp_ca_ref_file_mapping set   0      298      ssl_manager
+ 32790           ssl_otp_crl_cache set   0      298      ssl_manager
+ 36887           ssl_otp_crl_issuer_mapping bag   0      298      ssl_manager
+ 40984           ts_ssl_session_cache set   0      298      ssl_manager
+ 45081           ts_ssl_session_cache set   0      298      ssl_manager
+ 49180           httpc_manager__session_cookie_db bag   0      298      httpc_manager
+ 53279           jobs              set   0      298      &lt;0.116.0&gt;
+ 57376           to                set   0      298      &lt;0.117.0&gt;
+ 61473           notify            bag   0      298      &lt;0.117.0&gt;
+ 69666           sessiontable      ordered_set 12     1564     &lt;0.104.0&gt;
+ 73763           ign_requests      set   0      298      inet_gethost_native
+ 77860           ign_req_index     set   0      298      inet_gethost_native
+ 81959           sessiontable      set   4      1087     ts_session_cache
+ ac_tab          ac_tab            set   98     3859     application_controller
+ file_io_servers file_io_servers   set   5      789      file_server_2
+ global_locks    global_locks      set   0      298      global_name_server
+ global_names    global_names      set   14     578      global_name_server
+ global_names_ext global_names_ext  set   0      298      global_name_server
+ global_pid_ids  global_pid_ids    bag   0      298      global_name_server
+ global_pid_names global_pid_names  bag   28     536      global_name_server
+ httpc_manager__handler_db httpc_manager__handler_db set   0      298      httpc_manager
+ httpc_manager__session_db httpc_manager__session_db set   0      298      httpc_manager
+ httpd_conf_8091default httpd_conf_8091default bag   11     576      httpd_8091default
+ httpd_mime_8091 httpd_mime_8091   set   6      526      httpd_8091default
+ inet_cache      inet_cache        bag   0      298      inet_db
+ inet_db         inet_db           set   29     595      inet_db
+ inet_hosts_byaddr inet_hosts_byaddr bag   0      298      inet_db
+ inet_hosts_byname inet_hosts_byname bag   0      298      inet_db
+ inet_hosts_file_byaddr inet_hosts_file_byaddr bag   0      298      inet_db
+ inet_hosts_file_byname inet_hosts_file_byname bag   0      298      inet_db
+ ssl_pem_cache   ssl_pem_cache     set   0      298      ssl_pem_cache
+ sys_dist        sys_dist          set   1      363      net_kernel
+ timer_interval_tab timer_interval_tab set   1      318      timer_server
+ timer_tab       timer_tab         ordered_set 2      134      timer_server
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/09/29/erlang-source-analysis-tsung1/" data-id="cjmzq9vzu0009vp0m4m7fpzx3" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tsung/">tsung</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/09/04/erlang-release-updowngrade-rebar3/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">使用rebar3的方法对release版本升降级</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/blockchain/">blockchain</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/erlang/">erlang</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/source-analysis/">source-analysis</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/tune/">tune</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/erlang/">erlang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lager/">lager</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rebar3/">rebar3</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/source-analysis/">source-analysis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tsung/">tsung</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tune/">tune</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/以太坊/">以太坊</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/收集/">收集</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/erlang/" style="font-size: 20px;">erlang</a> <a href="/tags/lager/" style="font-size: 15px;">lager</a> <a href="/tags/rebar3/" style="font-size: 15px;">rebar3</a> <a href="/tags/source-analysis/" style="font-size: 15px;">source-analysis</a> <a href="/tags/tsung/" style="font-size: 10px;">tsung</a> <a href="/tags/tune/" style="font-size: 10px;">tune</a> <a href="/tags/以太坊/" style="font-size: 10px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/09/29/erlang-source-analysis-tsung1/">看源码前准备工作</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/04/erlang-release-updowngrade-rebar3/">使用rebar3的方法对release版本升降级</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/04/erlang-release-updowngrade-normal/">使用Erlang原生方法对release版本升降级</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/23/erlang-source-analysis-lager1/">源码分析:开源项目lager源码分析</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/31/erlang-tune-lager1-md/">实战1:对lager测试来分析Erlang的一些特性</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 赵卫国<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

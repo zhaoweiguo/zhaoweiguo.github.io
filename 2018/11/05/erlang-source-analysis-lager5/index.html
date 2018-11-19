@@ -5,20 +5,20 @@
   
 
   
-  <title>源码分析:开源项目 | 新溪blog</title>
+  <title>开源项目lager5-其他边边角角 | 新溪blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="原始使用: lager:info(&amp;quot;handle_call _Request = ~p&amp;quot;,[_Request]), 最本质是调用: lager:do_log(info,    [         {application, mongrel},          {module, mongrel},         {function, handle_call},">
+  <meta name="description" content="trace_filter执行lager_util:trace_filter(none): glc:compile(lager_default_tracer, glc:null(false)) lager_app:add_configured_traces/1: 配置文件: {traces, [   %% handler,                         filter,">
 <meta name="keywords" content="erlang,source-analysis,lager">
 <meta property="og:type" content="article">
-<meta property="og:title" content="源码分析:开源项目">
-<meta property="og:url" content="http://yoursite.com/2018/11/09/erlang-source-analysis-lager5/index.html">
+<meta property="og:title" content="开源项目lager5-其他边边角角">
+<meta property="og:url" content="http://yoursite.com/2018/11/05/erlang-source-analysis-lager5/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="原始使用: lager:info(&amp;quot;handle_call _Request = ~p&amp;quot;,[_Request]), 最本质是调用: lager:do_log(info,    [         {application, mongrel},          {module, mongrel},         {function, handle_call},">
+<meta property="og:description" content="trace_filter执行lager_util:trace_filter(none): glc:compile(lager_default_tracer, glc:null(false)) lager_app:add_configured_traces/1: 配置文件: {traces, [   %% handler,                         filter,">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-11-09T08:29:33.754Z">
+<meta property="og:updated_time" content="2018-11-19T10:14:00.405Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="源码分析:开源项目">
-<meta name="twitter:description" content="原始使用: lager:info(&amp;quot;handle_call _Request = ~p&amp;quot;,[_Request]), 最本质是调用: lager:do_log(info,    [         {application, mongrel},          {module, mongrel},         {function, handle_call},">
+<meta name="twitter:title" content="开源项目lager5-其他边边角角">
+<meta name="twitter:description" content="trace_filter执行lager_util:trace_filter(none): glc:compile(lager_default_tracer, glc:null(false)) lager_app:add_configured_traces/1: 配置文件: {traces, [   %% handler,                         filter,">
   
     <link rel="alternate" href="/atom.xml" title="新溪blog" type="application/atom+xml">
   
@@ -71,8 +71,8 @@
       <div class="outer">
         <section id="main"><article id="post-erlang-source-analysis-lager5" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2018/11/09/erlang-source-analysis-lager5/" class="article-date">
-  <time datetime="2018-11-09T01:19:11.000Z" itemprop="datePublished">2018-11-09</time>
+    <a href="/2018/11/05/erlang-source-analysis-lager5/" class="article-date">
+  <time datetime="2018-11-05T01:19:11.000Z" itemprop="datePublished">2018-11-05</time>
 </a>
     
   <div class="article-category">
@@ -87,7 +87,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      源码分析:开源项目
+      开源项目lager5-其他边边角角
     </h1>
   
 
@@ -95,40 +95,97 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>原始使用:</p>
-<pre><code>lager:info(&quot;handle_call _Request = ~p&quot;,[_Request]),
-</code></pre><p>最本质是调用:</p>
-<pre><code>lager:do_log(info,
-   [
-        {application, mongrel}, 
-        {module, mongrel},
-        {function, handle_call}, 
-        {line, 79},
-        {pid, pid_to_list(self())}, 
-        {node, node()}
-        | lager:md()
-    ],
-   &quot;handle_call _Request= ~p&quot;, 
-   [_Request], 
-   4096, 
-   4,
-   __Leveldemo_lager_server42, 
-   __Tracesdemo_lager_server42, 
-   lager_event, 
-   __Piddemo_lager_server42
-);
+        <h3 id="trace-filter"><a href="#trace-filter" class="headerlink" title="trace_filter"></a>trace_filter</h3><p>执行lager_util:trace_filter(none):</p>
+<pre><code>glc:compile(lager_default_tracer, glc:null(false))
+</code></pre><p>lager_app:add_configured_traces/1:</p>
+<pre><code>配置文件:
+{traces, [
+  %% handler,                         filter,        message level (defaults to debug)
+  {lager_console_backend,             [{module, foo}],       info },
+  {{lager_file_backend, "trace.log"}, [{request, '>', 120}], error},
+      {{lager_file_backend, "event.log"}, [{module, bar}]   } %% implied debug level here
+    ]}
 
-do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, TraceFilters, Sink, SinkPid)
-</code></pre><p>再本质:</p>
-<pre><code>同步:
-gen_event:notify(SinkPid, {log, LagerMsg});
-异步:
-gen_event:sync_notify(SinkPid, {log, LagerMsg})
+    1.取出配置文件traces的值,对此列表每个item执行
+      lager:trace(Handler, Filter) =>lager:trace(Handler, Filter, debug)
+      or
+      lager:trace(Handler, Filter, Level)
+
+
+<a id="more"></a>
+
+lager:trace({lager_file_backend, File}, Filter, Level):
+
+    =>lager:trace_file(File, Filter, Level)
+      a.从配置文件Filter里按key取值sink,如没配置默认为:lager_event
+      @todo
+
+lager:trace(Backend, Filter, Level):
+
+    1.lager:validate_trace_filters(Filter, Level, Backend):
+
+      a.<sink> = proplists:get_value(sink, Filters, lager_event)
+      b.<validfilter> = lager_util:validate_trace({
+                                 proplists:delete(sink, Filters),
+                                 Level,
+                                 Backend
+                               })
+      c.返回{<sink>, <validfilter>}
+    2.lager:add_trace_to_loglevel_config({Filter, <bin>, Handler}, <sink>)
+        1. {MinLevel, Traces} = 从表lager_config通过key:{<sink>, loglevel})取值
+        2. Traces中是否包含{Filter, <bin>, Handler}:
+          1.1.包含=> ignore
+          1.2 不包含:
+            NewTraces = [{Filter, <bin>, Handler}|Traces]
+            对NewTraces的每个item执行:
+              lager_util:trace_filter(Filter).
+              即:glc:compile(lager_default_tracer, glc_lib:reduce(trace_any(Filter))).
+            更新表lager_config的key:{<sink>, loglevel})对应的值
+
+lager_util:validate_trace({Filter, Level, Destination}):
+
+    1.<validfilter> = lager_util:validate_trace_filter(Filter)=> true | false
+    2.<levelbin> = level的二进制值<bin>
+    3.判断
+      1. if <validfilter> == false => {error, invalid_trace}
+      2. if Filter是个列表=> {ok, {glc:all(trace_acc(Query)), <levelbin>, Handler}}
+  3. 其他: {ok, {Filter, &lt;LevelBin&gt;, Handler}}
+</levelbin></validfilter></bin></levelbin></validfilter></sink></bin></bin></sink></sink></bin></validfilter></sink></validfilter></sink></code></pre><h3 id="extra-sinks相关"><a href="#extra-sinks相关" class="headerlink" title="extra_sinks相关"></a>extra_sinks相关</h3><p>配置文件:</p>
+<pre><code>{extra_sinks,
+ [{audit_lager_event,
+   [
+    {handlers,
+     [{lager_file_backend,
+       [{file, &quot;sink1.log&quot;},
+        {level, info}
+       ]
+      }]
+    },
+    {async_threshold, 500},
+    {async_threshold_window, 50}
+    ]
+  }]
+}
+</code></pre><p>步骤:</p>
+<pre><code>1.往表lager_config中插入数据:
+    key:{audit_lager_event, loglevel}
+    value:{&lt;Bin&gt;, []}
+2.
+supervisor:start_child(lager_sup,
+   {audit_lager_event_lager_event,
+    {gen_event, start_link, [{local, audit_lager_event}]},
+    permanent, 5000, worker, dynamic})
+3.如这儿配置文件值都为正常的,如
+    {async_threshold, 500},
+    {async_threshold_window, 50}
+  则:
+  supervisor:start_child(lager_handler_watcher_sup,
+      [audit_lager_event, lager_backend_throttle, [500, 50]]),
 </code></pre>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/11/09/erlang-source-analysis-lager5/" data-id="cjoo55c1i000s9j6gr4iwivei" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/11/05/erlang-source-analysis-lager5/" data-id="cjoo55c1i000s9j6gr4iwivei" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li></ul>
@@ -139,19 +196,19 @@ gen_event:sync_notify(SinkPid, {log, LagerMsg})
     
 <nav id="article-nav">
   
-    <a href="/2018/11/09/erlang-source-analysis-lager3/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2018/11/09/erlang-source-analysis-lager6/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          源码分析:开源项目lager-application启动
+          源码分析:开源项目lager-写一个lager的kafka插件
         
       </div>
     </a>
   
   
-    <a href="/2018/11/09/erlang-source-analysis-lager7/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2018/11/04/erlang-source-analysis-lager4/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">源码分析:开源项目lager-写一个lager的kafka插件</div>
+      <div class="article-nav-title">开源项目lager4:lager写入函数分析</div>
     </a>
   
 </nav>
@@ -209,23 +266,23 @@ gen_event:sync_notify(SinkPid, {log, LagerMsg})
       <ul>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager2/">源码分析:开源项目lager-parse_transform模式</a>
+            <a href="/2018/11/09/erlang-source-analysis-lager6/">源码分析:开源项目lager-写一个lager的kafka插件</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager4/">源码分析:lager-gen_event的启动</a>
+            <a href="/2018/11/05/erlang-source-analysis-lager5/">开源项目lager5-其他边边角角</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager6/">源码分析:开源项目lager-lager:info/1/2</a>
+            <a href="/2018/11/04/erlang-source-analysis-lager4/">开源项目lager4:lager写入函数分析</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager3/">源码分析:开源项目lager-application启动</a>
+            <a href="/2018/11/03/erlang-source-analysis-lager3/">开源项目lager3-设置阀值相关</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager5/">源码分析:开源项目</a>
+            <a href="/2018/11/02/erlang-source-analysis-lager2/">开源项目lager2-application启动</a>
           </li>
         
       </ul>

@@ -70,60 +70,6 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-erlang-source-analysis-lager1" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/08/23/erlang-source-analysis-lager1/" class="article-date">
-  <time datetime="2018-08-23T09:19:11.000Z" itemprop="datePublished">2018-08-23</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/source-analysis/">source-analysis</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/08/23/erlang-source-analysis-lager1/">源码分析:开源项目lager-源码分析前</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><p>项目使用lager打印日志很多时，会造成以下2个主要问题:</p>
-<pre><code>1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能
-2.有时会丢失部分日志
-</code></pre><p>目的:</p>
-<pre><code>1.通过源码分析找到这2个问题的原因
-2.是否可以找到一些方法解决这个问题
-3.看是否可以重写部分代码来提升性能
-</code></pre>
-        
-          <p class="article-more-link">
-            <a href="/2018/08/23/erlang-source-analysis-lager1/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/" data-id="cjoo55c0q00059j6gwc8wn4cq" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
     <article id="post-erlang-tune-lager1-md" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/07/31/erlang-tune-lager1-md/" class="article-date">
@@ -385,23 +331,23 @@ $ cat /etc/security/limits.conf
       <ul>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager2/">源码分析:开源项目lager-parse_transform模式</a>
+            <a href="/2018/11/09/erlang-source-analysis-lager6/">源码分析:开源项目lager-写一个lager的kafka插件</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager4/">源码分析:lager-gen_event的启动</a>
+            <a href="/2018/11/05/erlang-source-analysis-lager5/">开源项目lager5-其他边边角角</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager6/">源码分析:开源项目lager-lager:info/1/2</a>
+            <a href="/2018/11/04/erlang-source-analysis-lager4/">开源项目lager4:lager写入函数分析</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager3/">源码分析:开源项目lager-application启动</a>
+            <a href="/2018/11/03/erlang-source-analysis-lager3/">开源项目lager3-设置阀值相关</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager5/">源码分析:开源项目</a>
+            <a href="/2018/11/02/erlang-source-analysis-lager2/">开源项目lager2-application启动</a>
           </li>
         
       </ul>

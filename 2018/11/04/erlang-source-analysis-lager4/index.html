@@ -5,20 +5,20 @@
   
 
   
-  <title>源码分析:lager-gen_event的启动 | 新溪blog</title>
+  <title>开源项目lager4:lager写入函数分析 | 新溪blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="lager_backend_throttle入口: init([{sink, Sink}, Hwm, Window]) 表: 表lager_config: {{lager_event,async}, true}, 状态: #state{sink=Sink, hwm=Hwm, window_min=Hwm - Window} % Sink=lager_event % Threshold=env(as">
+  <meta name="description" content="原始使用: lager:info(&amp;quot;handle_call _Request = ~p&amp;quot;,[_Request]), 最本质是调用: lager:do_log(info,    [         {application, mongrel},          {module, mongrel},         {function, handle_call},">
 <meta name="keywords" content="erlang,source-analysis,lager">
 <meta property="og:type" content="article">
-<meta property="og:title" content="源码分析:lager-gen_event的启动">
-<meta property="og:url" content="http://yoursite.com/2018/11/09/erlang-source-analysis-lager4/index.html">
+<meta property="og:title" content="开源项目lager4:lager写入函数分析">
+<meta property="og:url" content="http://yoursite.com/2018/11/04/erlang-source-analysis-lager4/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="lager_backend_throttle入口: init([{sink, Sink}, Hwm, Window]) 表: 表lager_config: {{lager_event,async}, true}, 状态: #state{sink=Sink, hwm=Hwm, window_min=Hwm - Window} % Sink=lager_event % Threshold=env(as">
+<meta property="og:description" content="原始使用: lager:info(&amp;quot;handle_call _Request = ~p&amp;quot;,[_Request]), 最本质是调用: lager:do_log(info,    [         {application, mongrel},          {module, mongrel},         {function, handle_call},">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-11-09T09:06:18.472Z">
+<meta property="og:updated_time" content="2018-11-19T10:13:25.406Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="源码分析:lager-gen_event的启动">
-<meta name="twitter:description" content="lager_backend_throttle入口: init([{sink, Sink}, Hwm, Window]) 表: 表lager_config: {{lager_event,async}, true}, 状态: #state{sink=Sink, hwm=Hwm, window_min=Hwm - Window} % Sink=lager_event % Threshold=env(as">
+<meta name="twitter:title" content="开源项目lager4:lager写入函数分析">
+<meta name="twitter:description" content="原始使用: lager:info(&amp;quot;handle_call _Request = ~p&amp;quot;,[_Request]), 最本质是调用: lager:do_log(info,    [         {application, mongrel},          {module, mongrel},         {function, handle_call},">
   
     <link rel="alternate" href="/atom.xml" title="新溪blog" type="application/atom+xml">
   
@@ -71,8 +71,8 @@
       <div class="outer">
         <section id="main"><article id="post-erlang-source-analysis-lager4" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2018/11/09/erlang-source-analysis-lager4/" class="article-date">
-  <time datetime="2018-11-09T01:19:11.000Z" itemprop="datePublished">2018-11-09</time>
+    <a href="/2018/11/04/erlang-source-analysis-lager4/" class="article-date">
+  <time datetime="2018-11-04T01:19:11.000Z" itemprop="datePublished">2018-11-04</time>
 </a>
     
   <div class="article-category">
@@ -87,7 +87,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      源码分析:lager-gen_event的启动
+      开源项目lager4:lager写入函数分析
     </h1>
   
 
@@ -95,29 +95,40 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h3 id="lager-backend-throttle"><a href="#lager-backend-throttle" class="headerlink" title="lager_backend_throttle"></a>lager_backend_throttle</h3><p>入口:</p>
-<pre><code>init([{sink, Sink}, Hwm, Window])
-</code></pre><p>表:</p>
-<pre><code>表lager_config:
-{{lager_event,async}, true},
-</code></pre><p>状态:</p>
-<pre><code>#state{sink=Sink, hwm=Hwm, window_min=Hwm - Window}
-% Sink=lager_event
-% Threshold=env(async_threshold)
-% Window=env(async_threshold_window)
-</code></pre><h3 id="lager-manager-killer"><a href="#lager-manager-killer" class="headerlink" title="lager_manager_killer"></a>lager_manager_killer</h3><p>状态:</p>
-<pre><code>#state{killer_hwm=KillerHWM, killer_reinstall_after=KillerReinstallAfter}
-
-% Sink: lager_event
-% HWM: env(killer_hwm)
-% ReinstallTimer: env(killer_reinstall_after)
-</code></pre><h3 id="lager-file-backend"><a href="#lager-file-backend" class="headerlink" title="lager_file_backend"></a>lager_file_backend</h3><p>状态:</p>
-<p>  -record(state, {<br>        name :: string(),     //文件路径<br>        level :: {‘mask’, integer()},<br>        fd :: file:io_device() | undefined,<br>        inode :: integer() | undefined,<br>        flap=false :: boolean(),<br>        size = 0 :: integer(),<br>        date :: undefined | string(),<br>        count = 10 :: integer(),<br>        rotator = lager_util :: atom(),<br>        shaper :: lager_shaper(),<br>        formatter :: atom(),<br>        formatter_config :: any(),<br>        sync_on :: {‘mask’, integer()},<br>        check_interval = ?DEFAULT_CHECK_INTERVAL :: non_neg_integer(),<br>        sync_interval = ?DEFAULT_SYNC_INTERVAL :: non_neg_integer(),<br>        sync_size = ?DEFAULT_SYNC_SIZE :: non_neg_integer(),<br>        last_check = os:timestamp() :: erlang:timestamp()<br>    }).</p>
-
+        <p>原始使用:</p>
+<pre><code>lager:info(&quot;handle_call _Request = ~p&quot;,[_Request]),
+</code></pre><p>最本质是调用:</p>
+<pre><code>lager:do_log(info,
+   [
+        {application, mongrel}, 
+        {module, mongrel},
+        {function, handle_call}, 
+        {line, 79},
+        {pid, pid_to_list(self())}, 
+        {node, node()}
+        | lager:md()
+    ],
+   &quot;handle_call _Request= ~p&quot;, 
+   [_Request], 
+   4096, 
+   4,
+   __Leveldemo_lager_server42, 
+   __Tracesdemo_lager_server42, 
+   lager_event, 
+   __Piddemo_lager_server42
+);
+</code></pre><a id="more"></a>
+<pre><code>do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, TraceFilters, Sink, SinkPid)
+</code></pre><p>再本质:</p>
+<pre><code>同步:
+gen_event:notify(SinkPid, {log, LagerMsg});
+异步:
+gen_event:sync_notify(SinkPid, {log, LagerMsg})
+</code></pre>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/11/09/erlang-source-analysis-lager4/" data-id="cjoo55c12000e9j6g6y74j0sp" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/11/04/erlang-source-analysis-lager4/" data-id="cjoo55c12000e9j6g6y74j0sp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li></ul>
@@ -128,19 +139,19 @@
     
 <nav id="article-nav">
   
-    <a href="/2018/11/09/erlang-source-analysis-lager2/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2018/11/05/erlang-source-analysis-lager5/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          源码分析:开源项目lager-parse_transform模式
+          开源项目lager5-其他边边角角
         
       </div>
     </a>
   
   
-    <a href="/2018/11/09/erlang-source-analysis-lager6/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2018/11/03/erlang-source-analysis-lager3/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">源码分析:开源项目lager-lager:info/1/2</div>
+      <div class="article-nav-title">开源项目lager3-设置阀值相关</div>
     </a>
   
 </nav>
@@ -198,23 +209,23 @@
       <ul>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager2/">源码分析:开源项目lager-parse_transform模式</a>
+            <a href="/2018/11/09/erlang-source-analysis-lager6/">源码分析:开源项目lager-写一个lager的kafka插件</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager4/">源码分析:lager-gen_event的启动</a>
+            <a href="/2018/11/05/erlang-source-analysis-lager5/">开源项目lager5-其他边边角角</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager6/">源码分析:开源项目lager-lager:info/1/2</a>
+            <a href="/2018/11/04/erlang-source-analysis-lager4/">开源项目lager4:lager写入函数分析</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager3/">源码分析:开源项目lager-application启动</a>
+            <a href="/2018/11/03/erlang-source-analysis-lager3/">开源项目lager3-设置阀值相关</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager5/">源码分析:开源项目</a>
+            <a href="/2018/11/02/erlang-source-analysis-lager2/">开源项目lager2-application启动</a>
           </li>
         
       </ul>

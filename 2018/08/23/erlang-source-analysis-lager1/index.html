@@ -5,19 +5,19 @@
   
 
   
-  <title>源码分析:开源项目lager-源码分析前 | 新溪blog</title>
+  <title>开源项目lager1-源码分析前 | 新溪blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
 <meta name="keywords" content="erlang,source-analysis,lager">
 <meta property="og:type" content="article">
-<meta property="og:title" content="源码分析:开源项目lager-源码分析前">
+<meta property="og:title" content="开源项目lager1-源码分析前">
 <meta property="og:url" content="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/index.html">
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-11-09T03:23:41.388Z">
+<meta property="og:updated_time" content="2018-11-19T10:08:02.879Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="源码分析:开源项目lager-源码分析前">
+<meta name="twitter:title" content="开源项目lager1-源码分析前">
 <meta name="twitter:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
   
     <link rel="alternate" href="/atom.xml" title="新溪blog" type="application/atom+xml">
@@ -87,7 +87,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      源码分析:开源项目lager-源码分析前
+      开源项目lager1-源码分析前
     </h1>
   
 
@@ -137,21 +137,55 @@
 
   {{lager_event,async}, true},
 
-  {
-    {&apos;_global&apos;,handlers},
-    [
-      {lager_console_backend,&lt;0.148.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/info.log&quot;},&lt;0.150.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/notice.log&quot;},&lt;0.152.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/warning.log&quot;},&lt;0.154.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/error.log&quot;},&lt;0.156.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/critical.log&quot;},&lt;0.158.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/alert.log&quot;},&lt;0.160.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/emergency.log&quot;},&lt;0.162.0&gt;,lager_event},
-      {{lager_file_backend,&quot;console.log&quot;},&lt;0.164.0&gt;,lager_event}
+      {
+        {'_global',handlers},
+        [
+          {lager_console_backend,<0.148.0>,lager_event},
+          {{lager_file_backend,"log/info.log"},<0.150.0>,lager_event},
+          {{lager_file_backend,"log/notice.log"},<0.152.0>,lager_event},
+          {{lager_file_backend,"log/warning.log"},<0.154.0>,lager_event},
+          {{lager_file_backend,"log/error.log"},<0.156.0>,lager_event},
+          {{lager_file_backend,"log/critical.log"},<0.158.0>,lager_event},
+          {{lager_file_backend,"log/alert.log"},<0.160.0>,lager_event},
+          {{lager_file_backend,"log/emergency.log"},<0.162.0>,lager_event},
+          {{lager_file_backend,"console.log"},<0.164.0>,lager_event}
+        ]
+      }
     ]
-  }
-]
+
+
+### parse_transform模式
+
+获取parse_transform模式源码:
+
+    Beam = "./_build/default/lib/demo/ebin/demo_server.beam".
+    {ok, {_, [{abstract_code, {_,Abs}}]}} =  beam_lib:chunks(
+  Beam, [abstract_code]).
+io:fwrite(&quot;~s~n&quot;, [erl_prettypr:format(erl_syntax:form_list(Abs))]).
+% 通过以上命令得到parse_transform后的源码
+</0.164.0></0.162.0></0.160.0></0.158.0></0.156.0></0.154.0></0.152.0></0.150.0></0.148.0></code></pre><p>原始使用:</p>
+<pre><code>lager:info(&quot;handle_call _Request = ~p&quot;,[_Request]),
+</code></pre><p>parse_transform模式转化后:</p>
+<pre><code>case {whereis(lager_event), whereis(lager_event),
+      lager_config:get({lager_event, loglevel}, {0, []})}
+    of
+  {undefined, undefined, _} -&gt;
+      fun () -&gt; {error, lager_not_running} end();
+  {undefined, _, _} -&gt;
+      fun () -&gt; {error, {sink_not_configured, lager_event}}
+      end();
+  {__Piddemo_lager_server42, _, {__Leveldemo_lager_server42, __Tracesdemo_lager_server42}}
+      when __Leveldemo_lager_server42 band 4 /= 0 orelse
+             __Tracesdemo_lager_server42 /= [] -&gt;
+      lager:do_log(info,
+                   [{application, mongrel}, {module, mongrel},
+                    {function, handle_call}, {line, 79},
+                    {pid, pid_to_list(self())}, {node, node()}
+                    | lager:md()],
+                   &quot;handle_call _Request= ~p&quot;, [_Request], 4096, 4,
+                   __Leveldemo_lager_server42, __Tracesdemo_lager_server42, lager_event, __Piddemo_lager_server42);
+  _ -&gt; ok
+end,
 </code></pre>
       
     </div>
@@ -237,23 +271,23 @@
       <ul>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager2/">源码分析:开源项目lager-parse_transform模式</a>
+            <a href="/2018/11/09/erlang-source-analysis-lager6/">源码分析:开源项目lager-写一个lager的kafka插件</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager4/">源码分析:lager-gen_event的启动</a>
+            <a href="/2018/11/05/erlang-source-analysis-lager5/">开源项目lager5-其他边边角角</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager6/">源码分析:开源项目lager-lager:info/1/2</a>
+            <a href="/2018/11/04/erlang-source-analysis-lager4/">开源项目lager4:lager写入函数分析</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager3/">源码分析:开源项目lager-application启动</a>
+            <a href="/2018/11/03/erlang-source-analysis-lager3/">开源项目lager3-设置阀值相关</a>
           </li>
         
           <li>
-            <a href="/2018/11/09/erlang-source-analysis-lager5/">源码分析:开源项目</a>
+            <a href="/2018/11/02/erlang-source-analysis-lager2/">开源项目lager2-application启动</a>
           </li>
         
       </ul>

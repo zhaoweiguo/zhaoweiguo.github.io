@@ -167,8 +167,7 @@
   {{lager_file_backend, "trace.log"}, [{request, '>', 120}], error},
       {{lager_file_backend, "event.log"}, [{module, bar}]   } %% implied debug level here
     ]}
-
-    1.取出配置文件traces的值,对此列表每个item执行
+    取出配置文件traces的值,对此列表每个item执行
       lager:trace(Handler, Filter) =>lager:trace(Handler, Filter, debug)
       or
       lager:trace(Handler, Filter, Level)

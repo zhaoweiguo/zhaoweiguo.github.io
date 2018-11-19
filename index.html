@@ -441,204 +441,12 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
   lastips,          % store next ip to choose for each client host
   total_weight      % total weight of client machines
 }
-</code></pre><p>ts_mon::</p>
-<pre><code>global
--record(state, {
-  log,          % 日志文件的fd
-  backend,      % type of backend: text|...
-  log_dir,      % 
-  fullstats,    % fullstats fd
-  dump_interval,% 从配置文件中取值:10000
-  dumpfile,     % file used when dumptrafic is set light or full
-  client=0,     % number of clients currently running
-  maxclient=0,  % max of simultaneous clients
-  stats,        % 下面的record:Stats
-  stop = false, % true if we should stop
-  laststats,    % 下面的record:Stats
-  lastdate,     % 时间
-  type,         % type of logging (none, light, full)
-  launchers=0,  % number of launchers started
-  timer_ref,    % timer reference (for dumpstats)
-  wait_gui=false% wait gui before stopping
-}).
-
--record(stats, {
-  users_count         = 0,
-  finish_users_count  = 0,
-  os_mon,   % dict:new():[Mean, Var, Max, Min, Count, MeanFB,CountFB,Last]
-  session             = []
-}).
-</code></pre><p>ts_stats_mon::</p>
-<pre><code>global
-% connect,page,request
--record(state, {
-  log,          % log fd
-  backend,      % type of backend: text|rrdtool|fullstats
-  dump_interval,% 从配置文件中取值:10000
-  type = connect,page,request
-  fullstats,    % fullstats fd
-  stats,        % [0,0,0,0,0,0,0,0]:
-  laststats     % values of last printed stats
-}).
-
-% [id]
--record(state, {
-  log,          % log fd
-  backend,      % type of backend: text|rrdtool|fullstats
-  dump_interval,% 从配置文件中取值:10000
-  type = ts_stats_mon,
-  fullstats,    % fullstats fd
-  stats,        % 字典:dict:new()
-  laststats     % values of last printed stats
-}).
-</code></pre><p>ts_match_logger:</p>
-<pre><code>global
--record(state, {
-  filename,     % &quot;mach.log&quot;
-  level,        % type of backend: text|rrdtool|fullstats
-  dumpid=1,     % current dump id
-  logdir,
-  fd            % &quot;mach.log&quot;的fd
-}).
-</code></pre><p>ts_os_mon_sup:</p>
-<pre><code>local，监控专用，【参数】monitor
-ts_os_mon_erlang
-ts_os_mon_munin
-ts_os_mon_snmp
-
-ts_os_mon_erlang:
-% monitor在同一机器上
-#state{node=node(),mon=MonServer, host=Host, interval=Interval, options=Options}
-% 不在同一机器
-#state{host=Host, mon=MonServer, interval=Interval, options=Options}
-</code></pre><p>ts_timer:</p>
-<pre><code>global,fsm
--record(state, {
-  nclient    = 0, % number of unacked clients
-  maxclients = 0, % total number of clients to ack
-  pidlist = [],
-  timeout=3600000
-}).
-</code></pre><p>ts_msg_server:</p>
-<pre><code>global
--record(state, {number=0}).
-</code></pre><p>ts_user_server_sup:</p>
-<pre><code>simple_one_for_one
-
-ts_user_server:
--record(state, {
-  offline,        %ets table
-  last_offline,
-  connected,      %ets table
-  last_connected,
-  online,         %ets table
-  last_online,
-  first_client,   % id (integer)
-  random_server_id,  % file_server id for random users
-  offline_server_id, % file_server id for initial offline users
-  delimiter = &lt;&lt; &quot;;&quot; &gt;&gt;,   % delimiter for file_server id username
-  userid_max      % max number of ids (starts at 1)
-}).
-</code></pre><p>ts_job_notify:</p>
-<p>ts_interaction_server:</p>
-<pre><code>#state{
-  to=ets:new(to, []), 
-  notify=ets:new(notify, [bag])
-}
-</code></pre><h3 id="start-phases相关-load-config"><a href="#start-phases相关-load-config" class="headerlink" title="start_phases相关{load_config, []}"></a>start_phases相关{load_config, []}</h3><p>作用:</p>
-<pre><code>1.读tsung.xml文件
-设定ts_config_server的status的
-</code></pre><p>config:</p>
-<pre><code>-record(config, {
-      name,
-      duration, % 超时时间,单位秒.超时会往ts_config_server发送end_tsung的timeout消息
-      loglevel = ?WARN,   % 【xml】loglevel
-      dump = none,    % 【xml】dumptraffic：
-               &quot;false&quot; -&gt; none;
-               &quot;true&quot;  -&gt; full;
-               &quot;light&quot; -&gt; light;
-               &quot;protocol&quot; -&gt; protocol;
-               &quot;protocol_local&quot; -&gt; protocol_local
-      stats_backend,    % 【xml】backend:text
-      controller,         % controller machine
-      clients = [],       %  [{client,&quot;localhost&quot;,10.0,200000,
-                                [{10,140,2,245},
-                                 {10,140,2,244},
-                                 {10,140,2,241},
-                                 {10,140,2,5}],
-                                undefined}]
-      servers = [],       % [#server{host  = Server,
-                                   port  = Port,
-                                   weight= Weight,
-                                   type  = Type
-                                 }|ServerList]
-                          % [{server,&quot;idc-iot-pr-server-2&quot;,443,ts_tcp,10}],
-      ports_range,        % client ports range
-      monitor_hosts = [], % [{&quot;idc-iot-pr-server-4&quot;,{erlang,[]}}],
-      arrivalphases = [], % [{arrivalphase,1,6000000,undefined,0.001,infinity,6000,[],
-                          false,1}],
-      thinktime,          % default thinktime specs
-      subst    = false,   % Substitution should be applied on the request
-      match,              % Match regexp in response
-      dynvar   = [],
-      main_sess_type , % main type of session
-      sessions = [], %  [{session,1,100,ts_http,&quot;http-example&quot;,true,false,10000,
-                     {proto_opts,negotiate,negotiate,&quot;/http-bind/&quot;,false,
-                                 false,false,&quot;/chat&quot;,&quot;binary&quot;,[],10,3,
-                                 600000,infinity,infinity,32768,32768,
-                                 32768,32768,[],true,true},
-                     undefined,10,undefined,undefined,undefined,undefined,
-                     undefined}]
-      static_users=[],
-      session_tab,  % 表:ets:new(sessiontable, [ordered_set, protected]),
-      use_controller_vm = false, % if true, start the first launcher in the
-                                 % same vm as the controller if possible
-      curthink,  % temporary var (current request think)
-      curid = 0, % temporary var (current request id (can be transaction))
-      cur_req_id  = 0,   % temporary var (current real request id)
-      file_server = [],  % filenames for file_server
-      load_loop,         % loop phases if &gt; 0
-      hibernate = 10000, % hibernate timeout (millisec) 10sec by default
-      proto_opts,        % tcp/udp buffer sizes，参见后面的proto_opts
-      seed = now,        % random seed: (default= current time)
-      vhost_file = none, % file server user for virtual host jabber testing
-      user_server_maxuid = none, % user_id max
-      oids=[],  % [{OID,Name,Type,Fun}| OIDS]
-      rate_limit,
-      total_popularity = 0, % should be 100 if we use probabilites; sum of all weights if we use weights
-      use_weights      , % true if we use weights instead of probabilities
-      total_server_weights=0, % 总weights
-      job_notify_port,
-      max_ssh_startup = 20,
-      tag
-     }).
-
--record(proto_opts,
-    {ssl_ciphers   = negotiate, % for ssl only
-     ssl_versions  = negotiate, % for ssl only
-     bosh_path = &quot;/http-bind/&quot;,  % for bash only
-     tcp_reuseaddr  = false,  % for tcp reuseaddr
-     tcp_reuseport  = false,  % for tcp reuseport
-     ip_transparent = false,  % set IP_TRANSPARENT option on the socket
-     websocket_path = &quot;/chat&quot;,  % for websocket only
-     websocket_frame = &quot;binary&quot;,  % for websocket only
-     websocket_subprotocols = [],     % for websocket only
-     retry_timeout = 10,        % retry sending in milliseconds
-     max_retries = 3,           % maximum number of retries
-     idle_timeout  = 600000,    % timeout for local ack
-     connect_timeout  = infinity,   % timeout for gen_tcp:connect/4 (infinity OR time in milliseconds)
-     global_ack_timeout = infinity, % timeout for global ack
-     tcp_rcv_size  = 32768,     % tcp buffers size
-     tcp_snd_size  = 32768,
-     udp_rcv_size  = 32768,     % udp buffers size
-     udp_snd_size  = 32768,
-     certificate = [],          % for ssl
-     reuse_sessions = true,     % for ssl
-     is_first_connect = true   % whether it&apos;s the first connection
-    }).
-</code></pre><h3 id="start-phases相关-start-os-monitoring-timeout-30000"><a href="#start-phases相关-start-os-monitoring-timeout-30000" class="headerlink" title="start_phases相关{start_os_monitoring,[{timeout,30000}]}"></a>start_phases相关{start_os_monitoring,[{timeout,30000}]}</h3><p>  ts_os_mon_sup启动子<br>  启动monitor,把要监控的server中的cpu,内存,load等信息</p>
-<h3 id="start-phases相关-start-clients"><a href="#start-phases相关-start-clients" class="headerlink" title="start_phases相关{start_clients,[]}]}"></a>start_phases相关{start_clients,[]}]}</h3><p>  ts_mon启动子<br>  加载tsung,并启动<br>  % ts_launcher_static:<br>  gen_fsm:send_event({?MODULE, Node}, {launch, Sessions, atom_to_list(Host)}).<br>  % ts_launcher:<br>  gen_fsm:send_event({?MODULE, Node}, {launch, Arrivals, atom_to_list(Host), Seed}).</p>
-
+</code></pre>
+        
+          <p class="article-more-link">
+            <a href="/2018/09/29/erlang-source-analysis-tsung2/#more">Read More</a>
+          </p>
+        
       
     </div>
     <footer class="article-footer">
@@ -712,157 +520,12 @@ ts_user_server:
 -tsung_controller config_file &quot;fetch_user_key.xml&quot; 
 -tsung_controller log_dir &quot;/root/.tsung/log/&quot; 
 -tsung_controller mon_file &quot;tsung.log&quot;
-</code></pre><h5 id="配置选项"><a href="#配置选项" class="headerlink" title="配置选项"></a>配置选项</h5><p>tsung_controller.app:</p>
-<pre><code>{debug_level, 6},
-{smp_disable, true}, % disable smp on clients
-{ts_cookie, &quot;humhum&quot;},
-{clients_timeout, 60000},    % timeout for global synchro
-{file_server_timeout, 30000},% timeout for reading file
-{warm_time, 1}, % (seconds) initial waiting time when launching clients
-
-{thinktime_value, &quot;5&quot;}, % default value = 5sec
-{thinktime_override, &quot;false&quot;},
-{thinktime_random, &quot;false&quot;},
-
-{global_number, 100},
-{global_ack_timeout, 3600000}, %in msec
-
-{munin_port, 4949},
-
-{snmp_port, 161},
-{snmp_version, v2},
-{snmp_community, &quot;public&quot;},
-
-{mysql_port, 3306},
-{mysql_user, &quot;root&quot;},
-{mysql_password, false},
-
-{dumpstats_interval, 10000},
-{dump, none},          %% full or light or none
-{stats_backend, none}, %% text|rrdtool
-
-{nclients, 10},        %% number of clients
-{nclients_deb, 1},     %% beginning of interval
-{nclients_fin, 2000},     %% end of interval
-{config_file, &quot;./tsung.xml&quot;},
-{log_file, &quot;./tsung.log&quot;},
-{match_log_file, &quot;./match.log&quot;},
-{exclude_tag, &quot;&quot;},
-{template_path, beam_relative}
-</code></pre><p>tsung.app:</p>
-<pre><code>{debug_level, 2},
-{snd_size, 32768},      % send buffer size
-{rcv_size, 32768},      % receive buffer size
-{idle_timeout, 600000},  % 10min timeout
-{global_ack_timeout, infinity}, % global ack timeout
-{connect_timeout, 30000},
-{max_warm_delay, 15000},
-{dump, full},           % full or light
-{parse_type, noparse},
-{persistent, true},  % persistent connection: true or false
-{mes_type, dynamic}, % dynamic or static
-{nclients, 10},      % number of client to connect
-{log_file, &quot;./tsung.log&quot;}, % log file name
-%% use for IMS GET :
-{http_modified_since_date, &quot;Fri, 14 Nov 2003 02:43:31 GMT&quot;},
-{client_retry_timeout, 10}, % retry sending (in microsec.)
-{max_retries, 3},        % number of max retries
-{ssl_ciphers, negotiate},
-{ssl_versions, negotiate},
-
-{jabber_users, 2000000},
-{jabber_username, &quot;c&quot;},
-{jabber_password, &quot;pas&quot;},
-{jabber_domain, &quot;mydomain.com&quot;},
-
-{websocket_path, &quot;/chat&quot;}
-</code></pre><p>表:</p>
-<pre><code>2&gt; ets:i().
- id              name              type  size   mem      owner
- ----------------------------------------------------------------------------
- 1                         code                       set   411    25810    code_server
- 4098                      code_names                 set   51     6739     code_server
- 8206                      cookies                    set   0      298      auth
- 12305                     shell_records              ordered_set 0      88       &lt;0.58.0&gt;
- 20499                     ssl_otp_cacertificate_db   set   0      298      ssl_manager
- 24596                     ssl_otp_ca_file_ref        set   0      298      ssl_manager
- 28693                     ssl_otp_ca_ref_file_mapping set   0      298      ssl_manager
- 32790                     ssl_otp_crl_cache          set   0      298      ssl_manager
- 36887                     ssl_otp_crl_issuer_mapping bag   0      298      ssl_manager
- 40984                     ts_ssl_session_cache       set   0      298      ssl_manager
- 45081                     ts_ssl_session_cache       set   0      298      ssl_manager
- 49180                     httpc_manager__session_cookie_db bag   0      298      httpc_manager
- 53279                     jobs                       set   0      298      &lt;0.116.0&gt;
- 57376                     to                         set   0      298      &lt;0.117.0&gt;
- 61473                     notify                     bag   0      298      &lt;0.117.0&gt;
- 69666                     sessiontable               ordered_set 12     1564     &lt;0.104.0&gt;
- 73763                     ign_requests               set   0      298      inet_gethost_native
- 77860                     ign_req_index              set   0      298      inet_gethost_native
- 81959                     sessiontable               set   4      1087     ts_session_cache
- ac_tab                    ac_tab                     set   98     3859     application_controller
- file_io_servers           file_io_servers            set   5      789      file_server_2
- global_locks              global_locks               set   0      298      global_name_server
- global_names              global_names               set   14     578      global_name_server
- global_names_ext          global_names_ext           set   0      298      global_name_server
- global_pid_ids            global_pid_ids             bag   0      298      global_name_server
- global_pid_names          global_pid_names           bag   28     536      global_name_server
- httpc_manager__handler_db httpc_manager__handler_db  set   0      298      httpc_manager
- httpc_manager__session_db httpc_manager__session_db  set   0      298      httpc_manager
- httpd_conf_8091default    httpd_conf_8091default     bag   11     576      httpd_8091default
- httpd_mime_8091           httpd_mime_8091            set   6      526      httpd_8091default
- inet_cache                inet_cache                 bag   0      298      inet_db
- inet_db                   inet_db                    set   29     595      inet_db
- inet_hosts_byaddr         inet_hosts_byaddr          bag   0      298      inet_db
- inet_hosts_byname         inet_hosts_byname          bag   0      298      inet_db
- inet_hosts_file_byaddr    inet_hosts_file_byaddr     bag   0      298      inet_db
- inet_hosts_file_byname    inet_hosts_file_byname     bag   0      298      inet_db
- ssl_pem_cache             ssl_pem_cache              set   0      298      ssl_pem_cache
- sys_dist                  sys_dist                   set   1      363      net_kernel
- timer_interval_tab        timer_interval_tab         set   1      318      timer_server
- timer_tab                 timer_tab                  ordered_set 2      134      timer_server
-</code></pre><p>表sessiontable::</p>
-<pre><code>[{{1,1},{setdynvars,server,{},[host,port]}},
- {{1,2},{setdynvars,value,{string,"30000000000"},[startnum]}},
- {{1,3},
-      {ts_request,parse,true,[],
-                  [{jsonpath,userid,"user.user_id"},
-                   {jsonpath,sessionid,"user.session_id"}],
-                  {http_request,"/v2.0/fetch/user_key","1.1",
-                                "idc-iot-pr-server-2:443",undefined,[],post,
-                                "application/x-www-form-urlencoded",
-                                [{"Content-Type","application/json"}],
-                                <<"%%fetch_user_key:getmessage%%">>,0,undefined,undefined,
-                                undefined,undefined,undefined,undefined,undefined,...},
-                  true,"idc-iot-pr-server-2",443,ts_tcp}},
- {{1,4},
-      {change_type,ts_websocket,"%%_host%%","%%_port%%",ts_tcp,
-                   true,true,true}},
- {{1,5},
-      {ts_request,parse,true,[],[],
-                  {websocket_request,"13",connect,
-                                     "/client/comet?user_id=%%_userid%%&mac=%%_userid%%&locale=zh&ver=v2.0",
-                                     "binary",[],[],"\n"},
-                  false,undefined,undefined,undefined}},
- {{1,6},
-      {ts_request,parse,true,[],[],
-                  {websocket_request,"13",message,"/","text",[],[],
-                                     "{\"msg_type\":\"check_sid\",\"version\":\"v1.0.1\",\"qos\":1,\"sequence_id\": \"123445\",\"request\":{\"sid\":\"%%_sessionid%%\"}}&quot;},
-              true,undefined,undefined,undefined}},
- {{1,7},{ctrl_struct,{for_start,1,counter}}},
- {{1,8},
-      {ts_request,parse,true,[],[],
-                  {websocket_request,"13",message,"/","text",[],[],
-                                     "{\"mt\":\"k\"}"},
-                  true,undefined,undefined,undefined}},
- {{1,9},{thinktime,30000}},
- {{1,10},{ctrl_struct,{for_end,counter,20000,1,8}}},
- {{http_server,1},{"idc-iot-pr-server-2:443",http}},
- {{http_user_agent,value},
-  [{20,
-    &quot;Mozilla/5.0 (Windows; U; Windows NT 5.2; fr-FR; rv:1.7.8) Gecko/20050511 Firefox/1.0.4&quot;},
-   {80,
-    &quot;Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050513 Galeon/1.3.21&quot;}]}]
-</"%%fetch_user_key:getmessage%%"></code></pre>
+</code></pre>
+        
+          <p class="article-more-link">
+            <a href="/2018/09/29/erlang-source-analysis-tsung1/#more">Read More</a>
+          </p>
+        
       
     </div>
     <footer class="article-footer">
@@ -870,48 +533,6 @@ ts_user_server:
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tsung/">tsung</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-erlang-release-updowngrade-rebar3" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/09/04/erlang-release-updowngrade-rebar3/" class="article-date">
-  <time datetime="2018-09-04T10:01:18.000Z" itemprop="datePublished">2018-09-04</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/erlang/">erlang</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/09/04/erlang-release-updowngrade-rebar3/">使用rebar3的方法对release版本升降级</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/04/erlang-release-updowngrade-rebar3/" data-id="cjoo55c0s00069j6g1jj5mwt5" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rebar3/">rebar3</a></li></ul>
 
     </footer>
   </div>
@@ -1043,6 +664,62 @@ ts_user_server:
 
 
   
+    <article id="post-erlang-tune-lager1-md" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/31/erlang-tune-lager1-md/" class="article-date">
+  <time datetime="2018-07-31T05:22:09.000Z" itemprop="datePublished">2018-07-31</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/tune/">tune</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/07/31/erlang-tune-lager1-md/">实战1:对lager测试来分析Erlang的一些特性</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><p>通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响</p>
+<h3 id="系统资源"><a href="#系统资源" class="headerlink" title="系统资源"></a>系统资源</h3><p>一台服务器:</p>
+<pre><code>16CPU
+64G内存
+</code></pre><p>系统环境:</p>
+<pre><code>OS: CentOS 7.4.1708
+$ cat /etc/security/limits.conf
+* soft nofile 300000
+* hard nofile 300000
+</code></pre>
+        
+          <p class="article-more-link">
+            <a href="/2018/07/31/erlang-tune-lager1-md/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/07/31/erlang-tune-lager1-md/" data-id="cjoo55c1m000z9j6g96tv0b6v" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tune/">tune</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
 
 
   <nav id="page-nav">
@@ -1078,7 +755,7 @@ ts_user_server:
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 12.5px;">blockchain</a> <a href="/tags/erlang/" style="font-size: 20px;">erlang</a> <a href="/tags/lager/" style="font-size: 15px;">lager</a> <a href="/tags/rebar3/" style="font-size: 12.5px;">rebar3</a> <a href="/tags/source-analysis/" style="font-size: 17.5px;">source-analysis</a> <a href="/tags/tsung/" style="font-size: 12.5px;">tsung</a> <a href="/tags/tune/" style="font-size: 10px;">tune</a> <a href="/tags/以太坊/" style="font-size: 10px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
+      <a href="/tags/blockchain/" style="font-size: 12.5px;">blockchain</a> <a href="/tags/erlang/" style="font-size: 20px;">erlang</a> <a href="/tags/lager/" style="font-size: 15px;">lager</a> <a href="/tags/rebar3/" style="font-size: 10px;">rebar3</a> <a href="/tags/source-analysis/" style="font-size: 17.5px;">source-analysis</a> <a href="/tags/tsung/" style="font-size: 12.5px;">tsung</a> <a href="/tags/tune/" style="font-size: 10px;">tune</a> <a href="/tags/以太坊/" style="font-size: 10px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
     </div>
   </div>
 

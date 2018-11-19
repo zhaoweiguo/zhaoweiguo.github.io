@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="执行application:start(tsung_controller)时: {start_phases, [{load_config, []},{start_os_monitoring,[{timeout,30000}]},                 {start_clients,[]}]} {mod,          {tsung_controller, []}} 应用启动相关ts_">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-10-10T03:50:50.664Z">
+<meta property="og:updated_time" content="2018-11-19T10:18:23.872Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="源码分析基础工作">
 <meta name="twitter:description" content="执行application:start(tsung_controller)时: {start_phases, [{load_config, []},{start_os_monitoring,[{timeout,30000}]},                 {start_clients,[]}]} {mod,          {tsung_controller, []}} 应用启动相关ts_">
@@ -116,7 +116,8 @@
   lastips,          % store next ip to choose for each client host
   total_weight      % total weight of client machines
 }
-</code></pre><p>ts_mon::</p>
+</code></pre><a id="more"></a>
+<p>ts_mon::</p>
 <pre><code>global
 -record(state, {
   log,          % 日志文件的fd
@@ -376,7 +377,7 @@ ts_user_server:
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 12.5px;">blockchain</a> <a href="/tags/erlang/" style="font-size: 20px;">erlang</a> <a href="/tags/lager/" style="font-size: 15px;">lager</a> <a href="/tags/rebar3/" style="font-size: 12.5px;">rebar3</a> <a href="/tags/source-analysis/" style="font-size: 17.5px;">source-analysis</a> <a href="/tags/tsung/" style="font-size: 12.5px;">tsung</a> <a href="/tags/tune/" style="font-size: 10px;">tune</a> <a href="/tags/以太坊/" style="font-size: 10px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
+      <a href="/tags/blockchain/" style="font-size: 12.5px;">blockchain</a> <a href="/tags/erlang/" style="font-size: 20px;">erlang</a> <a href="/tags/lager/" style="font-size: 15px;">lager</a> <a href="/tags/rebar3/" style="font-size: 10px;">rebar3</a> <a href="/tags/source-analysis/" style="font-size: 17.5px;">source-analysis</a> <a href="/tags/tsung/" style="font-size: 12.5px;">tsung</a> <a href="/tags/tune/" style="font-size: 10px;">tune</a> <a href="/tags/以太坊/" style="font-size: 10px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
     </div>
   </div>
 

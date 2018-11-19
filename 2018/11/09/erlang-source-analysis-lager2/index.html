@@ -5,20 +5,20 @@
   
 
   
-  <title>源码分析:开源项目lager-源码分析前 | 新溪blog</title>
+  <title>源码分析:开源项目lager-parse_transform模式 | 新溪blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
+  <meta name="description" content="parse_transform模式获取parse_transform模式源码: Beam = &amp;quot;./_build/default/lib/demo/ebin/demo_server.beam&amp;quot;. {ok, {_, [{abstract_code, {_,Abs}}]}} =  beam_lib:chunks(   Beam, [abstract_code]). io:fwrit">
 <meta name="keywords" content="erlang,source-analysis,lager">
 <meta property="og:type" content="article">
-<meta property="og:title" content="源码分析:开源项目lager-源码分析前">
-<meta property="og:url" content="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/index.html">
+<meta property="og:title" content="源码分析:开源项目lager-parse_transform模式">
+<meta property="og:url" content="http://yoursite.com/2018/11/09/erlang-source-analysis-lager2/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
+<meta property="og:description" content="parse_transform模式获取parse_transform模式源码: Beam = &amp;quot;./_build/default/lib/demo/ebin/demo_server.beam&amp;quot;. {ok, {_, [{abstract_code, {_,Abs}}]}} =  beam_lib:chunks(   Beam, [abstract_code]). io:fwrit">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-11-09T03:23:41.388Z">
+<meta property="og:updated_time" content="2018-11-09T02:47:43.253Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="源码分析:开源项目lager-源码分析前">
-<meta name="twitter:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
+<meta name="twitter:title" content="源码分析:开源项目lager-parse_transform模式">
+<meta name="twitter:description" content="parse_transform模式获取parse_transform模式源码: Beam = &amp;quot;./_build/default/lib/demo/ebin/demo_server.beam&amp;quot;. {ok, {_, [{abstract_code, {_,Abs}}]}} =  beam_lib:chunks(   Beam, [abstract_code]). io:fwrit">
   
     <link rel="alternate" href="/atom.xml" title="新溪blog" type="application/atom+xml">
   
@@ -69,10 +69,10 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-erlang-source-analysis-lager1" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-erlang-source-analysis-lager2" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2018/08/23/erlang-source-analysis-lager1/" class="article-date">
-  <time datetime="2018-08-23T09:19:11.000Z" itemprop="datePublished">2018-08-23</time>
+    <a href="/2018/11/09/erlang-source-analysis-lager2/" class="article-date">
+  <time datetime="2018-11-09T01:19:11.000Z" itemprop="datePublished">2018-11-09</time>
 </a>
     
   <div class="article-category">
@@ -87,7 +87,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      源码分析:开源项目lager-源码分析前
+      源码分析:开源项目lager-parse_transform模式
     </h1>
   
 
@@ -95,68 +95,40 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><p>项目使用lager打印日志很多时，会造成以下2个主要问题:</p>
-<pre><code>1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能
-2.有时会丢失部分日志
-</code></pre><p>目的:</p>
-<pre><code>1.通过源码分析找到这2个问题的原因
-2.是否可以找到一些方法解决这个问题
-3.看是否可以重写部分代码来提升性能
-</code></pre><a id="more"></a>
-<h3 id="看源码前工作"><a href="#看源码前工作" class="headerlink" title="看源码前工作"></a>看源码前工作</h3><p>看lager文档显示以下几个主要参数:</p>
-<pre><code>{async_threshold, 20},
-{async_threshold_window, 5}
-小于20使用异步,超过20切换回同步,小于20-5=15再切换回异步
-
-{error_logger_hwm, 50}
-每秒最大日志数,即戒备线
-{error_logger_flush_queue, true | false}
-% 默认是true,可以关闭
-% 超过戒备线,会flush all event notifications in the message queue
-% 而这会对other handlers in the same event manager造成意外后果
-{flush_queue, true | false}
-% flush_queue为true时可以设置threshold
-
-{error_logger_flush_threshold, 1000}
-% 设定error_logger sink的阀值
-{flush_threshold, 1000}
-% 对所有的sinks的阀值
-
-{killer_hwm, 1000},
-{killer_reinstall_after, 5000}
-// 有时你需要丢弃所有pending日志消息而不是让他耗光时间
-// if the gen_event mailbox exceeds a configurable high water mark,
-// the sink will be killed and reinstalled after a configurable cool down time
-% This means if the sink&apos;s mailbox size exceeds 1000 messages, kill the entire sink and reload it after 5000 milliseconds
-% By default, the manager killer is not installed into any sink. If the killer_reinstall_after cool down time is not specified it defaults to 5000.
-</code></pre><p>ets表lager_config内容:</p>
-<pre><code>[
-  {
-    {lager_event,loglevel}, {255,[]}
-  },
-
-  {{lager_event,async}, true},
-
-  {
-    {&apos;_global&apos;,handlers},
-    [
-      {lager_console_backend,&lt;0.148.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/info.log&quot;},&lt;0.150.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/notice.log&quot;},&lt;0.152.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/warning.log&quot;},&lt;0.154.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/error.log&quot;},&lt;0.156.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/critical.log&quot;},&lt;0.158.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/alert.log&quot;},&lt;0.160.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/emergency.log&quot;},&lt;0.162.0&gt;,lager_event},
-      {{lager_file_backend,&quot;console.log&quot;},&lt;0.164.0&gt;,lager_event}
-    ]
-  }
-]
+        <h3 id="parse-transform模式"><a href="#parse-transform模式" class="headerlink" title="parse_transform模式"></a>parse_transform模式</h3><p>获取parse_transform模式源码:</p>
+<pre><code>Beam = &quot;./_build/default/lib/demo/ebin/demo_server.beam&quot;.
+{ok, {_, [{abstract_code, {_,Abs}}]}} =  beam_lib:chunks(
+  Beam, [abstract_code]).
+io:fwrite(&quot;~s~n&quot;, [erl_prettypr:format(erl_syntax:form_list(Abs))]).
+% 通过以上命令得到parse_transform后的源码
+</code></pre><p>原始使用:</p>
+<pre><code>lager:info(&quot;handle_call _Request = ~p&quot;,[_Request]),
+</code></pre><p>parse_transform模式转化后:</p>
+<pre><code>case {whereis(lager_event), whereis(lager_event),
+      lager_config:get({lager_event, loglevel}, {0, []})}
+    of
+  {undefined, undefined, _} -&gt;
+      fun () -&gt; {error, lager_not_running} end();
+  {undefined, _, _} -&gt;
+      fun () -&gt; {error, {sink_not_configured, lager_event}}
+      end();
+  {__Piddemo_lager_server42, _, {__Leveldemo_lager_server42, __Tracesdemo_lager_server42}}
+      when __Leveldemo_lager_server42 band 4 /= 0 orelse
+             __Tracesdemo_lager_server42 /= [] -&gt;
+      lager:do_log(info,
+                   [{application, mongrel}, {module, mongrel},
+                    {function, handle_call}, {line, 79},
+                    {pid, pid_to_list(self())}, {node, node()}
+                    | lager:md()],
+                   &quot;handle_call _Request= ~p&quot;, [_Request], 4096, 4,
+                   __Leveldemo_lager_server42, __Tracesdemo_lager_server42, lager_event, __Piddemo_lager_server42);
+  _ -&gt; ok
+end,
 </code></pre>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/" data-id="cjoo55c0q00059j6gwc8wn4cq" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/11/09/erlang-source-analysis-lager2/" data-id="cjoo55c0y000a9j6g43o9kqzd" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li></ul>
@@ -167,19 +139,10 @@
     
 <nav id="article-nav">
   
-    <a href="/2018/09/04/erlang-release-updowngrade-normal/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          使用Erlang原生方法对release版本升降级
-        
-      </div>
-    </a>
   
-  
-    <a href="/2018/07/31/erlang-tune-lager1-md/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2018/11/09/erlang-source-analysis-lager4/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">实战1:对lager测试来分析Erlang的一些特性</div>
+      <div class="article-nav-title">源码分析:lager-gen_event的启动</div>
     </a>
   
 </nav>

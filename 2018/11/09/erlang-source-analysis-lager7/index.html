@@ -5,20 +5,20 @@
   
 
   
-  <title>源码分析:开源项目lager-源码分析前 | 新溪blog</title>
+  <title>源码分析:开源项目lager-写一个lager的kafka插件 | 新溪blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
+  <meta name="description" content="配置文件: [  {handlers,[{lager_kafka_backend,[               {level,                         &amp;quot;info&amp;quot;},               {topic,                         &amp;lt;&amp;lt;&amp;quot;topic&amp;quot;&amp;gt;&amp;gt;},">
 <meta name="keywords" content="erlang,source-analysis,lager">
 <meta property="og:type" content="article">
-<meta property="og:title" content="源码分析:开源项目lager-源码分析前">
-<meta property="og:url" content="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/index.html">
+<meta property="og:title" content="源码分析:开源项目lager-写一个lager的kafka插件">
+<meta property="og:url" content="http://yoursite.com/2018/11/09/erlang-source-analysis-lager7/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
+<meta property="og:description" content="配置文件: [  {handlers,[{lager_kafka_backend,[               {level,                         &amp;quot;info&amp;quot;},               {topic,                         &amp;lt;&amp;lt;&amp;quot;topic&amp;quot;&amp;gt;&amp;gt;},">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-11-09T03:23:41.388Z">
+<meta property="og:updated_time" content="2018-11-19T10:00:43.755Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="源码分析:开源项目lager-源码分析前">
-<meta name="twitter:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
+<meta name="twitter:title" content="源码分析:开源项目lager-写一个lager的kafka插件">
+<meta name="twitter:description" content="配置文件: [  {handlers,[{lager_kafka_backend,[               {level,                         &amp;quot;info&amp;quot;},               {topic,                         &amp;lt;&amp;lt;&amp;quot;topic&amp;quot;&amp;gt;&amp;gt;},">
   
     <link rel="alternate" href="/atom.xml" title="新溪blog" type="application/atom+xml">
   
@@ -69,10 +69,10 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-erlang-source-analysis-lager1" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-erlang-source-analysis-lager7" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2018/08/23/erlang-source-analysis-lager1/" class="article-date">
-  <time datetime="2018-08-23T09:19:11.000Z" itemprop="datePublished">2018-08-23</time>
+    <a href="/2018/11/09/erlang-source-analysis-lager7/" class="article-date">
+  <time datetime="2018-11-09T01:19:11.000Z" itemprop="datePublished">2018-11-09</time>
 </a>
     
   <div class="article-category">
@@ -87,7 +87,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      源码分析:开源项目lager-源码分析前
+      源码分析:开源项目lager-写一个lager的kafka插件
     </h1>
   
 
@@ -95,68 +95,41 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><p>项目使用lager打印日志很多时，会造成以下2个主要问题:</p>
-<pre><code>1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能
-2.有时会丢失部分日志
-</code></pre><p>目的:</p>
-<pre><code>1.通过源码分析找到这2个问题的原因
-2.是否可以找到一些方法解决这个问题
-3.看是否可以重写部分代码来提升性能
-</code></pre><a id="more"></a>
-<h3 id="看源码前工作"><a href="#看源码前工作" class="headerlink" title="看源码前工作"></a>看源码前工作</h3><p>看lager文档显示以下几个主要参数:</p>
-<pre><code>{async_threshold, 20},
-{async_threshold_window, 5}
-小于20使用异步,超过20切换回同步,小于20-5=15再切换回异步
-
-{error_logger_hwm, 50}
-每秒最大日志数,即戒备线
-{error_logger_flush_queue, true | false}
-% 默认是true,可以关闭
-% 超过戒备线,会flush all event notifications in the message queue
-% 而这会对other handlers in the same event manager造成意外后果
-{flush_queue, true | false}
-% flush_queue为true时可以设置threshold
-
-{error_logger_flush_threshold, 1000}
-% 设定error_logger sink的阀值
-{flush_threshold, 1000}
-% 对所有的sinks的阀值
-
-{killer_hwm, 1000},
-{killer_reinstall_after, 5000}
-// 有时你需要丢弃所有pending日志消息而不是让他耗光时间
-// if the gen_event mailbox exceeds a configurable high water mark,
-// the sink will be killed and reinstalled after a configurable cool down time
-% This means if the sink&apos;s mailbox size exceeds 1000 messages, kill the entire sink and reload it after 5000 milliseconds
-% By default, the manager killer is not installed into any sink. If the killer_reinstall_after cool down time is not specified it defaults to 5000.
-</code></pre><p>ets表lager_config内容:</p>
+        <p>配置文件:</p>
 <pre><code>[
-  {
-    {lager_event,loglevel}, {255,[]}
-  },
-
-  {{lager_event,async}, true},
-
-  {
-    {&apos;_global&apos;,handlers},
-    [
-      {lager_console_backend,&lt;0.148.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/info.log&quot;},&lt;0.150.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/notice.log&quot;},&lt;0.152.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/warning.log&quot;},&lt;0.154.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/error.log&quot;},&lt;0.156.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/critical.log&quot;},&lt;0.158.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/alert.log&quot;},&lt;0.160.0&gt;,lager_event},
-      {{lager_file_backend,&quot;log/emergency.log&quot;},&lt;0.162.0&gt;,lager_event},
-      {{lager_file_backend,&quot;console.log&quot;},&lt;0.164.0&gt;,lager_event}
-    ]
+ {handlers,[{lager_kafka_backend,[
+              {level,                         &quot;info&quot;},
+              {topic,                         &lt;&lt;&quot;topic&quot;&gt;&gt;},
+              {broker,                        [{&quot;localhost&quot;, 9092}]},
+              {send_method,                   async},
+              {formatter,                     lager_default_formatter},
+              {formatter_config,
+                [date, &quot; &quot;, time, &quot;|&quot;, node, &quot;|&quot;,severity,&quot;|&quot;, module, &quot;|&quot;, function, &quot;|&quot;, line, &quot;|&quot;, pid, &quot;|&quot;, message]
+              }     
+           ]}]
   }
 ]
+</code></pre><p>文件lager_kafka_backend.erl:</p>
+<pre><code>上面的配置文件指定文件名为:lager_kafka_backend.erl
+实现一个gen_event，详见后面几个函数说明
+</code></pre><p>init/1函数:</p>
+<pre><code>参数就是上面配置文件中的值,作用是把相关信息存放到state中,
+启动brod,配置好kafka信息
+</code></pre><p>handle_call/2函数:</p>
+<pre><code>要实现set_loglevel和get_loglevel相关功能
+</code></pre><p>handle_event/2函数:</p>
+<pre><code>接收{log, Message}
+其中Message为info:log函数执行时的数据和meta信息
+执行brod的写入kafka函数
+</code></pre><p>config_to_id/1函数:</p>
+<pre><code>可选
+多id时用,如:lager_file_backend
+主要用于多个gen_event事件
 </code></pre>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/" data-id="cjoo55c0q00059j6gwc8wn4cq" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/11/09/erlang-source-analysis-lager7/" data-id="cjoo55c1f000q9j6g5sgqiw3q" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li></ul>
@@ -167,19 +140,19 @@
     
 <nav id="article-nav">
   
-    <a href="/2018/09/04/erlang-release-updowngrade-normal/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2018/11/09/erlang-source-analysis-lager5/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          使用Erlang原生方法对release版本升降级
+          源码分析:开源项目
         
       </div>
     </a>
   
   
-    <a href="/2018/07/31/erlang-tune-lager1-md/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2018/09/29/erlang-source-analysis-tsung2/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">实战1:对lager测试来分析Erlang的一些特性</div>
+      <div class="article-nav-title">源码分析基础工作</div>
     </a>
   
 </nav>

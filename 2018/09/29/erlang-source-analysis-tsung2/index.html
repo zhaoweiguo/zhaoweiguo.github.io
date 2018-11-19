@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>源码分析基础工作 | 新溪blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="执行application:start(tsung_controller)时: {start_phases, [{load_config, []},{start_os_monitoring,[{timeout,30000}]},                 {start_clients,[]}]} {mod,          {tsung_controller, []}} 应用启动相关ts_">
+<meta name="keywords" content="erlang,source-analysis,tsung">
+<meta property="og:type" content="article">
+<meta property="og:title" content="源码分析基础工作">
+<meta property="og:url" content="http://yoursite.com/2018/09/29/erlang-source-analysis-tsung2/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="执行application:start(tsung_controller)时: {start_phases, [{load_config, []},{start_os_monitoring,[{timeout,30000}]},                 {start_clients,[]}]} {mod,          {tsung_controller, []}} 应用启动相关ts_">
+<meta property="og:locale" content="zh-tw">
+<meta property="og:updated_time" content="2018-10-10T03:50:50.664Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="源码分析基础工作">
+<meta name="twitter:description" content="执行application:start(tsung_controller)时: {start_phases, [{load_config, []},{start_os_monitoring,[{timeout,30000}]},                 {start_clients,[]}]} {mod,          {tsung_controller, []}} 应用启动相关ts_">
+  
+    <link rel="alternate" href="/atom.xml" title="新溪blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">新溪blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Erlang——新溪-gordon之胡写乱画</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-erlang-source-analysis-tsung2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/29/erlang-source-analysis-tsung2/" class="article-date">
+  <time datetime="2018-09-29T03:46:03.000Z" itemprop="datePublished">2018-09-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/source-analysis/">source-analysis</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      源码分析基础工作
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>执行application:start(tsung_controller)时:</p>
+<pre><code>{start_phases, [{load_config, []},{start_os_monitoring,[{timeout,30000}]},
+                {start_clients,[]}]}
+{mod,          {tsung_controller, []}}
+</code></pre><h3 id="应用启动相关"><a href="#应用启动相关" class="headerlink" title="应用启动相关"></a>应用启动相关</h3><p>ts_config_server相关::</p>
+<pre><code>global
+-record(state, {
+  config,
+  logdir,   % 日志文件目录
+  curcfg = 0,       % number of configured launchers
+  client_static_users = 0, % number of clients that already have their static users
+  static_users = 0, % static users not yet given to a client
+  ports,            % dict, used if we need to choose the client port
+  users=1,          % userid (incremental counter)
+  start_date,       %
+  hostname,         % controller的hostname
+  last_beam_id = 0, % last tsung beam id (used to set nodenames)
+  ending_beams = 0, % number of beams with no new users to start
+  lastips,          % store next ip to choose for each client host
+  total_weight      % total weight of client machines
+}
+</code></pre><p>ts_mon::</p>
+<pre><code>global
+-record(state, {
+  log,          % 日志文件的fd
+  backend,      % type of backend: text|...
+  log_dir,      % 
+  fullstats,    % fullstats fd
+  dump_interval,% 从配置文件中取值:10000
+  dumpfile,     % file used when dumptrafic is set light or full
+  client=0,     % number of clients currently running
+  maxclient=0,  % max of simultaneous clients
+  stats,        % 下面的record:Stats
+  stop = false, % true if we should stop
+  laststats,    % 下面的record:Stats
+  lastdate,     % 时间
+  type,         % type of logging (none, light, full)
+  launchers=0,  % number of launchers started
+  timer_ref,    % timer reference (for dumpstats)
+  wait_gui=false% wait gui before stopping
+}).
+
+-record(stats, {
+  users_count         = 0,
+  finish_users_count  = 0,
+  os_mon,   % dict:new():[Mean, Var, Max, Min, Count, MeanFB,CountFB,Last]
+  session             = []
+}).
+</code></pre><p>ts_stats_mon::</p>
+<pre><code>global
+% connect,page,request
+-record(state, {
+  log,          % log fd
+  backend,      % type of backend: text|rrdtool|fullstats
+  dump_interval,% 从配置文件中取值:10000
+  type = connect,page,request
+  fullstats,    % fullstats fd
+  stats,        % [0,0,0,0,0,0,0,0]:
+  laststats     % values of last printed stats
+}).
+
+% [id]
+-record(state, {
+  log,          % log fd
+  backend,      % type of backend: text|rrdtool|fullstats
+  dump_interval,% 从配置文件中取值:10000
+  type = ts_stats_mon,
+  fullstats,    % fullstats fd
+  stats,        % 字典:dict:new()
+  laststats     % values of last printed stats
+}).
+</code></pre><p>ts_match_logger:</p>
+<pre><code>global
+-record(state, {
+  filename,     % &quot;mach.log&quot;
+  level,        % type of backend: text|rrdtool|fullstats
+  dumpid=1,     % current dump id
+  logdir,
+  fd            % &quot;mach.log&quot;的fd
+}).
+</code></pre><p>ts_os_mon_sup:</p>
+<pre><code>local，监控专用，【参数】monitor
+ts_os_mon_erlang
+ts_os_mon_munin
+ts_os_mon_snmp
+
+ts_os_mon_erlang:
+% monitor在同一机器上
+#state{node=node(),mon=MonServer, host=Host, interval=Interval, options=Options}
+% 不在同一机器
+#state{host=Host, mon=MonServer, interval=Interval, options=Options}
+</code></pre><p>ts_timer:</p>
+<pre><code>global,fsm
+-record(state, {
+  nclient    = 0, % number of unacked clients
+  maxclients = 0, % total number of clients to ack
+  pidlist = [],
+  timeout=3600000
+}).
+</code></pre><p>ts_msg_server:</p>
+<pre><code>global
+-record(state, {number=0}).
+</code></pre><p>ts_user_server_sup:</p>
+<pre><code>simple_one_for_one
+
+ts_user_server:
+-record(state, {
+  offline,        %ets table
+  last_offline,
+  connected,      %ets table
+  last_connected,
+  online,         %ets table
+  last_online,
+  first_client,   % id (integer)
+  random_server_id,  % file_server id for random users
+  offline_server_id, % file_server id for initial offline users
+  delimiter = &lt;&lt; &quot;;&quot; &gt;&gt;,   % delimiter for file_server id username
+  userid_max      % max number of ids (starts at 1)
+}).
+</code></pre><p>ts_job_notify:</p>
+<p>ts_interaction_server:</p>
+<pre><code>#state{
+  to=ets:new(to, []), 
+  notify=ets:new(notify, [bag])
+}
+</code></pre><h3 id="start-phases相关-load-config"><a href="#start-phases相关-load-config" class="headerlink" title="start_phases相关{load_config, []}"></a>start_phases相关{load_config, []}</h3><p>作用:</p>
+<pre><code>1.读tsung.xml文件
+设定ts_config_server的status的
+</code></pre><p>config:</p>
+<pre><code>-record(config, {
+      name,
+      duration, % 超时时间,单位秒.超时会往ts_config_server发送end_tsung的timeout消息
+      loglevel = ?WARN,   % 【xml】loglevel
+      dump = none,    % 【xml】dumptraffic：
+               &quot;false&quot; -&gt; none;
+               &quot;true&quot;  -&gt; full;
+               &quot;light&quot; -&gt; light;
+               &quot;protocol&quot; -&gt; protocol;
+               &quot;protocol_local&quot; -&gt; protocol_local
+      stats_backend,    % 【xml】backend:text
+      controller,         % controller machine
+      clients = [],       %  [{client,&quot;localhost&quot;,10.0,200000,
+                                [{10,140,2,245},
+                                 {10,140,2,244},
+                                 {10,140,2,241},
+                                 {10,140,2,5}],
+                                undefined}]
+      servers = [],       % [#server{host  = Server,
+                                   port  = Port,
+                                   weight= Weight,
+                                   type  = Type
+                                 }|ServerList]
+                          % [{server,&quot;idc-iot-pr-server-2&quot;,443,ts_tcp,10}],
+      ports_range,        % client ports range
+      monitor_hosts = [], % [{&quot;idc-iot-pr-server-4&quot;,{erlang,[]}}],
+      arrivalphases = [], % [{arrivalphase,1,6000000,undefined,0.001,infinity,6000,[],
+                          false,1}],
+      thinktime,          % default thinktime specs
+      subst    = false,   % Substitution should be applied on the request
+      match,              % Match regexp in response
+      dynvar   = [],
+      main_sess_type , % main type of session
+      sessions = [], %  [{session,1,100,ts_http,&quot;http-example&quot;,true,false,10000,
+                     {proto_opts,negotiate,negotiate,&quot;/http-bind/&quot;,false,
+                                 false,false,&quot;/chat&quot;,&quot;binary&quot;,[],10,3,
+                                 600000,infinity,infinity,32768,32768,
+                                 32768,32768,[],true,true},
+                     undefined,10,undefined,undefined,undefined,undefined,
+                     undefined}]
+      static_users=[],
+      session_tab,  % 表:ets:new(sessiontable, [ordered_set, protected]),
+      use_controller_vm = false, % if true, start the first launcher in the
+                                 % same vm as the controller if possible
+      curthink,  % temporary var (current request think)
+      curid = 0, % temporary var (current request id (can be transaction))
+      cur_req_id  = 0,   % temporary var (current real request id)
+      file_server = [],  % filenames for file_server
+      load_loop,         % loop phases if &gt; 0
+      hibernate = 10000, % hibernate timeout (millisec) 10sec by default
+      proto_opts,        % tcp/udp buffer sizes，参见后面的proto_opts
+      seed = now,        % random seed: (default= current time)
+      vhost_file = none, % file server user for virtual host jabber testing
+      user_server_maxuid = none, % user_id max
+      oids=[],  % [{OID,Name,Type,Fun}| OIDS]
+      rate_limit,
+      total_popularity = 0, % should be 100 if we use probabilites; sum of all weights if we use weights
+      use_weights      , % true if we use weights instead of probabilities
+      total_server_weights=0, % 总weights
+      job_notify_port,
+      max_ssh_startup = 20,
+      tag
+     }).
+
+-record(proto_opts,
+    {ssl_ciphers   = negotiate, % for ssl only
+     ssl_versions  = negotiate, % for ssl only
+     bosh_path = &quot;/http-bind/&quot;,  % for bash only
+     tcp_reuseaddr  = false,  % for tcp reuseaddr
+     tcp_reuseport  = false,  % for tcp reuseport
+     ip_transparent = false,  % set IP_TRANSPARENT option on the socket
+     websocket_path = &quot;/chat&quot;,  % for websocket only
+     websocket_frame = &quot;binary&quot;,  % for websocket only
+     websocket_subprotocols = [],     % for websocket only
+     retry_timeout = 10,        % retry sending in milliseconds
+     max_retries = 3,           % maximum number of retries
+     idle_timeout  = 600000,    % timeout for local ack
+     connect_timeout  = infinity,   % timeout for gen_tcp:connect/4 (infinity OR time in milliseconds)
+     global_ack_timeout = infinity, % timeout for global ack
+     tcp_rcv_size  = 32768,     % tcp buffers size
+     tcp_snd_size  = 32768,
+     udp_rcv_size  = 32768,     % udp buffers size
+     udp_snd_size  = 32768,
+     certificate = [],          % for ssl
+     reuse_sessions = true,     % for ssl
+     is_first_connect = true   % whether it&apos;s the first connection
+    }).
+</code></pre><h3 id="start-phases相关-start-os-monitoring-timeout-30000"><a href="#start-phases相关-start-os-monitoring-timeout-30000" class="headerlink" title="start_phases相关{start_os_monitoring,[{timeout,30000}]}"></a>start_phases相关{start_os_monitoring,[{timeout,30000}]}</h3><p>  ts_os_mon_sup启动子<br>  启动monitor,把要监控的server中的cpu,内存,load等信息</p>
+<h3 id="start-phases相关-start-clients"><a href="#start-phases相关-start-clients" class="headerlink" title="start_phases相关{start_clients,[]}]}"></a>start_phases相关{start_clients,[]}]}</h3><p>  ts_mon启动子<br>  加载tsung,并启动<br>  % ts_launcher_static:<br>  gen_fsm:send_event({?MODULE, Node}, {launch, Sessions, atom_to_list(Host)}).<br>  % ts_launcher:<br>  gen_fsm:send_event({?MODULE, Node}, {launch, Arrivals, atom_to_list(Host), Seed}).</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/09/29/erlang-source-analysis-tsung2/" data-id="cjoo55c1k000x9j6g2ibxwbkz" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tsung/">tsung</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/11/09/erlang-source-analysis-lager7/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          源码分析:开源项目lager-写一个lager的kafka插件
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/09/29/erlang-source-analysis-tsung1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">看源码前准备工作</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/blockchain/">blockchain</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/erlang/">erlang</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/source-analysis/">source-analysis</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/tune/">tune</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blockchain/">blockchain</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/erlang/">erlang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lager/">lager</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rebar3/">rebar3</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/source-analysis/">source-analysis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tsung/">tsung</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tune/">tune</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/以太坊/">以太坊</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/收集/">收集</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blockchain/" style="font-size: 12.5px;">blockchain</a> <a href="/tags/erlang/" style="font-size: 20px;">erlang</a> <a href="/tags/lager/" style="font-size: 15px;">lager</a> <a href="/tags/rebar3/" style="font-size: 12.5px;">rebar3</a> <a href="/tags/source-analysis/" style="font-size: 17.5px;">source-analysis</a> <a href="/tags/tsung/" style="font-size: 12.5px;">tsung</a> <a href="/tags/tune/" style="font-size: 10px;">tune</a> <a href="/tags/以太坊/" style="font-size: 10px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/11/09/erlang-source-analysis-lager2/">源码分析:开源项目lager-parse_transform模式</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/09/erlang-source-analysis-lager4/">源码分析:lager-gen_event的启动</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/09/erlang-source-analysis-lager6/">源码分析:开源项目lager-lager:info/1/2</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/09/erlang-source-analysis-lager3/">源码分析:开源项目lager-application启动</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/09/erlang-source-analysis-lager5/">源码分析:开源项目</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 赵卫国<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

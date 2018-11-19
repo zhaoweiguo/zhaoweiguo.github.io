@@ -70,6 +70,894 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-erlang-source-analysis-lager2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/09/erlang-source-analysis-lager2/" class="article-date">
+  <time datetime="2018-11-09T01:19:11.000Z" itemprop="datePublished">2018-11-09</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/source-analysis/">source-analysis</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/11/09/erlang-source-analysis-lager2/">源码分析:开源项目lager-parse_transform模式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="parse-transform模式"><a href="#parse-transform模式" class="headerlink" title="parse_transform模式"></a>parse_transform模式</h3><p>获取parse_transform模式源码:</p>
+<pre><code>Beam = &quot;./_build/default/lib/demo/ebin/demo_server.beam&quot;.
+{ok, {_, [{abstract_code, {_,Abs}}]}} =  beam_lib:chunks(
+  Beam, [abstract_code]).
+io:fwrite(&quot;~s~n&quot;, [erl_prettypr:format(erl_syntax:form_list(Abs))]).
+% 通过以上命令得到parse_transform后的源码
+</code></pre><p>原始使用:</p>
+<pre><code>lager:info(&quot;handle_call _Request = ~p&quot;,[_Request]),
+</code></pre><p>parse_transform模式转化后:</p>
+<pre><code>case {whereis(lager_event), whereis(lager_event),
+      lager_config:get({lager_event, loglevel}, {0, []})}
+    of
+  {undefined, undefined, _} -&gt;
+      fun () -&gt; {error, lager_not_running} end();
+  {undefined, _, _} -&gt;
+      fun () -&gt; {error, {sink_not_configured, lager_event}}
+      end();
+  {__Piddemo_lager_server42, _, {__Leveldemo_lager_server42, __Tracesdemo_lager_server42}}
+      when __Leveldemo_lager_server42 band 4 /= 0 orelse
+             __Tracesdemo_lager_server42 /= [] -&gt;
+      lager:do_log(info,
+                   [{application, mongrel}, {module, mongrel},
+                    {function, handle_call}, {line, 79},
+                    {pid, pid_to_list(self())}, {node, node()}
+                    | lager:md()],
+                   &quot;handle_call _Request= ~p&quot;, [_Request], 4096, 4,
+                   __Leveldemo_lager_server42, __Tracesdemo_lager_server42, lager_event, __Piddemo_lager_server42);
+  _ -&gt; ok
+end,
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/11/09/erlang-source-analysis-lager2/" data-id="cjoo55c0y000a9j6g43o9kqzd" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-erlang-source-analysis-lager4" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/09/erlang-source-analysis-lager4/" class="article-date">
+  <time datetime="2018-11-09T01:19:11.000Z" itemprop="datePublished">2018-11-09</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/source-analysis/">source-analysis</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/11/09/erlang-source-analysis-lager4/">源码分析:lager-gen_event的启动</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="lager-backend-throttle"><a href="#lager-backend-throttle" class="headerlink" title="lager_backend_throttle"></a>lager_backend_throttle</h3><p>入口:</p>
+<pre><code>init([{sink, Sink}, Hwm, Window])
+</code></pre><p>表:</p>
+<pre><code>表lager_config:
+{{lager_event,async}, true},
+</code></pre><p>状态:</p>
+<pre><code>#state{sink=Sink, hwm=Hwm, window_min=Hwm - Window}
+% Sink=lager_event
+% Threshold=env(async_threshold)
+% Window=env(async_threshold_window)
+</code></pre><h3 id="lager-manager-killer"><a href="#lager-manager-killer" class="headerlink" title="lager_manager_killer"></a>lager_manager_killer</h3><p>状态:</p>
+<pre><code>#state{killer_hwm=KillerHWM, killer_reinstall_after=KillerReinstallAfter}
+
+% Sink: lager_event
+% HWM: env(killer_hwm)
+% ReinstallTimer: env(killer_reinstall_after)
+</code></pre><h3 id="lager-file-backend"><a href="#lager-file-backend" class="headerlink" title="lager_file_backend"></a>lager_file_backend</h3><p>状态:</p>
+<p>  -record(state, {<br>        name :: string(),     //文件路径<br>        level :: {‘mask’, integer()},<br>        fd :: file:io_device() | undefined,<br>        inode :: integer() | undefined,<br>        flap=false :: boolean(),<br>        size = 0 :: integer(),<br>        date :: undefined | string(),<br>        count = 10 :: integer(),<br>        rotator = lager_util :: atom(),<br>        shaper :: lager_shaper(),<br>        formatter :: atom(),<br>        formatter_config :: any(),<br>        sync_on :: {‘mask’, integer()},<br>        check_interval = ?DEFAULT_CHECK_INTERVAL :: non_neg_integer(),<br>        sync_interval = ?DEFAULT_SYNC_INTERVAL :: non_neg_integer(),<br>        sync_size = ?DEFAULT_SYNC_SIZE :: non_neg_integer(),<br>        last_check = os:timestamp() :: erlang:timestamp()<br>    }).</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/11/09/erlang-source-analysis-lager4/" data-id="cjoo55c12000e9j6g6y74j0sp" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-erlang-source-analysis-lager6" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/09/erlang-source-analysis-lager6/" class="article-date">
+  <time datetime="2018-11-09T01:19:11.000Z" itemprop="datePublished">2018-11-09</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/source-analysis/">source-analysis</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/11/09/erlang-source-analysis-lager6/">源码分析:开源项目lager-lager:info/1/2</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>### </p>
+<p>执行lager_util:trace_filter(none):</p>
+<pre><code>glc:compile(lager_default_tracer, glc:null(false))
+</code></pre><p>lager_app:add_configured_traces/1:</p>
+<pre><code>配置文件:
+{traces, [
+  %% handler,                         filter,        message level (defaults to debug)
+  {lager_console_backend,             [{module, foo}],       info },
+  {{lager_file_backend, "trace.log"}, [{request, '>', 120}], error},
+      {{lager_file_backend, "event.log"}, [{module, bar}]   } %% implied debug level here
+    ]}
+
+    1.取出配置文件traces的值,对此列表每个item执行
+      lager:trace(Handler, Filter) =>lager:trace(Handler, Filter, debug)
+      or
+      lager:trace(Handler, Filter, Level)
+
+
+lager:trace({lager_file_backend, File}, Filter, Level):
+
+    =>lager:trace_file(File, Filter, Level)
+      a.从配置文件Filter里按key取值sink,如没配置默认为:lager_event
+      @todo
+
+lager:trace(Backend, Filter, Level):
+
+    1.lager:validate_trace_filters(Filter, Level, Backend):
+
+      a.<sink> = proplists:get_value(sink, Filters, lager_event)
+      b.<validfilter> = lager_util:validate_trace({
+                                 proplists:delete(sink, Filters),
+                                 Level,
+                                 Backend
+                               })
+      c.返回{<sink>, <validfilter>}
+    2.lager:add_trace_to_loglevel_config({Filter, <bin>, Handler}, <sink>)
+        1. {MinLevel, Traces} = 从表lager_config通过key:{<sink>, loglevel})取值
+        2. Traces中是否包含{Filter, <bin>, Handler}:
+          1.1.包含=> ignore
+          1.2 不包含:
+            NewTraces = [{Filter, <bin>, Handler}|Traces]
+            对NewTraces的每个item执行:
+              lager_util:trace_filter(Filter).
+              即:glc:compile(lager_default_tracer, glc_lib:reduce(trace_any(Filter))).
+            更新表lager_config的key:{<sink>, loglevel})对应的值
+
+lager_util:validate_trace({Filter, Level, Destination}):
+
+    1.<validfilter> = lager_util:validate_trace_filter(Filter)=> true | false
+    2.<levelbin> = level的二进制值<bin>
+    3.判断
+      1. if <validfilter> == false => {error, invalid_trace}
+      2. if Filter是个列表=> {ok, {glc:all(trace_acc(Query)), <levelbin>, Handler}}
+  3. 其他: {ok, {Filter, &lt;LevelBin&gt;, Handler}}
+</levelbin></validfilter></bin></levelbin></validfilter></sink></bin></bin></sink></sink></bin></validfilter></sink></validfilter></sink></code></pre><h3 id="extra-sinks相关"><a href="#extra-sinks相关" class="headerlink" title="extra_sinks相关"></a>extra_sinks相关</h3><p>配置文件:</p>
+<pre><code>{extra_sinks,
+ [{audit_lager_event,
+   [
+    {handlers,
+     [{lager_file_backend,
+       [{file, &quot;sink1.log&quot;},
+        {level, info}
+       ]
+      }]
+    },
+    {async_threshold, 500},
+    {async_threshold_window, 50}
+    ]
+  }]
+}
+</code></pre><p>步骤:</p>
+<pre><code>1.往表lager_config中插入数据:
+    key:{audit_lager_event, loglevel}
+    value:{&lt;Bin&gt;, []}
+2.
+supervisor:start_child(lager_sup,
+   {audit_lager_event_lager_event,
+    {gen_event, start_link, [{local, audit_lager_event}]},
+    permanent, 5000, worker, dynamic})
+3.如这儿配置文件值都为正常的,如
+    {async_threshold, 500},
+    {async_threshold_window, 50}
+  则:
+  supervisor:start_child(lager_handler_watcher_sup,
+      [audit_lager_event, lager_backend_throttle, [500, 50]]),
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/11/09/erlang-source-analysis-lager6/" data-id="cjoo55c1c000m9j6gley2odua" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-erlang-source-analysis-lager3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/09/erlang-source-analysis-lager3/" class="article-date">
+  <time datetime="2018-11-09T01:19:11.000Z" itemprop="datePublished">2018-11-09</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/source-analysis/">source-analysis</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/11/09/erlang-source-analysis-lager3/">源码分析:开源项目lager-application启动</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="lager-sup"><a href="#lager-sup" class="headerlink" title="lager_sup"></a>lager_sup</h3><p>1.ets表:lager_config:</p>
+<pre><code>% 初使化时往表里增加2条数据
+1.1 Sink
+{lager_event, loglevel} =&gt; {Int, []}
+例:{lager_event,loglevel}, {255,[]}
+其中: Int为8位的整形,即下面的and操作
+  -define(DEBUG, 128).
+  -define(INFO, 64).
+  -define(NOTICE, 32).
+  -define(WARNING, 16).
+  -define(ERROR, 8).
+  -define(CRITICAL, 4).
+  -define(ALERT, 2).
+  -define(EMERGENCY, 1).
+  -define(LOG_NONE, 0).
+
+1.2 Handlers
+{_global, handlers} =&gt; []
+</code></pre><p>2.三个子进程one_for_one:</p>
+<pre><code>{lager, {gen_event, start_link, [{local, lager_event}]},
+        permanent, 5000, worker, dynamic}
+{lager_handler_watcher_sup, {lager_handler_watcher_sup, start_link, []},
+        permanent, 5000, supervisor, [lager_handler_watcher_sup]}
+//可选,根据env(crash_log)的值
+{lager_crash_log, {lager_crash_log, start_link, [File, MaxBytes,
+  RotationSize, RotationDate, RotationCount, RotationMod]},
+  permanent, 5000, worker, [lager_crash_log]}
+</code></pre><p>3.lager_event:</p>
+<pre><code>% 后面操作中增加事件
+</code></pre><p>4.lager_handler_watcher_sup.erl:</p>
+<pre><code>simple_one_for_one:
+{lager_handler_watcher, {lager_handler_watcher, start_link, []},
+    temporary, 5000, worker, [lager_handler_watcher]}
+% 后面通过start_child增加
+</code></pre><p>5.lager_crash_log.erl:</p>
+<pre><code>% 后面单独对它分析
+</code></pre><h3 id="lager-app-boot-0"><a href="#lager-app-boot-0" class="headerlink" title="lager_app:boot/0"></a>lager_app:boot/0</h3><h5 id="Handler-gt-lager-backend-throttle"><a href="#Handler-gt-lager-backend-throttle" class="headerlink" title="Handler=&gt;lager_backend_throttle"></a>Handler=&gt;lager_backend_throttle</h5><p>相关参数</p>
+<pre><code>{async_threshold, 20},      % 默认undefined
+{async_threshold_window, 5} % 默认undefined
+
+a.如没设定async_threshold或值小于0
+不执行以下操作
+
+b.如没设定async_threshold_window
+async_threshold_window = async_threshold * 0.2(向下取整)
+
+c.两参数不为整数
+throw异常
+
+d. 都正常
+</code></pre><p>启动handler=&gt;lager_backend_throttle:</p>
+<pre><code>% 启动一个lager_handler_watcher_sup的child: 
+supervisor:start_child(lager_handler_watcher_sup, [Sink, lager_backend_throttle, [Threshold, Window]])
+其中:
+% Sink=lager_event
+% Threshold=env(async_threshold)
+% Window=env(async_threshold_window)
+
+说明:
+会先生成simple_one_for_one的lager_handler_watcher,再启动gen_event
+会增加参数{sink, Sink}
+</code></pre><h5 id="Handler-gt-lager-manager-killer"><a href="#Handler-gt-lager-manager-killer" class="headerlink" title="Handler=&gt;lager_manager_killer"></a>Handler=&gt;lager_manager_killer</h5><p>参数:</p>
+<pre><code>{killer_hwm, 1000}              % 默认undefined
+{killer_reinstall_after, 5000}  % 默认5000
+% This means if the sink&apos;s mailbox size exceeds 1000 messages,
+% kill the entire sink and reload it after 5000 milliseconds.
+
+% a. 没有配置killer_hwm参数
+不执行以下操作
+
+% b.没有配置killer_reinstall_after参数
+默认为5000
+
+% c.两参数不是大于0整数
+throw异常
+
+% d.一切正常
+</code></pre><p>启动handler=&gt;lager_manager_killer:</p>
+<pre><code>% 启动一个lager_handler_watcher_sup的child: 
+supervisor:start_child(lager_handler_watcher_sup, [Sink, lager_manager_killer, [HWM, ReinstallTimer]])
+其中:
+% Sink: lager_event
+% HWM: env(killer_hwm)
+% ReinstallTimer: env(killer_reinstall_after)
+
+说明:
+会先生成simple_one_for_one的lager_handler_watcher,再启动gen_event
+</code></pre><h5 id="配置文件配置handlers"><a href="#配置文件配置handlers" class="headerlink" title="配置文件配置handlers"></a>配置文件配置handlers</h5><p>配置文件:</p>
+<pre><code>{handlers, [
+  {lager_console_backend, [{level, info}]},
+  {lager_file_backend, [{file, &quot;error.log&quot;}, {level, error}]},
+  {lager_file_backend, [{file, &quot;console.log&quot;}, {level, info}]}
+ ]},
+
+% a.没有设备配置文件
+不执行以下操作
+
+% b.handlers不是列表
+throw异常
+
+% c.一切正常
+</code></pre><p>把配件文件转为格式:{Module, Config}，即:</p>
+<pre><code>[
+  {lager_console_backend, [{level, info}]},
+  {
+    {lager_file_backend, &quot;error.log&quot;}, 
+    [{file, &quot;error.log&quot;}, {level, error}]
+  },
+  {
+    {lager_file_backend, &quot;console.log&quot;}, 
+    [{file, &quot;console.log&quot;}, {level, info}]
+  }
+]
+</code></pre><p>对上面配置文件handlers列表中的每个handler，执行:</p>
+<pre><code>lager_app:check_handler_config(Module, Config)
+1. 如果是lager_console_backend类型:
+  直接返回ok
+2. 如果是lager_file_backend类型:
+  a. Fs=get(__lager_file_backend_filenames) % 进程字典
+    有些字典: 返回值
+    无字典: 返回ordsets:new()
+  b. put(__lager_file_backend_filenames, ordsets:add_element(F, Fs))
+    参数:
+    F: &quot;error.log&quot; | &quot;console.log&quot;
+    Fs: 进程字典指针
+</code></pre><p>启动handler=&gt;按配置文件启动3个:</p>
+<pre><code>start_handler(Sink, Module, Config)
+  % Sink: lager_event
+  % Module: 
+    % lager_console_backend | 
+    % {lager_file_backend, &quot;error.log&quot;} | 
+    % {lager_file_backend, &quot;console.log&quot;}
+  % Config: [{file, &quot;error.log&quot;}, {level, error}]
+  % 说明: handlers配置,对list中的每一项启动一个child
+  {ok, Watcher} = supervisor:start_child(lager_handler_watcher_sup, [Sink, Module, Config])
+</code></pre><p>往表lager_config中插入数据:</p>
+<pre><code>{{_global, handlers} =&gt; [{Module, Watcher, Sink} | _OtherList]}
+其中:
+Module: {lager_file_backend, &quot;error.log&quot;}
+Watcher: 上一步start_child的pid
+Sink: lager_event
+</code></pre><h5 id="update-loglevel-config模块"><a href="#update-loglevel-config模块" class="headerlink" title="update_loglevel_config模块"></a>update_loglevel_config模块</h5><p>获取Traces:</p>
+<pre><code>% 后面单独对它分析
+</code></pre><p>get_loglevels(lager_event):</p>
+<pre><code>1.获取所有handlers:
+  gen_event:which_handlers(Sink)
+
+2.执行call/4
+  对名为lager_event的gen_event,对它所有的handlers,执行:
+      call/4(request:get_loglevel)
+
+3.合并得到最小log级别,确定什么级别的日志会自动丢弃
+
+4.更新表lager_config中值:
+
+key: {lager_event, loglevel}
+value: {MinLog, Traces}
+如:
+{lager_event,loglevel}, {255,[]}
+</code></pre><h5 id="start-error-logger-handler-3"><a href="#start-error-logger-handler-3" class="headerlink" title="start_error_logger_handler/3"></a>start_error_logger_handler/3</h5><p>参数:</p>
+<pre><code>{error_logger_redirect, true}   % 默认:true
+{error_logger_hwm, 50}          % 默认:0
+{error_logger_whitelist, [Logger.ErrorHandler]} %  Stop lager removing Logger&apos;s:error_logger handler
+{error_logger_groupleader_strategy, undefined}  % 默认为undefined
+</code></pre><p>步骤:</p>
+<pre><code>1.如error_logger_redirect =&gt; false:
+  直接返回[]
+2.参数error_logger_groupleader_strategy的值
+  2.1 如为: undefined:
+    直接返回: handle
+  2.2 如为: handle | ignore | mirror
+    直接返回: 此值
+  2.3 throw 异常
+
+3.supervisor:start_child(lager_handler_watcher_sup, [error_logger, error_logger_lager_h, [HWM, GlStrategy]])
+  HWM: 配置error_logger_hwm的值
+  GlStrategy: 配置error_logger_groupleader_strategy的值
+</code></pre><h3 id="boot-all-extra"><a href="#boot-all-extra" class="headerlink" title="boot(all_extra)"></a>boot(all_extra)</h3><p>参数::</p>
+<pre><code>extra_sinks
+# 后面单独对它分析
+</code></pre><h3 id="boot-‘traces’"><a href="#boot-‘traces’" class="headerlink" title="boot(‘traces’)"></a>boot(‘traces’)</h3><p>参数::</p>
+<pre><code>traces
+</code></pre><p>说明::</p>
+<pre><code>1. 需要用到goldrush, 后面单独对它分析
+2. traces相关, 后面单独对它分析
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/11/09/erlang-source-analysis-lager3/" data-id="cjoo55c14000g9j6gnb32xlxz" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-erlang-source-analysis-lager5" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/09/erlang-source-analysis-lager5/" class="article-date">
+  <time datetime="2018-11-09T01:19:11.000Z" itemprop="datePublished">2018-11-09</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/source-analysis/">source-analysis</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/11/09/erlang-source-analysis-lager5/">源码分析:开源项目</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>原始使用:</p>
+<pre><code>lager:info(&quot;handle_call _Request = ~p&quot;,[_Request]),
+</code></pre><p>最本质是调用:</p>
+<pre><code>lager:do_log(info,
+   [
+        {application, mongrel}, 
+        {module, mongrel},
+        {function, handle_call}, 
+        {line, 79},
+        {pid, pid_to_list(self())}, 
+        {node, node()}
+        | lager:md()
+    ],
+   &quot;handle_call _Request= ~p&quot;, 
+   [_Request], 
+   4096, 
+   4,
+   __Leveldemo_lager_server42, 
+   __Tracesdemo_lager_server42, 
+   lager_event, 
+   __Piddemo_lager_server42
+);
+
+do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, TraceFilters, Sink, SinkPid)
+</code></pre><p>再本质:</p>
+<pre><code>同步:
+gen_event:notify(SinkPid, {log, LagerMsg});
+异步:
+gen_event:sync_notify(SinkPid, {log, LagerMsg})
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/11/09/erlang-source-analysis-lager5/" data-id="cjoo55c1i000s9j6gr4iwivei" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-erlang-source-analysis-lager7" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/09/erlang-source-analysis-lager7/" class="article-date">
+  <time datetime="2018-11-09T01:19:11.000Z" itemprop="datePublished">2018-11-09</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/source-analysis/">source-analysis</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/11/09/erlang-source-analysis-lager7/">源码分析:开源项目lager-写一个lager的kafka插件</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>配置文件:</p>
+<pre><code>[
+ {handlers,[{lager_kafka_backend,[
+              {level,                         &quot;info&quot;},
+              {topic,                         &lt;&lt;&quot;topic&quot;&gt;&gt;},
+              {broker,                        [{&quot;localhost&quot;, 9092}]},
+              {send_method,                   async},
+              {formatter,                     lager_default_formatter},
+              {formatter_config,
+                [date, &quot; &quot;, time, &quot;|&quot;, node, &quot;|&quot;,severity,&quot;|&quot;, module, &quot;|&quot;, function, &quot;|&quot;, line, &quot;|&quot;, pid, &quot;|&quot;, message]
+              }     
+           ]}]
+  }
+]
+</code></pre><p>文件lager_kafka_backend.erl:</p>
+<pre><code>上面的配置文件指定文件名为:lager_kafka_backend.erl
+实现一个gen_event，详见后面几个函数说明
+</code></pre><p>init/1函数:</p>
+<pre><code>参数就是上面配置文件中的值,作用是把相关信息存放到state中,
+启动brod,配置好kafka信息
+</code></pre><p>handle_call/2函数:</p>
+<pre><code>要实现set_loglevel和get_loglevel相关功能
+</code></pre><p>handle_event/2函数:</p>
+<pre><code>接收{log, Message}
+其中Message为info:log函数执行时的数据和meta信息
+执行brod的写入kafka函数
+</code></pre><p>config_to_id/1函数:</p>
+<pre><code>可选
+多id时用,如:lager_file_backend
+主要用于多个gen_event事件
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/11/09/erlang-source-analysis-lager7/" data-id="cjoo55c1f000q9j6g5sgqiw3q" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-erlang-source-analysis-tsung2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/29/erlang-source-analysis-tsung2/" class="article-date">
+  <time datetime="2018-09-29T03:46:03.000Z" itemprop="datePublished">2018-09-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/source-analysis/">source-analysis</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/29/erlang-source-analysis-tsung2/">源码分析基础工作</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>执行application:start(tsung_controller)时:</p>
+<pre><code>{start_phases, [{load_config, []},{start_os_monitoring,[{timeout,30000}]},
+                {start_clients,[]}]}
+{mod,          {tsung_controller, []}}
+</code></pre><h3 id="应用启动相关"><a href="#应用启动相关" class="headerlink" title="应用启动相关"></a>应用启动相关</h3><p>ts_config_server相关::</p>
+<pre><code>global
+-record(state, {
+  config,
+  logdir,   % 日志文件目录
+  curcfg = 0,       % number of configured launchers
+  client_static_users = 0, % number of clients that already have their static users
+  static_users = 0, % static users not yet given to a client
+  ports,            % dict, used if we need to choose the client port
+  users=1,          % userid (incremental counter)
+  start_date,       %
+  hostname,         % controller的hostname
+  last_beam_id = 0, % last tsung beam id (used to set nodenames)
+  ending_beams = 0, % number of beams with no new users to start
+  lastips,          % store next ip to choose for each client host
+  total_weight      % total weight of client machines
+}
+</code></pre><p>ts_mon::</p>
+<pre><code>global
+-record(state, {
+  log,          % 日志文件的fd
+  backend,      % type of backend: text|...
+  log_dir,      % 
+  fullstats,    % fullstats fd
+  dump_interval,% 从配置文件中取值:10000
+  dumpfile,     % file used when dumptrafic is set light or full
+  client=0,     % number of clients currently running
+  maxclient=0,  % max of simultaneous clients
+  stats,        % 下面的record:Stats
+  stop = false, % true if we should stop
+  laststats,    % 下面的record:Stats
+  lastdate,     % 时间
+  type,         % type of logging (none, light, full)
+  launchers=0,  % number of launchers started
+  timer_ref,    % timer reference (for dumpstats)
+  wait_gui=false% wait gui before stopping
+}).
+
+-record(stats, {
+  users_count         = 0,
+  finish_users_count  = 0,
+  os_mon,   % dict:new():[Mean, Var, Max, Min, Count, MeanFB,CountFB,Last]
+  session             = []
+}).
+</code></pre><p>ts_stats_mon::</p>
+<pre><code>global
+% connect,page,request
+-record(state, {
+  log,          % log fd
+  backend,      % type of backend: text|rrdtool|fullstats
+  dump_interval,% 从配置文件中取值:10000
+  type = connect,page,request
+  fullstats,    % fullstats fd
+  stats,        % [0,0,0,0,0,0,0,0]:
+  laststats     % values of last printed stats
+}).
+
+% [id]
+-record(state, {
+  log,          % log fd
+  backend,      % type of backend: text|rrdtool|fullstats
+  dump_interval,% 从配置文件中取值:10000
+  type = ts_stats_mon,
+  fullstats,    % fullstats fd
+  stats,        % 字典:dict:new()
+  laststats     % values of last printed stats
+}).
+</code></pre><p>ts_match_logger:</p>
+<pre><code>global
+-record(state, {
+  filename,     % &quot;mach.log&quot;
+  level,        % type of backend: text|rrdtool|fullstats
+  dumpid=1,     % current dump id
+  logdir,
+  fd            % &quot;mach.log&quot;的fd
+}).
+</code></pre><p>ts_os_mon_sup:</p>
+<pre><code>local，监控专用，【参数】monitor
+ts_os_mon_erlang
+ts_os_mon_munin
+ts_os_mon_snmp
+
+ts_os_mon_erlang:
+% monitor在同一机器上
+#state{node=node(),mon=MonServer, host=Host, interval=Interval, options=Options}
+% 不在同一机器
+#state{host=Host, mon=MonServer, interval=Interval, options=Options}
+</code></pre><p>ts_timer:</p>
+<pre><code>global,fsm
+-record(state, {
+  nclient    = 0, % number of unacked clients
+  maxclients = 0, % total number of clients to ack
+  pidlist = [],
+  timeout=3600000
+}).
+</code></pre><p>ts_msg_server:</p>
+<pre><code>global
+-record(state, {number=0}).
+</code></pre><p>ts_user_server_sup:</p>
+<pre><code>simple_one_for_one
+
+ts_user_server:
+-record(state, {
+  offline,        %ets table
+  last_offline,
+  connected,      %ets table
+  last_connected,
+  online,         %ets table
+  last_online,
+  first_client,   % id (integer)
+  random_server_id,  % file_server id for random users
+  offline_server_id, % file_server id for initial offline users
+  delimiter = &lt;&lt; &quot;;&quot; &gt;&gt;,   % delimiter for file_server id username
+  userid_max      % max number of ids (starts at 1)
+}).
+</code></pre><p>ts_job_notify:</p>
+<p>ts_interaction_server:</p>
+<pre><code>#state{
+  to=ets:new(to, []), 
+  notify=ets:new(notify, [bag])
+}
+</code></pre><h3 id="start-phases相关-load-config"><a href="#start-phases相关-load-config" class="headerlink" title="start_phases相关{load_config, []}"></a>start_phases相关{load_config, []}</h3><p>作用:</p>
+<pre><code>1.读tsung.xml文件
+设定ts_config_server的status的
+</code></pre><p>config:</p>
+<pre><code>-record(config, {
+      name,
+      duration, % 超时时间,单位秒.超时会往ts_config_server发送end_tsung的timeout消息
+      loglevel = ?WARN,   % 【xml】loglevel
+      dump = none,    % 【xml】dumptraffic：
+               &quot;false&quot; -&gt; none;
+               &quot;true&quot;  -&gt; full;
+               &quot;light&quot; -&gt; light;
+               &quot;protocol&quot; -&gt; protocol;
+               &quot;protocol_local&quot; -&gt; protocol_local
+      stats_backend,    % 【xml】backend:text
+      controller,         % controller machine
+      clients = [],       %  [{client,&quot;localhost&quot;,10.0,200000,
+                                [{10,140,2,245},
+                                 {10,140,2,244},
+                                 {10,140,2,241},
+                                 {10,140,2,5}],
+                                undefined}]
+      servers = [],       % [#server{host  = Server,
+                                   port  = Port,
+                                   weight= Weight,
+                                   type  = Type
+                                 }|ServerList]
+                          % [{server,&quot;idc-iot-pr-server-2&quot;,443,ts_tcp,10}],
+      ports_range,        % client ports range
+      monitor_hosts = [], % [{&quot;idc-iot-pr-server-4&quot;,{erlang,[]}}],
+      arrivalphases = [], % [{arrivalphase,1,6000000,undefined,0.001,infinity,6000,[],
+                          false,1}],
+      thinktime,          % default thinktime specs
+      subst    = false,   % Substitution should be applied on the request
+      match,              % Match regexp in response
+      dynvar   = [],
+      main_sess_type , % main type of session
+      sessions = [], %  [{session,1,100,ts_http,&quot;http-example&quot;,true,false,10000,
+                     {proto_opts,negotiate,negotiate,&quot;/http-bind/&quot;,false,
+                                 false,false,&quot;/chat&quot;,&quot;binary&quot;,[],10,3,
+                                 600000,infinity,infinity,32768,32768,
+                                 32768,32768,[],true,true},
+                     undefined,10,undefined,undefined,undefined,undefined,
+                     undefined}]
+      static_users=[],
+      session_tab,  % 表:ets:new(sessiontable, [ordered_set, protected]),
+      use_controller_vm = false, % if true, start the first launcher in the
+                                 % same vm as the controller if possible
+      curthink,  % temporary var (current request think)
+      curid = 0, % temporary var (current request id (can be transaction))
+      cur_req_id  = 0,   % temporary var (current real request id)
+      file_server = [],  % filenames for file_server
+      load_loop,         % loop phases if &gt; 0
+      hibernate = 10000, % hibernate timeout (millisec) 10sec by default
+      proto_opts,        % tcp/udp buffer sizes，参见后面的proto_opts
+      seed = now,        % random seed: (default= current time)
+      vhost_file = none, % file server user for virtual host jabber testing
+      user_server_maxuid = none, % user_id max
+      oids=[],  % [{OID,Name,Type,Fun}| OIDS]
+      rate_limit,
+      total_popularity = 0, % should be 100 if we use probabilites; sum of all weights if we use weights
+      use_weights      , % true if we use weights instead of probabilities
+      total_server_weights=0, % 总weights
+      job_notify_port,
+      max_ssh_startup = 20,
+      tag
+     }).
+
+-record(proto_opts,
+    {ssl_ciphers   = negotiate, % for ssl only
+     ssl_versions  = negotiate, % for ssl only
+     bosh_path = &quot;/http-bind/&quot;,  % for bash only
+     tcp_reuseaddr  = false,  % for tcp reuseaddr
+     tcp_reuseport  = false,  % for tcp reuseport
+     ip_transparent = false,  % set IP_TRANSPARENT option on the socket
+     websocket_path = &quot;/chat&quot;,  % for websocket only
+     websocket_frame = &quot;binary&quot;,  % for websocket only
+     websocket_subprotocols = [],     % for websocket only
+     retry_timeout = 10,        % retry sending in milliseconds
+     max_retries = 3,           % maximum number of retries
+     idle_timeout  = 600000,    % timeout for local ack
+     connect_timeout  = infinity,   % timeout for gen_tcp:connect/4 (infinity OR time in milliseconds)
+     global_ack_timeout = infinity, % timeout for global ack
+     tcp_rcv_size  = 32768,     % tcp buffers size
+     tcp_snd_size  = 32768,
+     udp_rcv_size  = 32768,     % udp buffers size
+     udp_snd_size  = 32768,
+     certificate = [],          % for ssl
+     reuse_sessions = true,     % for ssl
+     is_first_connect = true   % whether it&apos;s the first connection
+    }).
+</code></pre><h3 id="start-phases相关-start-os-monitoring-timeout-30000"><a href="#start-phases相关-start-os-monitoring-timeout-30000" class="headerlink" title="start_phases相关{start_os_monitoring,[{timeout,30000}]}"></a>start_phases相关{start_os_monitoring,[{timeout,30000}]}</h3><p>  ts_os_mon_sup启动子<br>  启动monitor,把要监控的server中的cpu,内存,load等信息</p>
+<h3 id="start-phases相关-start-clients"><a href="#start-phases相关-start-clients" class="headerlink" title="start_phases相关{start_clients,[]}]}"></a>start_phases相关{start_clients,[]}]}</h3><p>  ts_mon启动子<br>  加载tsung,并启动<br>  % ts_launcher_static:<br>  gen_fsm:send_event({?MODULE, Node}, {launch, Sessions, atom_to_list(Host)}).<br>  % ts_launcher:<br>  gen_fsm:send_event({?MODULE, Node}, {launch, Arrivals, atom_to_list(Host), Seed}).</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/09/29/erlang-source-analysis-tsung2/" data-id="cjoo55c1k000x9j6g2ibxwbkz" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tsung/">tsung</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-erlang-source-analysis-tsung1" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/09/29/erlang-source-analysis-tsung1/" class="article-date">
@@ -99,7 +987,10 @@
         <h3 id="tsung-start真实执行命令"><a href="#tsung-start真实执行命令" class="headerlink" title="tsung start真实执行命令"></a>tsung start真实执行命令</h3><p>查看/usr/local/bin/tsung文件:</p>
 <pre><code>此文件是sh文件，tsung start实际执行的是start方法
 </code></pre><p>当我们执行tsung -f fetch_user_key.xml start时,我们实际执行:</p>
-<pre><code>/usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000 -- -root /usr/local/lib/erlang -progname erl -- -home /root -- -smp auto -rsh ssh -noshell -proto_dist inet_tcp 
+<pre><code>/usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000 
+-- -root /usr/local/lib/erlang -progname erl 
+-- -home /root 
+-- -smp auto -rsh ssh -noshell -proto_dist inet_tcp 
 
 -sname tsung_controller 
 -setcookie tsung 
@@ -233,11 +1124,53 @@
  sys_dist                  sys_dist                   set   1      363      net_kernel
  timer_interval_tab        timer_interval_tab         set   1      318      timer_server
  timer_tab                 timer_tab                  ordered_set 2      134      timer_server
-</code></pre>
+</code></pre><p>表sessiontable::</p>
+<pre><code>[{{1,1},{setdynvars,server,{},[host,port]}},
+ {{1,2},{setdynvars,value,{string,"30000000000"},[startnum]}},
+ {{1,3},
+      {ts_request,parse,true,[],
+                  [{jsonpath,userid,"user.user_id"},
+                   {jsonpath,sessionid,"user.session_id"}],
+                  {http_request,"/v2.0/fetch/user_key","1.1",
+                                "idc-iot-pr-server-2:443",undefined,[],post,
+                                "application/x-www-form-urlencoded",
+                                [{"Content-Type","application/json"}],
+                                <<"%%fetch_user_key:getmessage%%">>,0,undefined,undefined,
+                                undefined,undefined,undefined,undefined,undefined,...},
+                  true,"idc-iot-pr-server-2",443,ts_tcp}},
+ {{1,4},
+      {change_type,ts_websocket,"%%_host%%","%%_port%%",ts_tcp,
+                   true,true,true}},
+ {{1,5},
+      {ts_request,parse,true,[],[],
+                  {websocket_request,"13",connect,
+                                     "/client/comet?user_id=%%_userid%%&mac=%%_userid%%&locale=zh&ver=v2.0",
+                                     "binary",[],[],"\n"},
+                  false,undefined,undefined,undefined}},
+ {{1,6},
+      {ts_request,parse,true,[],[],
+                  {websocket_request,"13",message,"/","text",[],[],
+                                     "{\"msg_type\":\"check_sid\",\"version\":\"v1.0.1\",\"qos\":1,\"sequence_id\": \"123445\",\"request\":{\"sid\":\"%%_sessionid%%\"}}&quot;},
+              true,undefined,undefined,undefined}},
+ {{1,7},{ctrl_struct,{for_start,1,counter}}},
+ {{1,8},
+      {ts_request,parse,true,[],[],
+                  {websocket_request,"13",message,"/","text",[],[],
+                                     "{\"mt\":\"k\"}"},
+                  true,undefined,undefined,undefined}},
+ {{1,9},{thinktime,30000}},
+ {{1,10},{ctrl_struct,{for_end,counter,20000,1,8}}},
+ {{http_server,1},{"idc-iot-pr-server-2:443",http}},
+ {{http_user_agent,value},
+  [{20,
+    &quot;Mozilla/5.0 (Windows; U; Windows NT 5.2; fr-FR; rv:1.7.8) Gecko/20050511 Firefox/1.0.4&quot;},
+   {80,
+    &quot;Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050513 Galeon/1.3.21&quot;}]}]
+</"%%fetch_user_key:getmessage%%"></code></pre>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/29/erlang-source-analysis-tsung1/" data-id="cjmzq9vzu0009vp0m4m7fpzx3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/29/erlang-source-analysis-tsung1/" data-id="cjoo55c16000l9j6grgdpsx2t" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tsung/">tsung</a></li></ul>
@@ -279,7 +1212,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/04/erlang-release-updowngrade-rebar3/" data-id="cjmzq9vzr0006vp0mthaa90is" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/04/erlang-release-updowngrade-rebar3/" data-id="cjoo55c0s00069j6g1jj5mwt5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rebar3/">rebar3</a></li></ul>
@@ -348,7 +1281,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/04/erlang-release-updowngrade-normal/" data-id="cjmzq9vzn0004vp0mti5n09om" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/04/erlang-release-updowngrade-normal/" data-id="cjoo55c0v00099j6gg0v2uq7b" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li></ul>
@@ -360,265 +1293,12 @@
 
 
   
-    <article id="post-erlang-source-analysis-lager1" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/08/23/erlang-source-analysis-lager1/" class="article-date">
-  <time datetime="2018-08-23T09:19:11.000Z" itemprop="datePublished">2018-08-23</time>
-</a>
+
+
+  <nav id="page-nav">
     
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/source-analysis/">source-analysis</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/08/23/erlang-source-analysis-lager1/">源码分析:开源项目lager源码分析</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><p>项目使用lager打印日志很多时，会造成以下2个主要问题:</p>
-<pre><code>1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能
-2.有时会丢失部分日志
-</code></pre><p>目的:</p>
-<pre><code>1.通过源码分析找到这2个问题的原因
-2.是否可以找到一些方法解决这个问题
-3.看是否可以重写部分代码来提升性能
-</code></pre>
-        
-          <p class="article-more-link">
-            <a href="/2018/08/23/erlang-source-analysis-lager1/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/" data-id="cjmzq9vzz000evp0mzb1aael3" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-erlang-tune-lager1-md" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/07/31/erlang-tune-lager1-md/" class="article-date">
-  <time datetime="2018-07-31T05:22:09.000Z" itemprop="datePublished">2018-07-31</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/tune/">tune</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/07/31/erlang-tune-lager1-md/">实战1:对lager测试来分析Erlang的一些特性</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><p>通过对lager进程数与打印日志数的不同组合的性能表现，分析lager在系统中对性能的影响</p>
-<h3 id="系统资源"><a href="#系统资源" class="headerlink" title="系统资源"></a>系统资源</h3><p>一台服务器:</p>
-<pre><code>16CPU
-64G内存
-</code></pre><p>系统环境:</p>
-<pre><code>OS: CentOS 7.4.1708
-$ cat /etc/security/limits.conf
-* soft nofile 300000
-* hard nofile 300000
-</code></pre>
-        
-          <p class="article-more-link">
-            <a href="/2018/07/31/erlang-tune-lager1-md/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/31/erlang-tune-lager1-md/" data-id="cjmzq9vzw000avp0me5vm34lg" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lager/">lager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tune/">tune</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-erlang-rebar3-start" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/07/24/erlang-rebar3-start/" class="article-date">
-  <time datetime="2018-07-24T12:09:43.000Z" itemprop="datePublished">2018-07-24</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/erlang/">erlang</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/07/24/erlang-rebar3-start/">Erlang：Rebar3的简单使用</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><h5 id="方法一：源码安装"><a href="#方法一：源码安装" class="headerlink" title="方法一：源码安装"></a>方法一：源码安装</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> git <span class="built_in">clone</span> https://github.com/erlang/rebar3.git</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> rebar3</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ./bootstrap</span></span><br></pre></td></tr></table></figure>
-<h5 id="方法二：点击「链接」直接下载"><a href="#方法二：点击「链接」直接下载" class="headerlink" title="方法二：点击「链接」直接下载"></a>方法二：点击「链接」直接下载</h5><p><a href="https://s3.amazonaws.com/rebar3/rebar3" target="_blank" rel="noopener">https://s3.amazonaws.com/rebar3/rebar3</a></p>
-<h5 id="方法三：直接从其他项目中拷贝"><a href="#方法三：直接从其他项目中拷贝" class="headerlink" title="方法三：直接从其他项目中拷贝"></a>方法三：直接从其他项目中拷贝</h5>
-        
-          <p class="article-more-link">
-            <a href="/2018/07/24/erlang-rebar3-start/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/24/erlang-rebar3-start/" data-id="cjmzq9vzp0005vp0m0uv4abb2" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rebar3/">rebar3</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-blockchain-collect" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/24/blockchain-collect/" class="article-date">
-  <time datetime="2018-05-24T07:19:13.000Z" itemprop="datePublished">2018-05-24</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/blockchain/">blockchain</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/24/blockchain-collect/">区块链技术相关收集（长期）</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h4 id="源码相关"><a href="#源码相关" class="headerlink" title="源码相关:"></a>源码相关:</h4><p>  <a href="https://github.com/imfly" target="_blank" rel="noopener">https://github.com/imfly</a><br>  <a href="https://github.com/Ebookcoin/ebookcoin" target="_blank" rel="noopener">https://github.com/Ebookcoin/ebookcoin</a><br>  <a href="https://github.com/ethereum/go-ethereum" target="_blank" rel="noopener">https://github.com/ethereum/go-ethereum</a><br>  <a href="https://github.com/ethersphere/eth-utils" target="_blank" rel="noopener">https://github.com/ethersphere/eth-utils</a><br>  <a href="https://github.com/ethereum/wiki/wiki/Network-Status" target="_blank" rel="noopener">https://github.com/ethereum/wiki/wiki/Network-Status</a><br>  <a href="https://github.com/ethereum/go-ethereum/wiki/Setting-up-monitoring-on-local-cluster" target="_blank" rel="noopener">https://github.com/ethereum/go-ethereum/wiki/Setting-up-monitoring-on-local-cluster</a></p>
-<h4 id="以太坊"><a href="#以太坊" class="headerlink" title="以太坊:"></a>以太坊:</h4><p>  <a href="https://ethereum.gitbooks.io/frontier-guide/content/listing_accounts.html" target="_blank" rel="noopener">https://ethereum.gitbooks.io/frontier-guide/content/listing_accounts.html</a></p>
-        
-          <p class="article-more-link">
-            <a href="/2018/05/24/blockchain-collect/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/24/blockchain-collect/" data-id="cjmzq9vzc0000vp0mjpcl1cfd" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/收集/">收集</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-blockchain-start" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/22/blockchain-start/" class="article-date">
-  <time datetime="2018-05-22T03:46:32.000Z" itemprop="datePublished">2018-05-22</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/blockchain/">blockchain</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/22/blockchain-start/">从零开始创建专属自己的以太坊</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="安装环境说明"><a href="#安装环境说明" class="headerlink" title="安装环境说明"></a>安装环境说明</h3><figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;cat /etc/issue</span><br><span class="line">Debian GNU/Linux <span class="number">9</span> <span class="string">\n</span> <span class="string">\l</span></span><br></pre></td></tr></table></figure>
-<p>注: debian基本版本也可用，其他linux系统可微调后使用</p>
-<p>###Golang的安装:</p>
-<p>1.打开go下载链接<br><a href="https://golang.org/dl/" target="_blank" rel="noopener">https://golang.org/dl/</a><br>//以debian为例，安装当前最新版本1.10.2</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;</span><span class="bash">wget  https://dl.google.com/go/go1.10.2.linux-amd64.tar.gz</span></span><br><span class="line"><span class="meta">&gt;</span><span class="bash">tar -C /usr/<span class="built_in">local</span> -xzf go1.10.2.linux-amd64.tar.gz</span></span><br></pre></td></tr></table></figure>
-        
-          <p class="article-more-link">
-            <a href="/2018/05/22/blockchain-start/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/22/blockchain-start/" data-id="cjmzq9vzh0001vp0m1bjba39w" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blockchain/">blockchain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/以太坊/">以太坊</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+  </nav>
 
 </section>
         
@@ -648,7 +1328,7 @@ $ cat /etc/security/limits.conf
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/erlang/" style="font-size: 20px;">erlang</a> <a href="/tags/lager/" style="font-size: 15px;">lager</a> <a href="/tags/rebar3/" style="font-size: 15px;">rebar3</a> <a href="/tags/source-analysis/" style="font-size: 15px;">source-analysis</a> <a href="/tags/tsung/" style="font-size: 10px;">tsung</a> <a href="/tags/tune/" style="font-size: 10px;">tune</a> <a href="/tags/以太坊/" style="font-size: 10px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
+      <a href="/tags/blockchain/" style="font-size: 12.5px;">blockchain</a> <a href="/tags/erlang/" style="font-size: 20px;">erlang</a> <a href="/tags/lager/" style="font-size: 15px;">lager</a> <a href="/tags/rebar3/" style="font-size: 12.5px;">rebar3</a> <a href="/tags/source-analysis/" style="font-size: 17.5px;">source-analysis</a> <a href="/tags/tsung/" style="font-size: 12.5px;">tsung</a> <a href="/tags/tune/" style="font-size: 10px;">tune</a> <a href="/tags/以太坊/" style="font-size: 10px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
     </div>
   </div>
 
@@ -657,7 +1337,7 @@ $ cat /etc/security/limits.conf
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a></li></ul>
     </div>
   </div>
 
@@ -670,23 +1350,23 @@ $ cat /etc/security/limits.conf
       <ul>
         
           <li>
-            <a href="/2018/09/29/erlang-source-analysis-tsung1/">看源码前准备工作</a>
+            <a href="/2018/11/09/erlang-source-analysis-lager2/">源码分析:开源项目lager-parse_transform模式</a>
           </li>
         
           <li>
-            <a href="/2018/09/04/erlang-release-updowngrade-rebar3/">使用rebar3的方法对release版本升降级</a>
+            <a href="/2018/11/09/erlang-source-analysis-lager4/">源码分析:lager-gen_event的启动</a>
           </li>
         
           <li>
-            <a href="/2018/09/04/erlang-release-updowngrade-normal/">使用Erlang原生方法对release版本升降级</a>
+            <a href="/2018/11/09/erlang-source-analysis-lager6/">源码分析:开源项目lager-lager:info/1/2</a>
           </li>
         
           <li>
-            <a href="/2018/08/23/erlang-source-analysis-lager1/">源码分析:开源项目lager源码分析</a>
+            <a href="/2018/11/09/erlang-source-analysis-lager3/">源码分析:开源项目lager-application启动</a>
           </li>
         
           <li>
-            <a href="/2018/07/31/erlang-tune-lager1-md/">实战1:对lager测试来分析Erlang的一些特性</a>
+            <a href="/2018/11/09/erlang-source-analysis-lager5/">源码分析:开源项目</a>
           </li>
         
       </ul>

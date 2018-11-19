@@ -7,18 +7,18 @@
   
   <title>看源码前准备工作 | 新溪blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="tsung start真实执行命令查看/usr/local/bin/tsung文件: 此文件是sh文件，tsung start实际执行的是start方法 当我们执行tsung -f fetch_user_key.xml start时,我们实际执行: /usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000 -- -">
-<meta name="keywords" content="erlang,tsung,source-analysis">
+  <meta name="description" content="tsung start真实执行命令查看/usr/local/bin/tsung文件: 此文件是sh文件，tsung start实际执行的是start方法 当我们执行tsung -f fetch_user_key.xml start时,我们实际执行: /usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000  --">
+<meta name="keywords" content="erlang,source-analysis,tsung">
 <meta property="og:type" content="article">
 <meta property="og:title" content="看源码前准备工作">
 <meta property="og:url" content="http://yoursite.com/2018/09/29/erlang-source-analysis-tsung1/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="tsung start真实执行命令查看/usr/local/bin/tsung文件: 此文件是sh文件，tsung start实际执行的是start方法 当我们执行tsung -f fetch_user_key.xml start时,我们实际执行: /usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000 -- -">
+<meta property="og:description" content="tsung start真实执行命令查看/usr/local/bin/tsung文件: 此文件是sh文件，tsung start实际执行的是start方法 当我们执行tsung -f fetch_user_key.xml start时,我们实际执行: /usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000  --">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-10-08T03:26:12.538Z">
+<meta property="og:updated_time" content="2018-10-08T09:24:20.079Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="看源码前准备工作">
-<meta name="twitter:description" content="tsung start真实执行命令查看/usr/local/bin/tsung文件: 此文件是sh文件，tsung start实际执行的是start方法 当我们执行tsung -f fetch_user_key.xml start时,我们实际执行: /usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000 -- -">
+<meta name="twitter:description" content="tsung start真实执行命令查看/usr/local/bin/tsung文件: 此文件是sh文件，tsung start实际执行的是start方法 当我们执行tsung -f fetch_user_key.xml start时,我们实际执行: /usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000  --">
   
     <link rel="alternate" href="/atom.xml" title="新溪blog" type="application/atom+xml">
   
@@ -98,7 +98,10 @@
         <h3 id="tsung-start真实执行命令"><a href="#tsung-start真实执行命令" class="headerlink" title="tsung start真实执行命令"></a>tsung start真实执行命令</h3><p>查看/usr/local/bin/tsung文件:</p>
 <pre><code>此文件是sh文件，tsung start实际执行的是start方法
 </code></pre><p>当我们执行tsung -f fetch_user_key.xml start时,我们实际执行:</p>
-<pre><code>/usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000 -- -root /usr/local/lib/erlang -progname erl -- -home /root -- -smp auto -rsh ssh -noshell -proto_dist inet_tcp 
+<pre><code>/usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000 
+-- -root /usr/local/lib/erlang -progname erl 
+-- -home /root 
+-- -smp auto -rsh ssh -noshell -proto_dist inet_tcp 
 
 -sname tsung_controller 
 -setcookie tsung 
@@ -232,11 +235,53 @@
  sys_dist                  sys_dist                   set   1      363      net_kernel
  timer_interval_tab        timer_interval_tab         set   1      318      timer_server
  timer_tab                 timer_tab                  ordered_set 2      134      timer_server
-</code></pre>
+</code></pre><p>表sessiontable::</p>
+<pre><code>[{{1,1},{setdynvars,server,{},[host,port]}},
+ {{1,2},{setdynvars,value,{string,"30000000000"},[startnum]}},
+ {{1,3},
+      {ts_request,parse,true,[],
+                  [{jsonpath,userid,"user.user_id"},
+                   {jsonpath,sessionid,"user.session_id"}],
+                  {http_request,"/v2.0/fetch/user_key","1.1",
+                                "idc-iot-pr-server-2:443",undefined,[],post,
+                                "application/x-www-form-urlencoded",
+                                [{"Content-Type","application/json"}],
+                                <<"%%fetch_user_key:getmessage%%">>,0,undefined,undefined,
+                                undefined,undefined,undefined,undefined,undefined,...},
+                  true,"idc-iot-pr-server-2",443,ts_tcp}},
+ {{1,4},
+      {change_type,ts_websocket,"%%_host%%","%%_port%%",ts_tcp,
+                   true,true,true}},
+ {{1,5},
+      {ts_request,parse,true,[],[],
+                  {websocket_request,"13",connect,
+                                     "/client/comet?user_id=%%_userid%%&mac=%%_userid%%&locale=zh&ver=v2.0",
+                                     "binary",[],[],"\n"},
+                  false,undefined,undefined,undefined}},
+ {{1,6},
+      {ts_request,parse,true,[],[],
+                  {websocket_request,"13",message,"/","text",[],[],
+                                     "{\"msg_type\":\"check_sid\",\"version\":\"v1.0.1\",\"qos\":1,\"sequence_id\": \"123445\",\"request\":{\"sid\":\"%%_sessionid%%\"}}&quot;},
+              true,undefined,undefined,undefined}},
+ {{1,7},{ctrl_struct,{for_start,1,counter}}},
+ {{1,8},
+      {ts_request,parse,true,[],[],
+                  {websocket_request,"13",message,"/","text",[],[],
+                                     "{\"mt\":\"k\"}"},
+                  true,undefined,undefined,undefined}},
+ {{1,9},{thinktime,30000}},
+ {{1,10},{ctrl_struct,{for_end,counter,20000,1,8}}},
+ {{http_server,1},{"idc-iot-pr-server-2:443",http}},
+ {{http_user_agent,value},
+  [{20,
+    &quot;Mozilla/5.0 (Windows; U; Windows NT 5.2; fr-FR; rv:1.7.8) Gecko/20050511 Firefox/1.0.4&quot;},
+   {80,
+    &quot;Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050513 Galeon/1.3.21&quot;}]}]
+</"%%fetch_user_key:getmessage%%"></code></pre>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/29/erlang-source-analysis-tsung1/" data-id="cjmzq9vzu0009vp0m4m7fpzx3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/29/erlang-source-analysis-tsung1/" data-id="cjoo55c16000l9j6grgdpsx2t" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/source-analysis/">source-analysis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tsung/">tsung</a></li></ul>
@@ -246,6 +291,15 @@
   
     
 <nav id="article-nav">
+  
+    <a href="/2018/09/29/erlang-source-analysis-tsung2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          源码分析基础工作
+        
+      </div>
+    </a>
   
   
     <a href="/2018/09/04/erlang-release-updowngrade-rebar3/" id="article-nav-older" class="article-nav-link-wrap">
@@ -286,7 +340,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/blockchain/" style="font-size: 15px;">blockchain</a> <a href="/tags/erlang/" style="font-size: 20px;">erlang</a> <a href="/tags/lager/" style="font-size: 15px;">lager</a> <a href="/tags/rebar3/" style="font-size: 15px;">rebar3</a> <a href="/tags/source-analysis/" style="font-size: 15px;">source-analysis</a> <a href="/tags/tsung/" style="font-size: 10px;">tsung</a> <a href="/tags/tune/" style="font-size: 10px;">tune</a> <a href="/tags/以太坊/" style="font-size: 10px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
+      <a href="/tags/blockchain/" style="font-size: 12.5px;">blockchain</a> <a href="/tags/erlang/" style="font-size: 20px;">erlang</a> <a href="/tags/lager/" style="font-size: 15px;">lager</a> <a href="/tags/rebar3/" style="font-size: 12.5px;">rebar3</a> <a href="/tags/source-analysis/" style="font-size: 17.5px;">source-analysis</a> <a href="/tags/tsung/" style="font-size: 12.5px;">tsung</a> <a href="/tags/tune/" style="font-size: 10px;">tune</a> <a href="/tags/以太坊/" style="font-size: 10px;">以太坊</a> <a href="/tags/收集/" style="font-size: 10px;">收集</a>
     </div>
   </div>
 
@@ -295,7 +349,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a></li></ul>
     </div>
   </div>
 
@@ -308,23 +362,23 @@
       <ul>
         
           <li>
-            <a href="/2018/09/29/erlang-source-analysis-tsung1/">看源码前准备工作</a>
+            <a href="/2018/11/09/erlang-source-analysis-lager2/">源码分析:开源项目lager-parse_transform模式</a>
           </li>
         
           <li>
-            <a href="/2018/09/04/erlang-release-updowngrade-rebar3/">使用rebar3的方法对release版本升降级</a>
+            <a href="/2018/11/09/erlang-source-analysis-lager4/">源码分析:lager-gen_event的启动</a>
           </li>
         
           <li>
-            <a href="/2018/09/04/erlang-release-updowngrade-normal/">使用Erlang原生方法对release版本升降级</a>
+            <a href="/2018/11/09/erlang-source-analysis-lager6/">源码分析:开源项目lager-lager:info/1/2</a>
           </li>
         
           <li>
-            <a href="/2018/08/23/erlang-source-analysis-lager1/">源码分析:开源项目lager源码分析</a>
+            <a href="/2018/11/09/erlang-source-analysis-lager3/">源码分析:开源项目lager-application启动</a>
           </li>
         
           <li>
-            <a href="/2018/07/31/erlang-tune-lager1-md/">实战1:对lager测试来分析Erlang的一些特性</a>
+            <a href="/2018/11/09/erlang-source-analysis-lager5/">源码分析:开源项目</a>
           </li>
         
       </ul>

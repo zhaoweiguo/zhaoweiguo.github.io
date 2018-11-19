@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="原始使用: lager:info(&amp;quot;handle_call _Request = ~p&amp;quot;,[_Request]), 最本质是调用: lager:do_log(info,    [         {application, mongrel},          {module, mongrel},         {function, handle_call},">
 <meta property="og:locale" content="zh-tw">
-<meta property="og:updated_time" content="2018-11-19T10:13:25.406Z">
+<meta property="og:updated_time" content="2018-11-19T10:15:57.509Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="开源项目lager4:lager写入函数分析">
 <meta name="twitter:description" content="原始使用: lager:info(&amp;quot;handle_call _Request = ~p&amp;quot;,[_Request]), 最本质是调用: lager:do_log(info,    [         {application, mongrel},          {module, mongrel},         {function, handle_call},">
@@ -117,9 +117,10 @@
    lager_event, 
    __Piddemo_lager_server42
 );
+
+do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, TraceFilters, Sink, SinkPid)
 </code></pre><a id="more"></a>
-<pre><code>do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, TraceFilters, Sink, SinkPid)
-</code></pre><p>再本质:</p>
+<p>再本质:</p>
 <pre><code>同步:
 gen_event:notify(SinkPid, {log, LagerMsg});
 异步:

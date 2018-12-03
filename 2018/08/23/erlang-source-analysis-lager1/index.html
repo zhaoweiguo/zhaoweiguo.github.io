@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.6.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.6.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.6.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.6.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.6.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
+<meta name="keywords" content="erlang,source-analysis,lager">
+<meta property="og:type" content="article">
+<meta property="og:title" content="开源项目lager1-源码分析前">
+<meta property="og:url" content="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-19T10:08:02.879Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="开源项目lager1-源码分析前">
+<meta name="twitter:description" content="目的项目使用lager打印日志很多时，会造成以下2个主要问题: 1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能 2.有时会丢失部分日志 目的: 1.通过源码分析找到这2个问题的原因 2.是否可以找到一些方法解决这个问题 3.看是否可以重写部分代码来提升性能">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>开源项目lager1-源码分析前 | 新溪blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">新溪blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">Erlang——新溪-gordon之胡写乱画</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br />Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br />Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/23/erlang-source-analysis-lager1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="赵卫国">
+      <meta itemprop="description" content="新溪">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">开源项目lager1-源码分析前
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-08-23 17:19:11" itemprop="dateCreated datePublished" datetime="2018-08-23T17:19:11+08:00">2018-08-23</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-19 18:08:02" itemprop="dateModified" datetime="2018-11-19T18:08:02+08:00">2018-11-19</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><p>项目使用lager打印日志很多时，会造成以下2个主要问题:</p>
+<pre><code>1.「Lager的erlang消息队列」数会变成很大，影响整个系统性能
+2.有时会丢失部分日志
+</code></pre><p>目的:</p>
+<pre><code>1.通过源码分析找到这2个问题的原因
+2.是否可以找到一些方法解决这个问题
+3.看是否可以重写部分代码来提升性能
+</code></pre><a id="more"></a>
+<h3 id="看源码前工作"><a href="#看源码前工作" class="headerlink" title="看源码前工作"></a>看源码前工作</h3><p>看lager文档显示以下几个主要参数:</p>
+<pre><code>{async_threshold, 20},
+{async_threshold_window, 5}
+小于20使用异步,超过20切换回同步,小于20-5=15再切换回异步
+
+{error_logger_hwm, 50}
+每秒最大日志数,即戒备线
+{error_logger_flush_queue, true | false}
+% 默认是true,可以关闭
+% 超过戒备线,会flush all event notifications in the message queue
+% 而这会对other handlers in the same event manager造成意外后果
+{flush_queue, true | false}
+% flush_queue为true时可以设置threshold
+
+{error_logger_flush_threshold, 1000}
+% 设定error_logger sink的阀值
+{flush_threshold, 1000}
+% 对所有的sinks的阀值
+
+{killer_hwm, 1000},
+{killer_reinstall_after, 5000}
+// 有时你需要丢弃所有pending日志消息而不是让他耗光时间
+// if the gen_event mailbox exceeds a configurable high water mark,
+// the sink will be killed and reinstalled after a configurable cool down time
+% This means if the sink&apos;s mailbox size exceeds 1000 messages, kill the entire sink and reload it after 5000 milliseconds
+% By default, the manager killer is not installed into any sink. If the killer_reinstall_after cool down time is not specified it defaults to 5000.
+</code></pre><p>ets表lager_config内容:</p>
+<pre><code>[
+  {
+    {lager_event,loglevel}, {255,[]}
+  },
+
+  {{lager_event,async}, true},
+
+      {
+        {'_global',handlers},
+        [
+          {lager_console_backend,<0.148.0>,lager_event},
+          {{lager_file_backend,"log/info.log"},<0.150.0>,lager_event},
+          {{lager_file_backend,"log/notice.log"},<0.152.0>,lager_event},
+          {{lager_file_backend,"log/warning.log"},<0.154.0>,lager_event},
+          {{lager_file_backend,"log/error.log"},<0.156.0>,lager_event},
+          {{lager_file_backend,"log/critical.log"},<0.158.0>,lager_event},
+          {{lager_file_backend,"log/alert.log"},<0.160.0>,lager_event},
+          {{lager_file_backend,"log/emergency.log"},<0.162.0>,lager_event},
+          {{lager_file_backend,"console.log"},<0.164.0>,lager_event}
+        ]
+      }
+    ]
+
+
+### parse_transform模式
+
+获取parse_transform模式源码:
+
+    Beam = "./_build/default/lib/demo/ebin/demo_server.beam".
+    {ok, {_, [{abstract_code, {_,Abs}}]}} =  beam_lib:chunks(
+  Beam, [abstract_code]).
+io:fwrite(&quot;~s~n&quot;, [erl_prettypr:format(erl_syntax:form_list(Abs))]).
+% 通过以上命令得到parse_transform后的源码
+</0.164.0></0.162.0></0.160.0></0.158.0></0.156.0></0.154.0></0.152.0></0.150.0></0.148.0></code></pre><p>原始使用:</p>
+<pre><code>lager:info(&quot;handle_call _Request = ~p&quot;,[_Request]),
+</code></pre><p>parse_transform模式转化后:</p>
+<pre><code>case {whereis(lager_event), whereis(lager_event),
+      lager_config:get({lager_event, loglevel}, {0, []})}
+    of
+  {undefined, undefined, _} -&gt;
+      fun () -&gt; {error, lager_not_running} end();
+  {undefined, _, _} -&gt;
+      fun () -&gt; {error, {sink_not_configured, lager_event}}
+      end();
+  {__Piddemo_lager_server42, _, {__Leveldemo_lager_server42, __Tracesdemo_lager_server42}}
+      when __Leveldemo_lager_server42 band 4 /= 0 orelse
+             __Tracesdemo_lager_server42 /= [] -&gt;
+      lager:do_log(info,
+                   [{application, mongrel}, {module, mongrel},
+                    {function, handle_call}, {line, 79},
+                    {pid, pid_to_list(self())}, {node, node()}
+                    | lager:md()],
+                   &quot;handle_call _Request= ~p&quot;, [_Request], 4096, 4,
+                   __Leveldemo_lager_server42, __Tracesdemo_lager_server42, lager_event, __Piddemo_lager_server42);
+  _ -&gt; ok
+end,
+</code></pre>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/erlang/" rel="tag"># erlang</a>
+          
+            <a href="/tags/source-analysis/" rel="tag"># source-analysis</a>
+          
+            <a href="/tags/lager/" rel="tag"># lager</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/31/erlang-tune-lager1/" rel="next" title="lager实战1:对lager测试来分析Erlang的一些特性">
+                <i class="fa fa-chevron-left"></i> lager实战1:对lager测试来分析Erlang的一些特性
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/09/04/erlang-release-updowngrade-normal/" rel="prev" title="使用Erlang原生方法对release版本升降级">
+                使用Erlang原生方法对release版本升降级 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">赵卫国</p>
+              <p class="site-description motion-element" itemprop="description">新溪</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">14</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">categories</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#目的"><span class="nav-number">1.</span> <span class="nav-text">目的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#看源码前工作"><span class="nav-number">2.</span> <span class="nav-text">看源码前工作</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">赵卫国</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.6.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

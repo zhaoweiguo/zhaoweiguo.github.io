@@ -12,7 +12,7 @@
 
 
 
-<html class="theme-next gemini" lang="zh">
+<html class="theme-next gemini" lang="zh-CN">
 <head>
   <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -59,16 +59,10 @@
 <link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css" />
 
 
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.6.0">
 
 
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.6.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon.png?v=6.6.0">
 
-
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.6.0">
-
-
-  <link rel="mask-icon" href="/images/logo.svg?v=6.6.0" color="#222">
 
 
 
@@ -84,7 +78,7 @@
     root: '/',
     scheme: 'Gemini',
     version: '6.6.0',
-    sidebar: {"b2t":true,"scrollpercent":true,"onmobile":true},
+    sidebar: {"position":"left","width":300,"b2t":true,"scrollpercent":true,"onmobile":true,"display":"post"},
     fancybox: false,
     fastclick: false,
     lazyload: true,
@@ -106,17 +100,17 @@
 
 
 
-  <meta name="description" content="新溪">
+  <meta name="description" content="Just do it now.">
 <meta name="keywords" content="golang,erlang">
 <meta property="og:type" content="website">
 <meta property="og:title" content="新溪blog">
 <meta property="og:url" content="http://blog.zhaoweiguo.com/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="新溪">
-<meta property="og:locale" content="zh">
+<meta property="og:description" content="Just do it now.">
+<meta property="og:locale" content="zh-CN">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="新溪blog">
-<meta name="twitter:description" content="新溪">
+<meta name="twitter:description" content="Just do it now.">
 
 
 
@@ -175,12 +169,14 @@
 
 </head>
 
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh">
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
 
   
   
+    
+  
 
-  <div class="container  
+  <div class="container sidebar-position-left 
   page-home">
     <div class="headband"></div>
 
@@ -204,7 +200,7 @@
   </div>
 
   <div class="site-nav-toggle">
-    <button aria-label="Toggle navigation bar">
+    <button aria-label="切换导航栏">
       <span class="btn-bar"></span>
       <span class="btn-bar"></span>
       <span class="btn-bar"></span>
@@ -222,7 +218,7 @@
         
         
           
-          <li class="menu-item menu-item-news menu-item-active">
+          <li class="menu-item menu-item-home menu-item-active">
 
     
     
@@ -234,7 +230,7 @@
       
     
 
-    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-bullhorn"></i> <br />News</a>
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-bullhorn"></i> <br />首页</a>
 
   </li>
         
@@ -253,7 +249,45 @@
       
     
 
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br />Archives<span class="badge">14</span></a>
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">14</span></a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">4</span></a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">10</span></a>
 
   </li>
 
@@ -284,7 +318,7 @@
 
   
 
-    <span class="exturl github-corner" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8vemhhb3dlaWd1by5naXRodWIuaW8=" title="Fork on GitHub" aria-label="Fork on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill: #222; color: #fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></span>
+    <span class="exturl github-corner" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8vemhhb3dlaWd1by5naXRodWIuaW8=" title="Fork me on GitHub" aria-label="Fork me on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill: #222; color: #fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></span>
 
 
 
@@ -352,14 +386,14 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
               
 
-              <time title="Created: 2018-11-21 21:22:09" itemprop="dateCreated datePublished" datetime="2018-11-21T21:22:09+08:00">2018-11-21</time>
+              <time title="创建时间：2018-11-21 21:22:09" itemprop="dateCreated datePublished" datetime="2018-11-21T21:22:09+08:00">2018-11-21</time>
             
 
             
@@ -374,9 +408,9 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Edited on</span>
+                  <span class="post-meta-item-text">更新于</span>
                 
-                <time title="Modified: 2018-11-22 11:52:39" itemprop="dateModified" datetime="2018-11-22T11:52:39+08:00">2018-11-22</time>
+                <time title="修改时间：2018-11-22 11:52:39" itemprop="dateModified" datetime="2018-11-22T11:52:39+08:00">2018-11-22</time>
               
             
           </span>
@@ -390,7 +424,7 @@
                 <i class="fa fa-folder-o"></i>
               </span>
               
-                <span class="post-meta-item-text">In</span>
+                <span class="post-meta-item-text">分类于</span>
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tune/" itemprop="url" rel="index"><span itemprop="name">tune</span></a></span>
@@ -419,9 +453,9 @@
                   <i class="fa fa-file-word-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Symbols count in article: </span>
+                  <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="Symbols count in article">3.8k</span>
+                <span title="本文字数">3.8k</span>
               
 
               
@@ -433,9 +467,9 @@
                   <i class="fa fa-clock-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Reading time &asymp;</span>
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="Reading time">3 mins.</span>
+                <span title="阅读时长">3 分钟</span>
               
             </div>
           
@@ -457,156 +491,30 @@
       
         
           
-            <p>参考项目:</p>
-<pre><code>https://github.com/klarna/brod
+          参考项目:
+https://github.com/klarna/brod
 https://github.com/erlang-lager/lager
 http://kafka.apache.org
 https://github.com/newforks/lager_kafka_backend
-</code></pre><p>测试目的:</p>
-<pre><code>项目使用lager写日志时，如果日志量非常大，会导致消息队列堆积，进而引起更严重的问题,
+测试目的:
+项目使用lager写日志时，如果日志量非常大，会导致消息队列堆积，进而引起更严重的问题,
 于是想着增加一kafka的backend:
   一是为了把所有日志合并在一起
   二是为了增加写入效率
-</code></pre><p>测试对比:</p>
-<pre><code>1. 测试file写入文件中带delayed_write与不带的性能对比
+测试对比:
+1. 测试file写入文件中带delayed_write与不带的性能对比
 2. 测试brod写kafka与file写入的性能对比
-3. 测试lager_kafka_backend与lager_file_backend的性能对比
-</code></pre><p>测试内容:</p>
-<pre><code>写入数据: &lt;&lt;&quot;123456789qwertyuiopasdfghjklzxcvbnm&quot;&gt;&gt;
-执行Module:loop(Times, Num).
-其中:
-  Times: 为执行次数
-  Num: 每次执行写入数据次数
-</code></pre><p>代码实例:</p>
-<pre><code>1. 普通文件写入: 
-https://github.com/zhaoweiguo/demo-erlang/blob/6829ca950f2ea16859d3be23a1396aa3d1fdaf2d/apps/demo_lager/src/speed_file.erl
-
-2. 带delayed_write文件写入:
-https://github.com/zhaoweiguo/demo-erlang/blob/6829ca950f2ea16859d3be23a1396aa3d1fdaf2d/apps/demo_lager/src/speed_delayfile.erl
-
-3. 普通写kafka(注:要本地启动kafka server)
-https://github.com/zhaoweiguo/demo-erlang/blob/6829ca950f2ea16859d3be23a1396aa3d1fdaf2d/apps/demo_lager/src/speed_brod.erl
-
-4. 通过lager写入文件
-https://github.com/zhaoweiguo/demo-erlang/blob/6829ca950f2ea16859d3be23a1396aa3d1fdaf2d/apps/demo_lager/src/speed_lager_file.erl
-
-5. 通过lager写入kafka
-https://github.com/zhaoweiguo/demo-erlang/blob/6829ca950f2ea16859d3be23a1396aa3d1fdaf2d/apps/demo_lager/src/speed_lager_kafka.erl
-</code></pre><p>测试结果:</p>
-<p>(demo_lager@127.0.0.1)3&gt; speed_file:loop(20, 20).</p>
-<pre><code>% 测试过程中文件写入不稳定,有时写入数据差10倍以上，原因不明
-time:384 | {0,0,384}
-time:833 | {0,0,833}
-time:2734 | {0,2,734}
-time:484 | {0,0,484}
-time:642 | {0,0,642}
-time:483 | {0,0,483}
-time:609 | {0,0,609}
-time:582 | {0,0,582}
-time:844 | {0,0,844}
-time:795 | {0,0,795}
-time:506 | {0,0,506}
-time:1125 | {0,1,125}
-time:490 | {0,0,490}
-time:599 | {0,0,599}
-time:605 | {0,0,605}
-time:444 | {0,0,444}
-time:479 | {0,0,479}
-time:415 | {0,0,415}
-time:421 | {0,0,421}
-time:577 | {0,0,577}
-</code></pre><p>(demo_lager@127.0.0.1)4&gt; speed_delayfile:loop(20, 20).</p>
-<pre><code>time:39 | {0,0,39}
-time:98 | {0,0,98}
-time:78 | {0,0,78}
-time:86 | {0,0,86}
-time:83 | {0,0,83}
-time:149 | {0,0,149}
-time:51 | {0,0,51}
-time:461 | {0,0,461}
-time:85 | {0,0,85}
-time:58 | {0,0,58}
-time:56 | {0,0,56}
-time:108 | {0,0,108}
-time:60 | {0,0,60}
-time:87 | {0,0,87}
-time:62 | {0,0,62}
-time:58 | {0,0,58}
-time:151 | {0,0,151}
-time:417 | {0,0,417}
-time:75 | {0,0,75}
-time:109 | {0,0,109}
-</code></pre><p>(demo_lager@127.0.0.1)14&gt; speed_brod:loop(20, 20).</p>
-<pre><code>time:2900 | {0,2,900}
-time:229 | {0,0,229}
-time:243 | {0,0,243}
-time:293 | {0,0,293}
-time:971 | {0,0,971}
-time:191 | {0,0,191}
-time:183 | {0,0,183}
-time:607 | {0,0,607}
-time:253 | {0,0,253}
-time:256 | {0,0,256}
-time:233 | {0,0,233}
-time:257 | {0,0,257}
-time:145 | {0,0,145}
-time:195 | {0,0,195}
-time:175 | {0,0,175}
-time:135 | {0,0,135}
-time:197 | {0,0,197}
-time:189 | {0,0,189}
-time:166 | {0,0,166}
-time:200 | {0,0,200}
-</code></pre><p>(demo_lager@127.0.0.1)15&gt; speed_lager_kafka:loop(20, 20).</p>
-<pre><code>time:136 | {0,0,136}
-time:176 | {0,0,176}
-time:203 | {0,0,203}
-time:198 | {0,0,198}
-time:161 | {0,0,161}
-time:161 | {0,0,161}
-time:192 | {0,0,192}
-time:141 | {0,0,141}
-time:229 | {0,0,229}
-time:235 | {0,0,235}
-time:253 | {0,0,253}
-time:247 | {0,0,247}
-time:189 | {0,0,189}
-time:201 | {0,0,201}
-time:150 | {0,0,150}
-time:189 | {0,0,189}
-time:153 | {0,0,153}
-time:235 | {0,0,235}
-time:161 | {0,0,161}
-time:176 | {0,0,176}
-</code></pre><p>(demo_lager@127.0.0.1)18&gt; speed_lager_file:loop(20, 20).</p>
-<pre><code>time:189 | {0,0,189}
-time:192 | {0,0,192}
-time:233 | {0,0,233}
-time:277 | {0,0,277}
-time:177 | {0,0,177}
-time:183 | {0,0,183}
-time:179 | {0,0,179}
-time:290 | {0,0,290}
-time:218 | {0,0,218}
-time:208 | {0,0,208}
-time:215 | {0,0,215}
-time:256 | {0,0,256}
-time:263 | {0,0,263}
-time:287 | {0,0,287}
-time:238 | {0,0,238}
-time:294 | {0,0,294}
-time:226 | {0,0,226}
-time:276 | {0,0,276}
-time:195 | {0,0,195}
-time:332 | {0,0,332}
-</code></pre><p>结论:</p>
-<pre><code>1.直接写文件，加不加buffer影响很大
-2.直接写kafka，比不加buffer的快，但比加buffer的慢
-3.通过lager_file_backend与通过lager_kafka_backend性能差别不大
-4.通过lager_file_backend加不加buffer，影响不大
-5.可能是虚拟机原因，磁盘写入不稳定
-</code></pre>
+3. 测试lager_kafka_backend与lage
+          ...
+          <!--noindex-->
           
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/11/21/erlang-tune-lager2/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
         
       
     </div>
@@ -699,14 +607,14 @@ time:332 | {0,0,332}
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
               
 
-              <time title="Created: 2018-11-09 17:19:11" itemprop="dateCreated datePublished" datetime="2018-11-09T17:19:11+08:00">2018-11-09</time>
+              <time title="创建时间：2018-11-09 17:19:11" itemprop="dateCreated datePublished" datetime="2018-11-09T17:19:11+08:00">2018-11-09</time>
             
 
             
@@ -721,9 +629,9 @@ time:332 | {0,0,332}
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Edited on</span>
+                  <span class="post-meta-item-text">更新于</span>
                 
-                <time title="Modified: 2018-11-19 18:25:04" itemprop="dateModified" datetime="2018-11-19T18:25:04+08:00">2018-11-19</time>
+                <time title="修改时间：2018-11-19 18:25:04" itemprop="dateModified" datetime="2018-11-19T18:25:04+08:00">2018-11-19</time>
               
             
           </span>
@@ -737,7 +645,7 @@ time:332 | {0,0,332}
                 <i class="fa fa-folder-o"></i>
               </span>
               
-                <span class="post-meta-item-text">In</span>
+                <span class="post-meta-item-text">分类于</span>
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
@@ -766,9 +674,9 @@ time:332 | {0,0,332}
                   <i class="fa fa-file-word-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Symbols count in article: </span>
+                  <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="Symbols count in article">1k</span>
+                <span title="本文字数">1k</span>
               
 
               
@@ -780,9 +688,9 @@ time:332 | {0,0,332}
                   <i class="fa fa-clock-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Reading time &asymp;</span>
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="Reading time">1 mins.</span>
+                <span title="阅读时长">1 分钟</span>
               
             </div>
           
@@ -822,7 +730,7 @@ time:332 | {0,0,332}
           
             <div class="post-button text-center">
               <a class="btn" href="/2018/11/09/erlang-source-analysis-lager6/#more" rel="contents">
-                Read more &raquo;
+                阅读全文 &raquo;
               </a>
             </div>
          
@@ -919,14 +827,14 @@ time:332 | {0,0,332}
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
               
 
-              <time title="Created: 2018-11-05 17:19:11" itemprop="dateCreated datePublished" datetime="2018-11-05T17:19:11+08:00">2018-11-05</time>
+              <time title="创建时间：2018-11-05 17:19:11" itemprop="dateCreated datePublished" datetime="2018-11-05T17:19:11+08:00">2018-11-05</time>
             
 
             
@@ -941,9 +849,9 @@ time:332 | {0,0,332}
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Edited on</span>
+                  <span class="post-meta-item-text">更新于</span>
                 
-                <time title="Modified: 2018-11-19 18:26:29" itemprop="dateModified" datetime="2018-11-19T18:26:29+08:00">2018-11-19</time>
+                <time title="修改时间：2018-11-19 18:26:29" itemprop="dateModified" datetime="2018-11-19T18:26:29+08:00">2018-11-19</time>
               
             
           </span>
@@ -957,7 +865,7 @@ time:332 | {0,0,332}
                 <i class="fa fa-folder-o"></i>
               </span>
               
-                <span class="post-meta-item-text">In</span>
+                <span class="post-meta-item-text">分类于</span>
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
@@ -986,9 +894,9 @@ time:332 | {0,0,332}
                   <i class="fa fa-file-word-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Symbols count in article: </span>
+                  <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="Symbols count in article">2.7k</span>
+                <span title="本文字数">2.7k</span>
               
 
               
@@ -1000,9 +908,9 @@ time:332 | {0,0,332}
                   <i class="fa fa-clock-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Reading time &asymp;</span>
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="Reading time">2 mins.</span>
+                <span title="阅读时长">2 分钟</span>
               
             </div>
           
@@ -1041,7 +949,7 @@ time:332 | {0,0,332}
           
             <div class="post-button text-center">
               <a class="btn" href="/2018/11/05/erlang-source-analysis-lager5/#more" rel="contents">
-                Read more &raquo;
+                阅读全文 &raquo;
               </a>
             </div>
          
@@ -1138,14 +1046,14 @@ time:332 | {0,0,332}
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
               
 
-              <time title="Created: 2018-11-04 17:19:11" itemprop="dateCreated datePublished" datetime="2018-11-04T17:19:11+08:00">2018-11-04</time>
+              <time title="创建时间：2018-11-04 17:19:11" itemprop="dateCreated datePublished" datetime="2018-11-04T17:19:11+08:00">2018-11-04</time>
             
 
             
@@ -1160,9 +1068,9 @@ time:332 | {0,0,332}
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Edited on</span>
+                  <span class="post-meta-item-text">更新于</span>
                 
-                <time title="Modified: 2018-11-19 18:15:57" itemprop="dateModified" datetime="2018-11-19T18:15:57+08:00">2018-11-19</time>
+                <time title="修改时间：2018-11-19 18:15:57" itemprop="dateModified" datetime="2018-11-19T18:15:57+08:00">2018-11-19</time>
               
             
           </span>
@@ -1176,7 +1084,7 @@ time:332 | {0,0,332}
                 <i class="fa fa-folder-o"></i>
               </span>
               
-                <span class="post-meta-item-text">In</span>
+                <span class="post-meta-item-text">分类于</span>
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
@@ -1205,9 +1113,9 @@ time:332 | {0,0,332}
                   <i class="fa fa-file-word-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Symbols count in article: </span>
+                  <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="Symbols count in article">703</span>
+                <span title="本文字数">703</span>
               
 
               
@@ -1219,9 +1127,9 @@ time:332 | {0,0,332}
                   <i class="fa fa-clock-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Reading time &asymp;</span>
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="Reading time">1 mins.</span>
+                <span title="阅读时长">1 分钟</span>
               
             </div>
           
@@ -1271,7 +1179,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
           
             <div class="post-button text-center">
               <a class="btn" href="/2018/11/04/erlang-source-analysis-lager4/#more" rel="contents">
-                Read more &raquo;
+                阅读全文 &raquo;
               </a>
             </div>
          
@@ -1368,14 +1276,14 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
               
 
-              <time title="Created: 2018-11-03 17:19:11" itemprop="dateCreated datePublished" datetime="2018-11-03T17:19:11+08:00">2018-11-03</time>
+              <time title="创建时间：2018-11-03 17:19:11" itemprop="dateCreated datePublished" datetime="2018-11-03T17:19:11+08:00">2018-11-03</time>
             
 
             
@@ -1390,9 +1298,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Edited on</span>
+                  <span class="post-meta-item-text">更新于</span>
                 
-                <time title="Modified: 2018-11-27 17:19:15" itemprop="dateModified" datetime="2018-11-27T17:19:15+08:00">2018-11-27</time>
+                <time title="修改时间：2018-11-27 17:19:15" itemprop="dateModified" datetime="2018-11-27T17:19:15+08:00">2018-11-27</time>
               
             
           </span>
@@ -1406,7 +1314,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                 <i class="fa fa-folder-o"></i>
               </span>
               
-                <span class="post-meta-item-text">In</span>
+                <span class="post-meta-item-text">分类于</span>
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
@@ -1435,9 +1343,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-file-word-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Symbols count in article: </span>
+                  <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="Symbols count in article">1.2k</span>
+                <span title="本文字数">1.2k</span>
               
 
               
@@ -1449,9 +1357,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-clock-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Reading time &asymp;</span>
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="Reading time">1 mins.</span>
+                <span title="阅读时长">1 分钟</span>
               
             </div>
           
@@ -1487,7 +1395,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
           
             <div class="post-button text-center">
               <a class="btn" href="/2018/11/03/erlang-source-analysis-lager3/#more" rel="contents">
-                Read more &raquo;
+                阅读全文 &raquo;
               </a>
             </div>
          
@@ -1584,14 +1492,14 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
               
 
-              <time title="Created: 2018-11-02 17:19:11" itemprop="dateCreated datePublished" datetime="2018-11-02T17:19:11+08:00">2018-11-02</time>
+              <time title="创建时间：2018-11-02 17:19:11" itemprop="dateCreated datePublished" datetime="2018-11-02T17:19:11+08:00">2018-11-02</time>
             
 
             
@@ -1606,9 +1514,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Edited on</span>
+                  <span class="post-meta-item-text">更新于</span>
                 
-                <time title="Modified: 2018-11-19 18:08:38" itemprop="dateModified" datetime="2018-11-19T18:08:38+08:00">2018-11-19</time>
+                <time title="修改时间：2018-11-19 18:08:38" itemprop="dateModified" datetime="2018-11-19T18:08:38+08:00">2018-11-19</time>
               
             
           </span>
@@ -1622,7 +1530,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                 <i class="fa fa-folder-o"></i>
               </span>
               
-                <span class="post-meta-item-text">In</span>
+                <span class="post-meta-item-text">分类于</span>
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
@@ -1651,9 +1559,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-file-word-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Symbols count in article: </span>
+                  <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="Symbols count in article">5.2k</span>
+                <span title="本文字数">5.2k</span>
               
 
               
@@ -1665,9 +1573,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-clock-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Reading time &asymp;</span>
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="Reading time">5 mins.</span>
+                <span title="阅读时长">5 分钟</span>
               
             </div>
           
@@ -1720,7 +1628,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
           
             <div class="post-button text-center">
               <a class="btn" href="/2018/11/02/erlang-source-analysis-lager2/#more" rel="contents">
-                Read more &raquo;
+                阅读全文 &raquo;
               </a>
             </div>
          
@@ -1817,14 +1725,14 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
               
 
-              <time title="Created: 2018-09-29 19:46:03" itemprop="dateCreated datePublished" datetime="2018-09-29T19:46:03+08:00">2018-09-29</time>
+              <time title="创建时间：2018-09-29 19:46:03" itemprop="dateCreated datePublished" datetime="2018-09-29T19:46:03+08:00">2018-09-29</time>
             
 
             
@@ -1839,9 +1747,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Edited on</span>
+                  <span class="post-meta-item-text">更新于</span>
                 
-                <time title="Modified: 2018-11-19 18:18:35" itemprop="dateModified" datetime="2018-11-19T18:18:35+08:00">2018-11-19</time>
+                <time title="修改时间：2018-11-19 18:18:35" itemprop="dateModified" datetime="2018-11-19T18:18:35+08:00">2018-11-19</time>
               
             
           </span>
@@ -1855,7 +1763,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                 <i class="fa fa-folder-o"></i>
               </span>
               
-                <span class="post-meta-item-text">In</span>
+                <span class="post-meta-item-text">分类于</span>
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
@@ -1884,9 +1792,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-file-word-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Symbols count in article: </span>
+                  <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="Symbols count in article">9.1k</span>
+                <span title="本文字数">9.1k</span>
               
 
               
@@ -1898,9 +1806,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-clock-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Reading time &asymp;</span>
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="Reading time">8 mins.</span>
+                <span title="阅读时长">8 分钟</span>
               
             </div>
           
@@ -1958,7 +1866,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
           
             <div class="post-button text-center">
               <a class="btn" href="/2018/09/29/erlang-source-analysis-tsung1/#more" rel="contents">
-                Read more &raquo;
+                阅读全文 &raquo;
               </a>
             </div>
          
@@ -2055,14 +1963,14 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
               
 
-              <time title="Created: 2018-09-29 19:46:03" itemprop="dateCreated datePublished" datetime="2018-09-29T19:46:03+08:00">2018-09-29</time>
+              <time title="创建时间：2018-09-29 19:46:03" itemprop="dateCreated datePublished" datetime="2018-09-29T19:46:03+08:00">2018-09-29</time>
             
 
             
@@ -2077,9 +1985,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Edited on</span>
+                  <span class="post-meta-item-text">更新于</span>
                 
-                <time title="Modified: 2018-11-19 18:18:23" itemprop="dateModified" datetime="2018-11-19T18:18:23+08:00">2018-11-19</time>
+                <time title="修改时间：2018-11-19 18:18:23" itemprop="dateModified" datetime="2018-11-19T18:18:23+08:00">2018-11-19</time>
               
             
           </span>
@@ -2093,7 +2001,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                 <i class="fa fa-folder-o"></i>
               </span>
               
-                <span class="post-meta-item-text">In</span>
+                <span class="post-meta-item-text">分类于</span>
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
@@ -2122,9 +2030,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-file-word-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Symbols count in article: </span>
+                  <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="Symbols count in article">8.8k</span>
+                <span title="本文字数">8.8k</span>
               
 
               
@@ -2136,9 +2044,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-clock-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Reading time &asymp;</span>
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="Reading time">8 mins.</span>
+                <span title="阅读时长">8 分钟</span>
               
             </div>
           
@@ -2185,7 +2093,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
           
             <div class="post-button text-center">
               <a class="btn" href="/2018/09/29/erlang-source-analysis-tsung2/#more" rel="contents">
-                Read more &raquo;
+                阅读全文 &raquo;
               </a>
             </div>
          
@@ -2282,19 +2190,31 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
               
 
-              <time title="Created: 2018-09-05 02:01:11 / Modified: 15:22:38" itemprop="dateCreated datePublished" datetime="2018-09-05T02:01:11+08:00">2018-09-05</time>
+              <time title="创建时间：2018-09-05 02:01:11" itemprop="dateCreated datePublished" datetime="2018-09-05T02:01:11+08:00">2018-09-05</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-09-05 15:22:38" itemprop="dateModified" datetime="2018-09-05T15:22:38+08:00">2018-09-05</time>
               
             
           </span>
@@ -2308,7 +2228,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                 <i class="fa fa-folder-o"></i>
               </span>
               
-                <span class="post-meta-item-text">In</span>
+                <span class="post-meta-item-text">分类于</span>
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/erlang/" itemprop="url" rel="index"><span itemprop="name">erlang</span></a></span>
@@ -2337,9 +2257,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-file-word-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Symbols count in article: </span>
+                  <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="Symbols count in article">15k</span>
+                <span title="本文字数">15k</span>
               
 
               
@@ -2351,9 +2271,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-clock-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Reading time &asymp;</span>
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="Reading time">13 mins.</span>
+                <span title="阅读时长">13 分钟</span>
               
             </div>
           
@@ -2401,7 +2321,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
           
             <div class="post-button text-center">
               <a class="btn" href="/2018/09/05/erlang-release-updowngrade-normal/#more" rel="contents">
-                Read more &raquo;
+                阅读全文 &raquo;
               </a>
             </div>
          
@@ -2498,14 +2418,14 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
               
 
-              <time title="Created: 2018-08-24 01:19:11" itemprop="dateCreated datePublished" datetime="2018-08-24T01:19:11+08:00">2018-08-24</time>
+              <time title="创建时间：2018-08-24 01:19:11" itemprop="dateCreated datePublished" datetime="2018-08-24T01:19:11+08:00">2018-08-24</time>
             
 
             
@@ -2520,9 +2440,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Edited on</span>
+                  <span class="post-meta-item-text">更新于</span>
                 
-                <time title="Modified: 2018-11-19 18:08:02" itemprop="dateModified" datetime="2018-11-19T18:08:02+08:00">2018-11-19</time>
+                <time title="修改时间：2018-11-19 18:08:02" itemprop="dateModified" datetime="2018-11-19T18:08:02+08:00">2018-11-19</time>
               
             
           </span>
@@ -2536,7 +2456,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                 <i class="fa fa-folder-o"></i>
               </span>
               
-                <span class="post-meta-item-text">In</span>
+                <span class="post-meta-item-text">分类于</span>
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
@@ -2565,9 +2485,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-file-word-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Symbols count in article: </span>
+                  <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="Symbols count in article">3.2k</span>
+                <span title="本文字数">3.2k</span>
               
 
               
@@ -2579,9 +2499,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <i class="fa fa-clock-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Reading time &asymp;</span>
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="Reading time">3 mins.</span>
+                <span title="阅读时长">3 分钟</span>
               
             </div>
           
@@ -2614,7 +2534,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
           
             <div class="post-button text-center">
               <a class="btn" href="/2018/08/24/erlang-source-analysis-lager1/#more" rel="contents">
-                Read more &raquo;
+                阅读全文 &raquo;
               </a>
             </div>
          
@@ -2662,7 +2582,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2712,7 +2632,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                   <a href="/archives/">
                 
                     <span class="site-state-item-count">14</span>
-                    <span class="site-state-item-name">posts</span>
+                    <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
               
@@ -2733,7 +2653,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                       
                     
                     <span class="site-state-item-count">4</span>
-                    <span class="site-state-item-name">categories</span>
+                    <span class="site-state-item-name">分类</span>
                   
                 </div>
               
@@ -2766,7 +2686,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                       
                     
                     <span class="site-state-item-count">10</span>
-                    <span class="site-state-item-name">tags</span>
+                    <span class="site-state-item-name">标签</span>
                   
                 </div>
               
@@ -2842,7 +2762,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; 2011 – <span itemprop="copyrightYear">2018</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
   <span class="with-love" id="animate">
     <i class="fa fa-heart"></i>
   </span>
@@ -2854,9 +2774,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
       <i class="fa fa-area-chart"></i>
     </span>
     
-      <span class="post-meta-item-text">Symbols count total: </span>
+      <span class="post-meta-item-text">站点总字数：</span>
     
-    <span title="Symbols count total">64k</span>
+    <span title="站点总字数">64k</span>
   
 
   
@@ -2865,14 +2785,14 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
       <i class="fa fa-coffee"></i>
     </span>
     
-      <span class="post-meta-item-text">Reading time total &asymp;</span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="Reading time total">58 mins.</span>
+    <span title="站点阅读时长">58 分钟</span>
   
 </div>
 
 
-  <div class="powered-by">Powered by <span class="exturl theme-link" data-url="aHR0cHM6Ly9oZXhvLmlv">Hexo</span> v3.7.1</div>
+  <div class="powered-by">由 <span class="exturl theme-link" data-url="aHR0cHM6Ly9oZXhvLmlv">Hexo</span> 强力驱动 v3.7.1</div>
 
 
 
@@ -2880,7 +2800,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
 
 
 
-  <div class="theme-info">Theme – <span class="exturl theme-link" data-url="aHR0cHM6Ly90aGVtZS1uZXh0Lm9yZw==">NexT.Gemini</span> v6.6.0</div>
+  <div class="theme-info">主题 – <span class="exturl theme-link" data-url="aHR0cHM6Ly90aGVtZS1uZXh0Lm9yZw==">NexT.Gemini</span> v6.6.0</div>
 
 
 

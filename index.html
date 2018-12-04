@@ -834,7 +834,7 @@ https://github.com/newforks/lager_kafka_backend
                 
               
 
-              <time title="创建时间：2018-11-05 17:19:11" itemprop="dateCreated datePublished" datetime="2018-11-05T17:19:11+08:00">2018-11-05</time>
+              <time title="创建时间：2018-11-05 09:19:11" itemprop="dateCreated datePublished" datetime="2018-11-05T09:19:11+08:00">2018-11-05</time>
             
 
             
@@ -851,7 +851,7 @@ https://github.com/newforks/lager_kafka_backend
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-11-19 18:26:29" itemprop="dateModified" datetime="2018-11-19T18:26:29+08:00">2018-11-19</time>
+                <time title="修改时间：2018-12-04 19:35:15" itemprop="dateModified" datetime="2018-12-04T19:35:15+08:00">2018-12-04</time>
               
             
           </span>
@@ -934,17 +934,6 @@ https://github.com/newforks/lager_kafka_backend
           <h3 id="trace-filter"><a href="#trace-filter" class="headerlink" title="trace_filter"></a>trace_filter</h3><p>执行lager_util:trace_filter(none):</p>
 <pre><code>glc:compile(lager_default_tracer, glc:null(false))
 </code></pre><p>lager_app:add_configured_traces/1:</p>
-<pre><code>配置文件:
-{traces, [
-  %% handler,                         filter,        message level (defaults to debug)
-  {lager_console_backend,             [{module, foo}],       info },
-  {{lager_file_backend, "trace.log"}, [{request, '>', 120}], error},
-      {{lager_file_backend, "event.log"}, [{module, bar}]   } %% implied debug level here
-    ]}
-    取出配置文件traces的值,对此列表每个item执行
-      lager:trace(Handler, Filter) =>lager:trace(Handler, Filter, debug)
-      or
-      lager:trace(Handler, Filter, Level)
           <!--noindex-->
           
             <div class="post-button text-center">

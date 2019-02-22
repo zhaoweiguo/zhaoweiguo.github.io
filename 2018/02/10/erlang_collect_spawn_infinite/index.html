@@ -100,24 +100,25 @@
 
 
 
-  <meta name="description" content="Just do it now.">
-<meta name="keywords" content="golang,erlang">
-<meta property="og:type" content="website">
-<meta property="og:title" content="新溪blog">
-<meta property="og:url" content="http://blog.zhaoweiguo.com/tags/tune/index.html">
+  <meta name="description" content="前言最近和同事聊天的时候，我突然想到进程Pid格式为，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了: 1. A2增加到多少，A3加1 2. 如果A3的值也增加到这个值后会有什么情况出现呢? 问题1源码: -module(spawn_loop_infinite2). -author(&amp;quot;zhaowei">
+<meta name="keywords" content="erlang,collect,spawn">
+<meta property="og:type" content="article">
+<meta property="og:title" content="erlang收集-一直不断spawn新进程会有什么现象">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2018/02/10/erlang_collect_spawn_infinite/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="Just do it now.">
+<meta property="og:description" content="前言最近和同事聊天的时候，我突然想到进程Pid格式为，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了: 1. A2增加到多少，A3加1 2. 如果A3的值也增加到这个值后会有什么情况出现呢? 问题1源码: -module(spawn_loop_infinite2). -author(&amp;quot;zhaowei">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-02-22T07:11:28.915Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="新溪blog">
-<meta name="twitter:description" content="Just do it now.">
+<meta name="twitter:title" content="erlang收集-一直不断spawn新进程会有什么现象">
+<meta name="twitter:description" content="前言最近和同事聊天的时候，我突然想到进程Pid格式为，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了: 1. A2增加到多少，A3加1 2. 如果A3的值也增加到这个值后会有什么情况出现呢? 问题1源码: -module(spawn_loop_infinite2). -author(&amp;quot;zhaowei">
 
 
 
 
 
 
-  <link rel="canonical" href="http://blog.zhaoweiguo.com/tags/tune/"/>
+  <link rel="canonical" href="http://blog.zhaoweiguo.com/2018/02/10/erlang_collect_spawn_infinite/"/>
 
 
 
@@ -127,7 +128,7 @@
   };
 </script>
 
-  <title>标签: tune | 新溪blog</title>
+  <title>erlang收集-一直不断spawn新进程会有什么现象 | 新溪blog</title>
   
 
 
@@ -176,7 +177,7 @@
     
   
 
-  <div class="container sidebar-position-left ">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -274,7 +275,7 @@
         
         
           
-          <li class="menu-item menu-item-tags menu-item-active">
+          <li class="menu-item menu-item-tags">
 
     
     
@@ -327,109 +328,359 @@
           
             
 
-    
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-    
-
-  
-
-
           
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block tag">
+  <div id="posts" class="posts-expand">
+    
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h2>tune<small>标签</small>
-        </h2>
-      </div>
+  
 
-      
-        
+  
+  
+  
+
+  
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/02/10/erlang_collect_spawn_infinite/">
 
-      <h3 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+      <meta itemprop="image" content="/images/icon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+
+    
+      <header class="post-header">
+
         
-            <a class="post-title-link" href="/2018/11/21/erlang-tune-lager2/" itemprop="url">
-              
-                <span itemprop="name">lager实战2:写文件、写kafka的性能测试</span>
-              
-            </a>
         
-      </h3>
+          <h2 class="post-title" itemprop="name headline">erlang收集-一直不断spawn新进程会有什么现象
+              
+            
+          </h2>
+        
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-11-21T21:22:09+08:00"
-              content="2018-11-21" >
-          11-21
-        </time>
-      </div>
+        <div class="post-meta">
+          <span class="post-time">
 
-    </header>
-  </article>
+            
+            
+            
 
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-02-10 10:26:00" itemprop="dateCreated datePublished" datetime="2018-02-10T10:26:00+08:00">2018-02-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-02-22 15:11:28" itemprop="dateModified" datetime="2019-02-22T15:11:28+08:00">2019-02-22</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/erlang/" itemprop="url" rel="index"><span itemprop="name">erlang</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">2.3k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">2 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-        
+      
 
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近和同事聊天的时候，我突然想到进程Pid格式为<a1, a2,="" a3="">，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了:</a1,></p>
+<pre><code>1. A2增加到多少，A3加1
+2. 如果A3的值也增加到这个值后会有什么情况出现呢?
+</code></pre><h3 id="问题1"><a href="#问题1" class="headerlink" title="问题1"></a>问题1</h3><p>源码:</p>
+<pre><code>-module(spawn_loop_infinite2).
+-author(&quot;zhaoweiguo&quot;).
 
-      <h3 class="post-title">
-        
-            <a class="post-title-link" href="/2018/07/31/erlang-tune-lager1/" itemprop="url">
-              
-                <span itemprop="name">lager实战1:对lager测试来分析Erlang的一些特性</span>
-              
-            </a>
-        
-      </h3>
+%% API
+-export([loop/1]).
+-export([do_nothing/0]).
+-export([loop1/2]).
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-07-31T21:22:09+08:00"
-              content="2018-07-31" >
-          07-31
-        </time>
-      </div>
+loop(N) -&gt;
+    {ok, F} = file:open(&quot;aaa.txt&quot;, [append]),
+    loop1(F, N).
 
-    </header>
-  </article>
+loop1(_F, 0) -&gt;
+    ok;
+loop1(F, N) -&gt;
+    Pid = spawn(spawn_loop_infinite, do_nothing, []),
+    file:write(F, io_lib:format(&quot;[~p]:(~p)~n&quot;, [N, Pid])),
+    loop1(F, N-1).
 
+do_nothing() -&gt;
+    ok.
+</code></pre><p>执行命令:</p>
+<pre><code>erl&gt; spawn_loop_infinite2:loop(33000).
+</code></pre><p>打开文件aaa.txt:</p>
+<pre><code>[303]:(&lt;0.32766.0&gt;)
+[302]:(&lt;0.32767.0&gt;)
+[301]:(&lt;0.0.1&gt;)
+[300]:(&lt;0.1.1&gt;)
+[299]:(&lt;0.2.1&gt;)
+</code></pre><p>结论:</p>
+<pre><code>A2增加到32767，A3加1
+</code></pre><h3 id="问题2"><a href="#问题2" class="headerlink" title="问题2"></a>问题2</h3><p>源码:</p>
+<pre><code>% 每次生成100万新进程，打印下一进程的pid，休息0.1秒后再生成100万新进程
+-module(spawn_loop_infinite).
+-author(&quot;zhaoweiguo&quot;).
 
+%% API
+-export([loop/2]).
+-export([do_nothing/0]).
+
+loop(N, N) -&gt;
+    io:format(&quot;stop~n&quot;);
+loop(M, N) -&gt;
+    Add = 32768*10,
+    io:format(&quot;~p;&quot;, [N]),
+    {ok, F} = file:open(&quot;fff&quot;++ integer_to_list(N) ++&quot;.txt&quot;, [append]),
+    loop1(Add, N, F),
+    file:close(F),
+    timer:sleep(10),
+    loop(M, N+1).
+
+loop1(0, _N, _F) -&gt;
+    ok;
+loop1(Add, N, F) -&gt;
+    Pid = spawn(spawn_loop_infinite, do_nothing, []),
+    file:write(F, io_lib:format(&quot;[~p]:(~p)~n&quot;, [Add, Pid])),
+    loop1(Add-1, N, F).
+
+do_nothing() -&gt;
+    ok.
+</code></pre><p>在文件fff820.txt中看到::</p>
+<pre><code>[296800]:(&lt;0.32762.8191&gt;)
+[296799]:(&lt;0.32763.8191&gt;)
+[296798]:(&lt;0.32764.8191&gt;)
+[296797]:(&lt;0.32765.8191&gt;)
+[296796]:(&lt;0.32766.8191&gt;)
+[296795]:(&lt;0.32767.7&gt;)
+[296794]:(&lt;0.5.0&gt;)
+[296793]:(&lt;0.7.0&gt;)
+[296792]:(&lt;0.11.0&gt;)
+[296791]:(&lt;0.8.0&gt;)
+[296790]:(&lt;0.17.0&gt;)
+[296789]:(&lt;0.16.0&gt;)
+[296788]:(&lt;0.24.0&gt;)
+[296787]:(&lt;0.6.0&gt;)
+...
+[296755]:(&lt;0.72.0&gt;)
+[296754]:(&lt;0.73.0&gt;)
+[296753]:(&lt;0.74.0&gt;)
+[296752]:(&lt;0.75.0&gt;)
+[296751]:(&lt;0.76.0&gt;)
+[296750]:(&lt;0.77.0&gt;)
+[296749]:(&lt;0.78.0&gt;)
+</code></pre><p>结论:</p>
+<pre><code>A3在增加到8191后就不再增加,改为使用已经回收的进程
+经过很短的混乱后又变的有序起来
+之后每一次A3+1都会先乱,再有序,并且乱的顺序都是对的
+</code></pre><p>其他发现:</p>
+<pre><code>% 有个有趣的发现, 在每次进程到达&lt;0.32766.8191&gt;后产生的下一个进程分别是:
+&lt;0.32767.7&gt;
+&lt;0.32767.15&gt;
+&lt;0.32767.23&gt;
+&lt;0.32767.31&gt;
+&lt;0.32767.39&gt;
+&lt;0.32767.47&gt;
+</code></pre>
       
     </div>
 
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+      <div>
+        
+
+
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhaoweiguo</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    
+    <a href="http://blog.zhaoweiguo.com/2018/02/10/erlang_collect_spawn_infinite/" title="erlang收集-一直不断spawn新进程会有什么现象">http://blog.zhaoweiguo.com/2018/02/10/erlang_collect_spawn_infinite/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/erlang/" rel="tag"># erlang</a>
+          
+            <a href="/tags/collect/" rel="tag"># collect</a>
+          
+            <a href="/tags/spawn/" rel="tag"># spawn</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/02/20/erlang_collect_mnesia_delect_object/" rel="prev" title="erlang收集-mnesia:delect_object只删除索引问题">
+                erlang收集-mnesia:delect_object只删除索引问题 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
+
+  </div>
 
 
           </div>
           
+
+  
+
+
 
         </div>
         
@@ -452,8 +703,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -588,6 +848,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题1"><span class="nav-number">2.</span> <span class="nav-text">问题1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题2"><span class="nav-number">3.</span> <span class="nav-text">问题2</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -750,6 +1026,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.6.0"></script>
+
+
 
   
 

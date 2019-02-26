@@ -100,25 +100,25 @@
 
 
 
-  <meta name="description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  -record(gordon_test, {  idr,    % {id, pid}  id,  pid,  locale,  time = os:timestamp()  }).  初使化代码:  mnesia:">
-<meta name="keywords" content="erlang,mnesia,collect">
+  <meta name="description" content="前言最近和同事聊天的时候，我突然想到进程Pid格式为，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了: 1. A2增加到多少，A3加1 2. 如果A3的值也增加到这个值后会有什么情况出现呢? 问题1源码: -module(spawn_loop_infinite2). -author(&amp;quot;zhaowei">
+<meta name="keywords" content="erlang,collect,spawn">
 <meta property="og:type" content="article">
-<meta property="og:title" content="erlang收集-mnesia:delect_object只删除索引问题">
-<meta property="og:url" content="http://blog.zhaoweiguo.com/2018/02/20/erlang_collect_mnesia_delect_object/index.html">
+<meta property="og:title" content="erlang收集-一直不断spawn新进程会有什么现象">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  -record(gordon_test, {  idr,    % {id, pid}  id,  pid,  locale,  time = os:timestamp()  }).  初使化代码:  mnesia:">
+<meta property="og:description" content="前言最近和同事聊天的时候，我突然想到进程Pid格式为，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了: 1. A2增加到多少，A3加1 2. 如果A3的值也增加到这个值后会有什么情况出现呢? 问题1源码: -module(spawn_loop_infinite2). -author(&amp;quot;zhaowei">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-02-20T03:30:15.850Z">
+<meta property="og:updated_time" content="2019-02-26T01:49:07.841Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="erlang收集-mnesia:delect_object只删除索引问题">
-<meta name="twitter:description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  -record(gordon_test, {  idr,    % {id, pid}  id,  pid,  locale,  time = os:timestamp()  }).  初使化代码:  mnesia:">
+<meta name="twitter:title" content="erlang收集-一直不断spawn新进程会有什么现象">
+<meta name="twitter:description" content="前言最近和同事聊天的时候，我突然想到进程Pid格式为，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了: 1. A2增加到多少，A3加1 2. 如果A3的值也增加到这个值后会有什么情况出现呢? 问题1源码: -module(spawn_loop_infinite2). -author(&amp;quot;zhaowei">
 
 
 
 
 
 
-  <link rel="canonical" href="http://blog.zhaoweiguo.com/2018/02/20/erlang_collect_mnesia_delect_object/"/>
+  <link rel="canonical" href="http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/"/>
 
 
 
@@ -128,7 +128,7 @@
   };
 </script>
 
-  <title>erlang收集-mnesia:delect_object只删除索引问题 | 新溪blog</title>
+  <title>erlang收集-一直不断spawn新进程会有什么现象 | 新溪blog</title>
   
 
 
@@ -348,7 +348,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/02/20/erlang_collect_mnesia_delect_object/">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoweiguo">
@@ -365,7 +365,7 @@
 
         
         
-          <h2 class="post-title" itemprop="name headline">erlang收集-mnesia:delect_object只删除索引问题
+          <h2 class="post-title" itemprop="name headline">erlang收集-一直不断spawn新进程会有什么现象
               
             
           </h2>
@@ -390,7 +390,7 @@
                 
               
 
-              <time title="创建时间：2018-02-20 11:46:03" itemprop="dateCreated datePublished" datetime="2018-02-20T11:46:03+08:00">2018-02-20</time>
+              <time title="创建时间：2019-02-10 10:26:00" itemprop="dateCreated datePublished" datetime="2019-02-10T10:26:00+08:00">2019-02-10</time>
             
 
             
@@ -407,7 +407,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-02-20 11:30:15" itemprop="dateModified" datetime="2019-02-20T11:30:15+08:00">2019-02-20</time>
+                <time title="修改时间：2019-02-26 09:49:07" itemprop="dateModified" datetime="2019-02-26T09:49:07+08:00">2019-02-26</time>
               
             
           </span>
@@ -452,7 +452,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">1.8k</span>
+                <span title="本文字数">2.3k</span>
               
 
               
@@ -486,50 +486,106 @@
       
 
       
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据</p>
-<h3 id="问题重现"><a href="#问题重现" class="headerlink" title="问题重现"></a>问题重现</h3><ol>
-<li><p>表结构:</p>
-<p> -record(gordon_test, {</p>
-<pre><code> idr,    % {id, pid}
- id,
- pid,
- locale,
- time = os:timestamp()
-</code></pre><p> }).</p>
-</li>
-<li><p>初使化代码:</p>
-<p> mnesia:create_table(gordon_test, [</p>
-<pre><code> {ram_copies, [node() | nodes()]},
- {attributes, record_info(fields, gordon_test)}
-</code></pre><p> ]),<br> mnesia:add_table_index(gordon_test, id),<br> mnesia:add_table_index(gordon_test, pid).</p>
-</li>
-<li><p>插入数据:</p>
-<p> mnesia:dirty_write(gordon_test, {gordon_test, {1, 1}, 1, 1, &quot;&quot;, &quot;&quot;, os:timestamp()}).<br> mnesia:dirty_write(gordon_test, {gordon_test, {2, 2}, 2, 2, &quot;&quot;, &quot;&quot;, os:timestamp()}).<br> mnesia:dirty_write(gordon_test, {gordon_test, {3, 3}, 3, 3, &quot;&quot;, &quot;&quot;, os:timestamp()}).</p>
-</li>
-</ol>
-<p>3.查询:</p>
-<pre><code>Id = 3,
-Pid = 3,
-% 查出id=3的所有记录，都能查出一条记录
-mnesia:dirty_index_read(gordon_test, Id, #gordon_test.id),
-mnesia:dirty_index_match_object(#gordon_test{idr = &#39;$1&#39;,id=Id, _=&#39;_&#39;}, #gordon_test.id),
-</code></pre><ol>
-<li><p>执行删除:</p>
-<p> mnesia:dirty_delete_object(X#gordon_test{locale = aaaa}).<br> or<br> Trans = fun() -&gt;</p>
-<pre><code> mnesia:delete_object(X#gordon_test{locale = aaaa})
-     end,
-</code></pre><p> mnesia:transaction(Trans)</p>
-</li>
-<li><p>两次查询，dirty_index_read查不到数据:</p>
-<p> % 数据查询为空<br> mnesia:dirty<em>index_read(gordon_test, Id, #gordon_test.id),<br> % 数据不变<br> mnesia:dirty_index_match_object(#gordon_test{idr = &#39;$1&#39;,id=Id, </em>=&#39;_&#39;}, #gordon_test.id),</p>
-</li>
-</ol>
-<h3 id="问题定位"><a href="#问题定位" class="headerlink" title="问题定位"></a>问题定位</h3><p>查文档:</p>
-<pre><code>If a table is of type bag, it can sometimes be needed to delete only some of the records with a certain key. This can be done with the function delete_object/3. A complete record must be supplied to this function.
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近和同事聊天的时候，我突然想到进程Pid格式为<a1, a2,="" a3="">，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了:</a1,></p>
+<pre><code>1. A2增加到多少，A3加1
+2. 如果A3的值也增加到这个值后会有什么情况出现呢?
+</code></pre><h3 id="问题1"><a href="#问题1" class="headerlink" title="问题1"></a>问题1</h3><p>源码:</p>
+<pre><code>-module(spawn_loop_infinite2).
+-author(&quot;zhaoweiguo&quot;).
 
-The semantics of this function is context-sensitive. For details, see mnesia:activity/4. In transaction-context, it acquires a lock of type LockKind on the record. Currently, the lock types write and sticky_write are supported.
-</code></pre><p>待继续 @todo</p>
+%% API
+-export([loop/1]).
+-export([do_nothing/0]).
+-export([loop1/2]).
 
+loop(N) -&gt;
+    {ok, F} = file:open(&quot;aaa.txt&quot;, [append]),
+    loop1(F, N).
+
+loop1(_F, 0) -&gt;
+    ok;
+loop1(F, N) -&gt;
+    Pid = spawn(spawn_loop_infinite, do_nothing, []),
+    file:write(F, io_lib:format(&quot;[~p]:(~p)~n&quot;, [N, Pid])),
+    loop1(F, N-1).
+
+do_nothing() -&gt;
+    ok.
+</code></pre><p>执行命令:</p>
+<pre><code>erl&gt; spawn_loop_infinite2:loop(33000).
+</code></pre><p>打开文件aaa.txt:</p>
+<pre><code>[303]:(&lt;0.32766.0&gt;)
+[302]:(&lt;0.32767.0&gt;)
+[301]:(&lt;0.0.1&gt;)
+[300]:(&lt;0.1.1&gt;)
+[299]:(&lt;0.2.1&gt;)
+</code></pre><p>结论:</p>
+<pre><code>A2增加到32767，A3加1
+</code></pre><h3 id="问题2"><a href="#问题2" class="headerlink" title="问题2"></a>问题2</h3><p>源码:</p>
+<pre><code>% 每次生成100万新进程，打印下一进程的pid，休息0.1秒后再生成100万新进程
+-module(spawn_loop_infinite).
+-author(&quot;zhaoweiguo&quot;).
+
+%% API
+-export([loop/2]).
+-export([do_nothing/0]).
+
+loop(N, N) -&gt;
+    io:format(&quot;stop~n&quot;);
+loop(M, N) -&gt;
+    Add = 32768*10,
+    io:format(&quot;~p;&quot;, [N]),
+    {ok, F} = file:open(&quot;fff&quot;++ integer_to_list(N) ++&quot;.txt&quot;, [append]),
+    loop1(Add, N, F),
+    file:close(F),
+    timer:sleep(10),
+    loop(M, N+1).
+
+loop1(0, _N, _F) -&gt;
+    ok;
+loop1(Add, N, F) -&gt;
+    Pid = spawn(spawn_loop_infinite, do_nothing, []),
+    file:write(F, io_lib:format(&quot;[~p]:(~p)~n&quot;, [Add, Pid])),
+    loop1(Add-1, N, F).
+
+do_nothing() -&gt;
+    ok.
+</code></pre><p>在文件fff820.txt中看到::</p>
+<pre><code>[296800]:(&lt;0.32762.8191&gt;)
+[296799]:(&lt;0.32763.8191&gt;)
+[296798]:(&lt;0.32764.8191&gt;)
+[296797]:(&lt;0.32765.8191&gt;)
+[296796]:(&lt;0.32766.8191&gt;)
+[296795]:(&lt;0.32767.7&gt;)
+[296794]:(&lt;0.5.0&gt;)
+[296793]:(&lt;0.7.0&gt;)
+[296792]:(&lt;0.11.0&gt;)
+[296791]:(&lt;0.8.0&gt;)
+[296790]:(&lt;0.17.0&gt;)
+[296789]:(&lt;0.16.0&gt;)
+[296788]:(&lt;0.24.0&gt;)
+[296787]:(&lt;0.6.0&gt;)
+...
+[296755]:(&lt;0.72.0&gt;)
+[296754]:(&lt;0.73.0&gt;)
+[296753]:(&lt;0.74.0&gt;)
+[296752]:(&lt;0.75.0&gt;)
+[296751]:(&lt;0.76.0&gt;)
+[296750]:(&lt;0.77.0&gt;)
+[296749]:(&lt;0.78.0&gt;)
+</code></pre><p>结论:</p>
+<pre><code>A3在增加到8191后就不再增加,改为使用已经回收的进程
+经过很短的混乱后又变的有序起来
+之后每一次A3+1都会先乱,再有序,并且乱的顺序都是对的
+</code></pre><p>其他发现:</p>
+<pre><code>% 有个有趣的发现, 在每次进程到达&lt;0.32766.8191&gt;后产生的下一个进程分别是:
+&lt;0.32767.7&gt;
+&lt;0.32767.15&gt;
+&lt;0.32767.23&gt;
+&lt;0.32767.31&gt;
+&lt;0.32767.39&gt;
+&lt;0.32767.47&gt;
+</code></pre>
       
     </div>
 
@@ -562,7 +618,7 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     
-    <a href="http://blog.zhaoweiguo.com/2018/02/20/erlang_collect_mnesia_delect_object/" title="erlang收集-mnesia:delect_object只删除索引问题">http://blog.zhaoweiguo.com/2018/02/20/erlang_collect_mnesia_delect_object/</a>
+    <a href="http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/" title="erlang收集-一直不断spawn新进程会有什么现象">http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！</li>
@@ -577,9 +633,9 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
           
             <a href="/tags/erlang/" rel="tag"># erlang</a>
           
-            <a href="/tags/mnesia/" rel="tag"># mnesia</a>
-          
             <a href="/tags/collect/" rel="tag"># collect</a>
+          
+            <a href="/tags/spawn/" rel="tag"># spawn</a>
           
         </div>
       
@@ -592,8 +648,8 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/02/10/erlang_collect_spawn_infinite/" rel="next" title="erlang收集-一直不断spawn新进程会有什么现象">
-                <i class="fa fa-chevron-left"></i> erlang收集-一直不断spawn新进程会有什么现象
+              <a href="/2018/11/21/erlang-tune-lager2/" rel="next" title="lager实战2:写文件、写kafka的性能测试">
+                <i class="fa fa-chevron-left"></i> lager实战2:写文件、写kafka的性能测试
               </a>
             
           </div>
@@ -602,8 +658,8 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/05/22/blockchain-start/" rel="prev" title="从零开始创建专属自己的以太坊">
-                从零开始创建专属自己的以太坊 <i class="fa fa-chevron-right"></i>
+              <a href="/2019/02/20/erlang_collect_mnesia_delect_object/" rel="prev" title="erlang收集-mnesia:delect_object只删除索引问题">
+                erlang收集-mnesia:delect_object只删除索引问题 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -806,7 +862,7 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题重现"><span class="nav-number">2.</span> <span class="nav-text">问题重现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题定位"><span class="nav-number">3.</span> <span class="nav-text">问题定位</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题1"><span class="nav-number">2.</span> <span class="nav-text">问题1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题2"><span class="nav-number">3.</span> <span class="nav-text">问题2</span></a></li></ol></div>
             
 
           </div>

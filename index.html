@@ -249,7 +249,7 @@
       
     
 
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">16</span></a>
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">18</span></a>
 
   </li>
         
@@ -268,7 +268,7 @@
       
     
 
-    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">4</span></a>
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">5</span></a>
 
   </li>
         
@@ -287,7 +287,7 @@
       
     
 
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">13</span></a>
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">16</span></a>
 
   </li>
 
@@ -348,6 +348,217 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/03/10/question-dns-domain-expired/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+      <meta itemprop="image" content="/images/icon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/10/question-dns-domain-expired/" class="post-title-link" itemprop="http://blog.zhaoweiguo.com/index.html">域名过期导致的一系列问题</a>
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-10 13:22:09" itemprop="dateCreated datePublished" datetime="2019-03-10T13:22:09+08:00">2019-03-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-03-11 20:56:39" itemprop="dateModified" datetime="2019-03-11T20:56:39+08:00">2019-03-11</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/question/" itemprop="url" rel="index"><span itemprop="name">question</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">7.4k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">7 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          问题描述域名是通过代理商在阿里买的，然后域名解析用的腾讯dnspod的收费版（是很乱，我也不知道为啥这么搞）过期后，阿里把权威dns改成EXPIRENS3.HICHINA.COM/EXPIRENS4.HICHINA.COM。于是域名解析有问题了，但这个问题因为dns缓存机制，延迟了1整天才被发现。续费后，权威dns修改正常，同样因为dns缓存机制，有48小时的缓冲时间，所以有很多地方请求还是有问题有一部分机器请求阿里的那个权威dns，一部分请求腾讯的权威dns，请求阿里那部分失败。
+问题解决中间经历了各种尝试就不细说了，最后在阿里上也修改二级域名记录，修改后，不管是请求哪个权威dns,结果都是对的原因可能是:
+阿里过期dns对不过期的域名也做了域名解析
+阿里去对顶级域服务器来说是有可控的写入
+          ...
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/03/10/question-dns-domain-expired/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/02/20/erlang_collect_mnesia_delect_object/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -368,7 +579,7 @@
           <h2 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/02/20/erlang_collect_mnesia_delect_object/" class="post-title-link" itemprop="http://blog.zhaoweiguo.com/index.html">erlang收集-mnesia:delect_object只删除索引问题</a>
+                <a href="/2019/02/20/erlang_collect_mnesia_delect_object/" class="post-title-link" itemprop="http://blog.zhaoweiguo.com/index.html">erlang发现——mnesia:delect_object只删除索引问题</a>
               
             
           </h2>
@@ -410,7 +621,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-02-26 09:49:04" itemprop="dateModified" datetime="2019-02-26T09:49:04+08:00">2019-02-26</time>
+                <time title="修改时间：2019-03-03 14:15:27" itemprop="dateModified" datetime="2019-03-03T14:15:27+08:00">2019-03-03</time>
               
             
           </span>
@@ -591,7 +802,7 @@
           <h2 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/02/10/erlang_collect_spawn_infinite/" class="post-title-link" itemprop="http://blog.zhaoweiguo.com/index.html">erlang收集-一直不断spawn新进程会有什么现象</a>
+                <a href="/2019/02/10/erlang_collect_spawn_infinite/" class="post-title-link" itemprop="http://blog.zhaoweiguo.com/index.html">erlang发现——直不断spawn新进程会有什么现象</a>
               
             
           </h2>
@@ -633,7 +844,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-02-26 09:49:07" itemprop="dateModified" datetime="2019-02-26T09:49:07+08:00">2019-02-26</time>
+                <time title="修改时间：2019-03-03 14:15:33" itemprop="dateModified" datetime="2019-03-03T14:15:33+08:00">2019-03-03</time>
               
             
           </span>
@@ -733,6 +944,214 @@ loop(N) -&gt;
           
             <div class="post-button text-center">
               <a class="btn" href="/2019/02/10/erlang_collect_spawn_infinite/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/01/12/question-certificate-expired/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+      <meta itemprop="image" content="/images/icon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/12/question-certificate-expired/" class="post-title-link" itemprop="http://blog.zhaoweiguo.com/index.html">网站证书过期导致的一系列问题</a>
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-12 13:22:09" itemprop="dateCreated datePublished" datetime="2019-01-12T13:22:09+08:00">2019-01-12</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-03-11 17:17:52" itemprop="dateModified" datetime="2019-03-11T17:17:52+08:00">2019-03-11</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/question/" itemprop="url" rel="index"><span itemprop="name">question</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">4</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">1 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          问题描述
+          
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/01/12/question-certificate-expired/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -2105,471 +2524,6 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/09/29/erlang-source-analysis-tsung2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zhaoweiguo">
-      <meta itemprop="description" content="Just do it now.">
-      <meta itemprop="image" content="/images/icon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="新溪blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/09/29/erlang-source-analysis-tsung2/" class="post-title-link" itemprop="http://blog.zhaoweiguo.com/index.html">源码分析基础工作</a>
-              
-            
-          </h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-09-29 19:46:03" itemprop="dateCreated datePublished" datetime="2018-09-29T19:46:03+08:00">2018-09-29</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2018-11-19 18:18:23" itemprop="dateModified" datetime="2018-11-19T18:18:23+08:00">2018-11-19</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-symbolscount">
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">本文字数：</span>
-                
-                <span title="本文字数">8.8k</span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">8 分钟</span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>执行application:start(tsung_controller)时:</p>
-<pre><code>{start_phases, [{load_config, []},{start_os_monitoring,[{timeout,30000}]},
-                {start_clients,[]}]}
-{mod,          {tsung_controller, []}}
-</code></pre><h3 id="应用启动相关"><a href="#应用启动相关" class="headerlink" title="应用启动相关"></a>应用启动相关</h3><p>ts_config_server相关::</p>
-<pre><code>global
--record(state, {
-  config,
-  logdir,   % 日志文件目录
-  curcfg = 0,       % number of configured launchers
-  client_static_users = 0, % number of clients that already have their static users
-  static_users = 0, % static users not yet given to a client
-  ports,            % dict, used if we need to choose the client port
-  users=1,          % userid (incremental counter)
-  start_date,       %
-  hostname,         % controller的hostname
-  last_beam_id = 0, % last tsung beam id (used to set nodenames)
-  ending_beams = 0, % number of beams with no new users to start
-  lastips,          % store next ip to choose for each client host
-  total_weight      % total weight of client machines
-}
-</code></pre>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/09/29/erlang-source-analysis-tsung2/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-         
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-       
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/09/29/erlang-source-analysis-tsung1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zhaoweiguo">
-      <meta itemprop="description" content="Just do it now.">
-      <meta itemprop="image" content="/images/icon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="新溪blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/09/29/erlang-source-analysis-tsung1/" class="post-title-link" itemprop="http://blog.zhaoweiguo.com/index.html">看源码前准备工作</a>
-              
-            
-          </h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-09-29 19:46:03" itemprop="dateCreated datePublished" datetime="2018-09-29T19:46:03+08:00">2018-09-29</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2018-11-19 18:18:35" itemprop="dateModified" datetime="2018-11-19T18:18:35+08:00">2018-11-19</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-symbolscount">
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">本文字数：</span>
-                
-                <span title="本文字数">9.1k</span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">8 分钟</span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="tsung-start真实执行命令"><a href="#tsung-start真实执行命令" class="headerlink" title="tsung start真实执行命令"></a>tsung start真实执行命令</h3><p>查看/usr/local/bin/tsung文件:</p>
-<pre><code>此文件是sh文件，tsung start实际执行的是start方法
-</code></pre><p>当我们执行tsung -f fetch_user_key.xml start时,我们实际执行:</p>
-<pre><code>/usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000 
--- -root /usr/local/lib/erlang -progname erl 
--- -home /root 
--- -smp auto -rsh ssh -noshell -proto_dist inet_tcp 
-
--sname tsung_controller 
--setcookie tsung 
-
--kernel inet_dist_listen_min 64000 
--kernel inet_dist_listen_max 65500 
-
--s tsung_controller
-
--pa /usr/local/lib/tsung/tsung-1.7.0/ebin 
--pa /usr/local/lib/tsung/tsung_controller-1.7.0/ebin 
-
--ssl session_cb ts_ssl_session_cache 
--ssl session_lifetime 600 
--sasl sasl_error_logger false 
-
--tsung_controller web_gui true 
--tsung_controller keep_web_gui false 
--tsung_controller smp_disable true 
--tsung_controller debug_level 5 
--tsung_controller warm_time 1 
--tsung_controller exclude_tag &quot;&quot; 
--tsung_controller config_file &quot;fetch_user_key.xml&quot; 
--tsung_controller log_dir &quot;/root/.tsung/log/&quot; 
--tsung_controller mon_file &quot;tsung.log&quot;
-</code></pre>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/09/29/erlang-source-analysis-tsung1/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-         
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-       
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2623,7 +2577,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-count">18</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2644,7 +2598,9 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                     
                       
                     
-                    <span class="site-state-item-count">4</span>
+                      
+                    
+                    <span class="site-state-item-count">5</span>
                     <span class="site-state-item-name">分类</span>
                   
                 </div>
@@ -2683,7 +2639,13 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
                     
                       
                     
-                    <span class="site-state-item-count">13</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
                     <span class="site-state-item-name">标签</span>
                   
                 </div>
@@ -2774,7 +2736,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
     
       <span class="post-meta-item-text">站点总字数：</span>
     
-    <span title="站点总字数">68k</span>
+    <span title="站点总字数">75k</span>
   
 
   
@@ -2785,7 +2747,7 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">1:02</span>
+    <span title="站点阅读时长">1:08</span>
   
 </div>
 

@@ -103,14 +103,14 @@
   <meta name="description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  -record(gordon_test, {  idr,    % {id, pid}  id,  pid,  locale,  time = os:timestamp()  }).  初使化代码:  mnesia:">
 <meta name="keywords" content="erlang,mnesia,collect">
 <meta property="og:type" content="article">
-<meta property="og:title" content="erlang收集-mnesia:delect_object只删除索引问题">
+<meta property="og:title" content="erlang发现——mnesia:delect_object只删除索引问题">
 <meta property="og:url" content="http://blog.zhaoweiguo.com/2019/02/20/erlang_collect_mnesia_delect_object/index.html">
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  -record(gordon_test, {  idr,    % {id, pid}  id,  pid,  locale,  time = os:timestamp()  }).  初使化代码:  mnesia:">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-02-26T01:49:04.274Z">
+<meta property="og:updated_time" content="2019-03-03T06:15:27.598Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="erlang收集-mnesia:delect_object只删除索引问题">
+<meta name="twitter:title" content="erlang发现——mnesia:delect_object只删除索引问题">
 <meta name="twitter:description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  -record(gordon_test, {  idr,    % {id, pid}  id,  pid,  locale,  time = os:timestamp()  }).  初使化代码:  mnesia:">
 
 
@@ -128,7 +128,7 @@
   };
 </script>
 
-  <title>erlang收集-mnesia:delect_object只删除索引问题 | 新溪blog</title>
+  <title>erlang发现——mnesia:delect_object只删除索引问题 | 新溪blog</title>
   
 
 
@@ -249,7 +249,7 @@
       
     
 
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">16</span></a>
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">18</span></a>
 
   </li>
         
@@ -268,7 +268,7 @@
       
     
 
-    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">4</span></a>
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">5</span></a>
 
   </li>
         
@@ -287,7 +287,7 @@
       
     
 
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">13</span></a>
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">16</span></a>
 
   </li>
 
@@ -365,7 +365,7 @@
 
         
         
-          <h2 class="post-title" itemprop="name headline">erlang收集-mnesia:delect_object只删除索引问题
+          <h2 class="post-title" itemprop="name headline">erlang发现——mnesia:delect_object只删除索引问题
               
             
           </h2>
@@ -407,7 +407,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-02-26 09:49:04" itemprop="dateModified" datetime="2019-02-26T09:49:04+08:00">2019-02-26</time>
+                <time title="修改时间：2019-03-03 14:15:27" itemprop="dateModified" datetime="2019-03-03T14:15:27+08:00">2019-03-03</time>
               
             
           </span>
@@ -562,7 +562,7 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     
-    <a href="http://blog.zhaoweiguo.com/2019/02/20/erlang_collect_mnesia_delect_object/" title="erlang收集-mnesia:delect_object只删除索引问题">http://blog.zhaoweiguo.com/2019/02/20/erlang_collect_mnesia_delect_object/</a>
+    <a href="http://blog.zhaoweiguo.com/2019/02/20/erlang_collect_mnesia_delect_object/" title="erlang发现——mnesia:delect_object只删除索引问题">http://blog.zhaoweiguo.com/2019/02/20/erlang_collect_mnesia_delect_object/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！</li>
@@ -592,8 +592,8 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/02/10/erlang_collect_spawn_infinite/" rel="next" title="erlang收集-一直不断spawn新进程会有什么现象">
-                <i class="fa fa-chevron-left"></i> erlang收集-一直不断spawn新进程会有什么现象
+              <a href="/2019/02/10/erlang_collect_spawn_infinite/" rel="next" title="erlang发现——直不断spawn新进程会有什么现象">
+                <i class="fa fa-chevron-left"></i> erlang发现——直不断spawn新进程会有什么现象
               </a>
             
           </div>
@@ -601,6 +601,10 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/03/10/question-dns-domain-expired/" rel="prev" title="域名过期导致的一系列问题">
+                域名过期导致的一系列问题 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -676,7 +680,7 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-count">18</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -697,7 +701,9 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
                     
                       
                     
-                    <span class="site-state-item-count">4</span>
+                      
+                    
+                    <span class="site-state-item-count">5</span>
                     <span class="site-state-item-name">分类</span>
                   
                 </div>
@@ -736,7 +742,13 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
                     
                       
                     
-                    <span class="site-state-item-count">13</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
                     <span class="site-state-item-name">标签</span>
                   
                 </div>
@@ -843,7 +855,7 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
     
       <span class="post-meta-item-text">站点总字数：</span>
     
-    <span title="站点总字数">68k</span>
+    <span title="站点总字数">75k</span>
   
 
   
@@ -854,7 +866,7 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">1:02</span>
+    <span title="站点阅读时长">1:08</span>
   
 </div>
 

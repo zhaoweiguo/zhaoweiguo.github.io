@@ -110,7 +110,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://blog.zhaoweiguo.com/images/alis/iot_data_parse1.png">
 <meta property="og:image" content="http://blog.zhaoweiguo.com/images/alis/iot_data_flow2.png">
-<meta property="og:updated_time" content="2019-04-29T09:27:46.036Z">
+<meta property="og:updated_time" content="2019-04-29T09:35:08.637Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="5分钟了解阿里云物联网平台">
 <meta name="twitter:description" content="简介 阿里云物联网平台向下连接海量设备，支撑设备数据采集上云；向上提供云端API，指令数据通过API调用下发至设备端，实现远程控制。 提供MQTT, CoaP, HTTP/S等多种协议SDK设备接入，可快速对接2G/3G/4G、NB-IoT、LoRa、WiFi等不同网络设备">
@@ -410,7 +410,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-29 17:27:46" itemprop="dateModified" datetime="2019-04-29T17:27:46+08:00">2019-04-29</time>
+                <time title="修改时间：2019-04-29 17:35:08" itemprop="dateModified" datetime="2019-04-29T17:35:08+08:00">2019-04-29</time>
               
             
           </span>
@@ -496,113 +496,61 @@
 <a id="more"></a>
 <h3 id="安全"><a href="#安全" class="headerlink" title="安全"></a>安全</h3><ul>
 <li><p>身份认证:</p>
-<p>  安全级别很高  -&gt; 提供芯片级安全存储方案（ID²）及设备秘钥安全管理机制，防止设备密钥被破解<br>  安全级别高    -&gt; 一机一密，适合有能力批量预分配ID密钥烧入到每个芯片的设备<br>  安全级别普通  -&gt; 一型一密，认证时动态获取设备证书，适合批量生产时无法将设备证书烧入每个设备</p>
+<figure class="highlight clean"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">安全级别很高  -&gt; 提供芯片级安全存储方案（ID²）及设备秘钥安全管理机制，防止设备密钥被破解</span><br><span class="line">安全级别高    -&gt; 一机一密，适合有能力批量预分配ID密钥烧入到每个芯片的设备</span><br><span class="line">安全级别普通  -&gt; 一型一密，认证时动态获取设备证书，适合批量生产时无法将设备证书烧入每个设备</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>通信安全:</p>
-<p>  安全级别高   -&gt; 支持TLS（MQTT\HTTP）、DTLS(CoAP)数据传输通道，保证数据的机密性和完整性<br>  安全级别普通 -&gt; 支持TCP(MQTT)、UDP(CoAP)上自定义数据对称加密通道<br>  支持设备权限管理机制，保障设备与云端安全通信<br>  支持设备级别的通信资源（Topic等）隔离，防止设备越权等问题</p>
+<figure class="highlight gcode"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">安全级别高   -&gt; 支持TLS（MQTT\HTTP）、DTLS<span class="comment">(CoAP)</span>数据传输通道，保证数据的机密性和完整性</span><br><span class="line">安全级别普通 -&gt; 支持TCP<span class="comment">(MQTT)</span>、UDP<span class="comment">(CoAP)</span>上自定义数据对称加密通道</span><br><span class="line">支持设备权限管理机制，保障设备与云端安全通信</span><br><span class="line">支持设备级别的通信资源（Topic等）隔离，防止设备越权等问题</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>可根据需要选择合适自己的方案，我们的项目一般:</p>
-<ol>
-<li>身份认证:<br>主要使用使用一机一密或一型一密<br>工厂支持逐一烧录的,最好使用一机一密，确保安全性<br>工厂不支持逐一烧录的，使用一型一密(最好把此批次的设备唯一标识记录下来方便有问题时剔除伪造设备)</li>
-<li>通信安全:<br>支持TLS/DTLS的设备,使用TLS/DTLS相关的加密传输[MQTT(TLS)或CoaP(DTLS)来保证通信安全]<br>不支持TLS/DTLS的设备，使用对称加密的方式</li>
-</ol>
+<figure class="highlight gcode"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span> 身份认证:</span><br><span class="line">  主要使用使用一机一密或一型一密</span><br><span class="line">  工厂支持逐一烧录的,最好使用一机一密，确保安全性</span><br><span class="line">  工厂不支持逐一烧录的，使用一型一密<span class="comment">(最好把此批次的设备唯一标识记录下来方便有问题时剔除伪造设备)</span></span><br><span class="line"><span class="number">2.</span> 通信安全:</span><br><span class="line">  支持TLS/DTLS的设备,使用TLS/DTLS相关的加密传输[MQTT<span class="comment">(TLS)</span>或CoaP<span class="comment">(DTLS)</span>来保证通信安全]</span><br><span class="line">  不支持TLS/DTLS的设备，使用对称加密的方式</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 <h3 id="数据解析"><a href="#数据解析" class="headerlink" title="数据解析"></a>数据解析</h3><ul>
-<li><p>以下几种情况会使用到数据解析:</p>
-<ol>
-<li>有些设备对流量很敏感，尽可能减少数据通信量</li>
-<li>之前设备已经完成二进制数据编码，不想修改相关代码</li>
-</ol>
+<li>以下几种情况会使用到数据解析:<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">1. </span>有些设备对流量很敏感，尽可能减少数据通信量</span><br><span class="line"><span class="bullet">2. </span>之前设备已经完成二进制数据编码，不想修改相关代码</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 <p><img src="/images/alis/iot_data_parse1.png" alt="数据解析图"></p>
 <ul>
-<li><p>数据转化这部分逻辑你要实现，本质是实现下面2个函数:</p>
-<p>  // 此函数是把json字串转化为二进制<br>  function protocolToRawData(jsonObj) {</p>
-<pre><code>  return rawdata;
-</code></pre><p>  }<br>  // 此函数是把二进制串转化为json<br>  function rawDataToProtocol(rawData) {</p>
-<pre><code>  return jsonObj;
-</code></pre><p>  }</p>
+<li>数据转化这部分逻辑你要实现，本质是实现下面2个函数:<figure class="highlight actionscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 此函数是把json字串转化为二进制</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">protocolToRawData</span><span class="params">(jsonObj)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> rawdata;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 此函数是把二进制串转化为json</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">rawDataToProtocol</span><span class="params">(rawData)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> jsonObj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 <h3 id="物模型"><a href="#物模型" class="headerlink" title="物模型"></a>物模型</h3><h5 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h5><ul>
 <li><p>物模型，简称TSL，即Thing Specification Language，指将物理空间中的实体数字化，并在云端构建该实体的数据模型。在物联网平台中，定义物模型即定义产品功能。</p>
 </li>
 <li><p>属性（Property）:</p>
-<p>  一般用于描述设备运行时的状态，如环境监测设备所读取的当前环境温度等。<br>  属性支持 GET 和 SET 请求方式。应用系统可发起对属性的读取和设置请求。</p>
-<p>  设备 =&gt; 上报属性<br>  云端 =&gt; 设置属性</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">一般用于描述设备运行时的状态，如环境监测设备所读取的当前环境温度等。</span><br><span class="line">属性支持 <span class="builtin-name">GET</span> 和 <span class="builtin-name">SET</span> 请求方式。应用系统可发起对属性的读取和设置请求。</span><br><span class="line"></span><br><span class="line">设备 =&gt; 上报属性</span><br><span class="line">云端 =&gt; 设置属性</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>服务（Service）:</p>
-<p>  设备可被外部调用的能力或方法，可设置输入参数和输出参数。<br>  相比于属性，服务可通过一条指令实现更复杂的业务逻辑，如执行某项特定的任务。</p>
-<p>  云端 =&gt; 调用服务</p>
+<figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">设备可被外部调用的能力或方法，可设置输入参数和输出参数。</span><br><span class="line">相比于属性，服务可通过一条指令实现更复杂的业务逻辑，如执行某项特定的任务。</span><br><span class="line"></span><br><span class="line">云端 =&gt; 调用服务</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>事件（Event）:</p>
-<p>  设备运行时的事件。<br>  事件一般包含需要被外部感知和处理的通知信息，可包含多个输出参数。如:</p>
-<pre><code>某项任务完成的信息，或者设备发生故障或告警时的温度等，事件可以被订阅和推送。
-</code></pre><p>  设备 =&gt; 上报事件</p>
+<figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">设备运行时的事件。</span><br><span class="line">事件一般包含需要被外部感知和处理的通知信息，可包含多个输出参数。如:</span><br><span class="line">  某项任务完成的信息，或者设备发生故障或告警时的温度等，事件可以被订阅和推送。</span><br><span class="line"></span><br><span class="line">设备 =&gt; 上报事件</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 <h5 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h5><ul>
 <li><p>以门锁作为一个实例，来简单解释一下属性、事件和服务</p>
 </li>
 <li><p>属性:</p>
-<p>  开关状态: islock, bool, true:打开, false:关闭</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">开关状态:</span> <span class="string">islock,</span> <span class="string">bool,</span> <span class="literal">true</span><span class="string">:打开,</span> <span class="literal">false</span><span class="string">:关闭</span></span><br></pre></td></tr></table></figure>
 </li>
 <li><p>事件:</p>
-<p>  开门通知: DoorOpen, 事件类型:信息<br>  故障上报: DoorError, 事件类型:报警</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">开门通知: DoorOpen, 事件类型:信息</span></span><br><span class="line"><span class="section">故障上报: DoorError, 事件类型:报警</span></span><br></pre></td></tr></table></figure>
 </li>
 <li><p>服务:</p>
-<p>  获取指纹列表: GetFingerprint</p>
-<pre><code>  输入: 无
-  输出: 1.指纹id 2.指纹昵称 3.指纹权限
-</code></pre><p>  删除指纹:     DelFingerprint</p>
-<pre><code>  输入: 指纹id
-  输出: 无
-</code></pre><p>  添加指纹:     AddFingerprint</p>
-<pre><code>  输入: 指纹权限
-  输出: 无
-</code></pre></li>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">获取指纹列表: GetFingerprint</span></span><br><span class="line">    输入: 无</span><br><span class="line">    输出: 1.指纹id 2.指纹昵称 3.指纹权限</span><br><span class="line"><span class="section">删除指纹:     DelFingerprint</span></span><br><span class="line">    输入: 指纹id</span><br><span class="line">    输出: 无</span><br><span class="line"><span class="section">添加指纹:     AddFingerprint</span></span><br><span class="line">    输入: 指纹权限</span><br><span class="line">    输出: 无</span><br></pre></td></tr></table></figure>
+</li>
 </ul>
 <h3 id="设备影子"><a href="#设备影子" class="headerlink" title="设备影子"></a>设备影子</h3><ul>
 <li><p>用于缓存设备状态。</p>
 </li>
 <li><p>应用场景:</p>
-<p>  场景1：网络不稳定，设备频繁上下线<br>  场景2：多程序同时请求获取设备状态<br>  场景3：设备掉线</p>
+<figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">场景<span class="number">1</span>：网络不稳定，设备频繁上下线</span><br><span class="line">场景<span class="number">2</span>：多程序同时请求获取设备状态</span><br><span class="line">场景<span class="number">3</span>：设备掉线</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>设备影子的修改:</p>
-<ol>
-<li>app通过阿里iot平台接口修改:<br> 修改desired数据,并反馈给设备<br> 用于记录人工的操作</li>
-<li>设备上报信息修改:<br> 修改reported数据<br> 用于记录设备执行的操作，反应设备当前状态</li>
-</ol>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">1. </span>app通过阿里iot平台接口修改:</span><br><span class="line"><span class="code">    修改desired数据,并反馈给设备</span></span><br><span class="line"><span class="code">    用于记录人工的操作</span></span><br><span class="line"><span class="bullet">2. </span>设备上报信息修改:</span><br><span class="line"><span class="code">    修改reported数据</span></span><br><span class="line"><span class="code">    用于记录设备执行的操作，反应设备当前状态</span></span><br></pre></td></tr></table></figure>
 </li>
-</ul>
-<ul>
 <li><p>设备影子JSON文档示例:</p>
-<p>  {</p>
-<pre><code>  &quot;state&quot;: {
-      &quot;desired&quot;: {    % 设备的预期状态,一般是app写
-          &quot;color&quot;: &quot;RED&quot;
-      },
-      &quot;reported&quot;: {   % 设备的报告状态,设备写
-          &quot;color&quot;: &quot;GREEN&quot;
-      }
-  },
-  &quot;metadata&quot;: {
-      &quot;desired&quot;: {
-          &quot;color&quot;: {
-              &quot;timestamp&quot;: 1469564492
-          }
-      },
-      &quot;reported&quot;: {
-          &quot;color&quot;: {
-              &quot;timestamp&quot;: 1469564492
-          }
-      }
-  },
-  &quot;timestamp&quot;: 1469564492,
-  &quot;version&quot;: 1
-</code></pre><p>  }</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="string">"state"</span>: &#123;</span><br><span class="line">        <span class="string">"desired"</span>: &#123;    % 设备的预期状态,一般是app写</span><br><span class="line">            <span class="string">"color"</span>: <span class="string">"RED"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">"reported"</span>: &#123;   % 设备的报告状态,设备写</span><br><span class="line">            <span class="string">"color"</span>: <span class="string">"GREEN"</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">"metadata"</span>: &#123;</span><br><span class="line">        <span class="string">"desired"</span>: &#123;</span><br><span class="line">            <span class="string">"color"</span>: &#123;</span><br><span class="line">                <span class="string">"timestamp"</span>: <span class="number">1469564492</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">"reported"</span>: &#123;</span><br><span class="line">            <span class="string">"color"</span>: &#123;</span><br><span class="line">                <span class="string">"timestamp"</span>: <span class="number">1469564492</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">"timestamp"</span>: <span class="number">1469564492</span>,</span><br><span class="line">    <span class="string">"version"</span>: <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 <h3 id="规则引擎"><a href="#规则引擎" class="headerlink" title="规则引擎"></a>规则引擎</h3><h5 id="数据流转"><a href="#数据流转" class="headerlink" title="数据流转"></a>数据流转</h5><ul>
@@ -613,8 +561,7 @@
 <li>如上图所示，你可以直接订阅相关事件，设备上报相关数据后，会直接通过http2协议推送给云端。</li>
 </ul>
 <h5 id="场景联动"><a href="#场景联动" class="headerlink" title="场景联动"></a>场景联动</h5><ul>
-<li><p>数据流转场景联动:</p>
-<p>  1.触发条件<br>  2.过滤条件<br>  3.执行动作</p>
+<li>数据流转场景联动:<figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span>触发条件</span><br><span class="line"><span class="number">2.</span>过滤条件</span><br><span class="line"><span class="number">3.</span>执行动作</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 

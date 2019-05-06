@@ -100,25 +100,28 @@
 
 
 
-  <meta name="description" content="前言最近和同事聊天的时候，我突然想到进程Pid格式为，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了: 1. A2增加到多少，A3加1 2. 如果A3的值也增加到这个值后会有什么情况出现呢? 问题1源码: -module(spawn_loop_infinite2). -author(&amp;quot;zhaowei">
-<meta name="keywords" content="erlang,collect,spawn">
+  <meta name="description" content="简介日志服务（Log Service，简称 LOG）是针对日志类数据的一站式服务，无需开发就能快捷完成日志数据采集、消费、投递以及查询分析等功能，提升运维、运营效率，建立 DT 时代海量日志处理能力。">
+<meta name="keywords" content="aliyun,log">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Erlang不断spawn新进程会有什么现象">
-<meta property="og:url" content="http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/index.html">
+<meta property="og:title" content="5分钟了解阿里云日志平台">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2019/05/05/ali-log-5-minute/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="前言最近和同事聊天的时候，我突然想到进程Pid格式为，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了: 1. A2增加到多少，A3加1 2. 如果A3的值也增加到这个值后会有什么情况出现呢? 问题1源码: -module(spawn_loop_infinite2). -author(&amp;quot;zhaowei">
+<meta property="og:description" content="简介日志服务（Log Service，简称 LOG）是针对日志类数据的一站式服务，无需开发就能快捷完成日志数据采集、消费、投递以及查询分析等功能，提升运维、运营效率，建立 DT 时代海量日志处理能力。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-03-12T04:16:17.512Z">
+<meta property="og:image" content="http://blog.zhaoweiguo.com/images/alis/log_search_index1.png">
+<meta property="og:image" content="http://blog.zhaoweiguo.com/images/alis/log_search_index2.png">
+<meta property="og:updated_time" content="2019-05-06T04:11:36.740Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Erlang不断spawn新进程会有什么现象">
-<meta name="twitter:description" content="前言最近和同事聊天的时候，我突然想到进程Pid格式为，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了: 1. A2增加到多少，A3加1 2. 如果A3的值也增加到这个值后会有什么情况出现呢? 问题1源码: -module(spawn_loop_infinite2). -author(&amp;quot;zhaowei">
+<meta name="twitter:title" content="5分钟了解阿里云日志平台">
+<meta name="twitter:description" content="简介日志服务（Log Service，简称 LOG）是针对日志类数据的一站式服务，无需开发就能快捷完成日志数据采集、消费、投递以及查询分析等功能，提升运维、运营效率，建立 DT 时代海量日志处理能力。">
+<meta name="twitter:image" content="http://blog.zhaoweiguo.com/images/alis/log_search_index1.png">
 
 
 
 
 
 
-  <link rel="canonical" href="http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/"/>
+  <link rel="canonical" href="http://blog.zhaoweiguo.com/2019/05/05/ali-log-5-minute/"/>
 
 
 
@@ -128,7 +131,7 @@
   };
 </script>
 
-  <title>Erlang不断spawn新进程会有什么现象 | 新溪blog</title>
+  <title>5分钟了解阿里云日志平台 | 新溪blog</title>
   
 
 
@@ -348,7 +351,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/05/05/ali-log-5-minute/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoweiguo">
@@ -365,7 +368,7 @@
 
         
         
-          <h2 class="post-title" itemprop="name headline">Erlang不断spawn新进程会有什么现象
+          <h2 class="post-title" itemprop="name headline">5分钟了解阿里云日志平台
               
             
           </h2>
@@ -390,7 +393,7 @@
                 
               
 
-              <time title="创建时间：2019-02-10 10:26:00" itemprop="dateCreated datePublished" datetime="2019-02-10T10:26:00+08:00">2019-02-10</time>
+              <time title="创建时间：2019-05-05 11:19:13" itemprop="dateCreated datePublished" datetime="2019-05-05T11:19:13+08:00">2019-05-05</time>
             
 
             
@@ -407,7 +410,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-03-12 12:16:17" itemprop="dateModified" datetime="2019-03-12T12:16:17+08:00">2019-03-12</time>
+                <time title="修改时间：2019-05-06 12:11:36" itemprop="dateModified" datetime="2019-05-06T12:11:36+08:00">2019-05-06</time>
               
             
           </span>
@@ -424,7 +427,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/erlang/" itemprop="url" rel="index"><span itemprop="name">erlang</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/aliyun/" itemprop="url" rel="index"><span itemprop="name">aliyun</span></a></span>
 
                 
                 
@@ -452,7 +455,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">2.3k</span>
+                <span title="本文字数">1.5k</span>
               
 
               
@@ -466,7 +469,7 @@
                 
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="阅读时长">2 分钟</span>
+                <span title="阅读时长">1 分钟</span>
               
             </div>
           
@@ -486,106 +489,32 @@
       
 
       
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近和同事聊天的时候，我突然想到进程Pid格式为<a1, a2,="" a3="">，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了:</a1,></p>
-<pre><code>1. A2增加到多少，A3加1
-2. 如果A3的值也增加到这个值后会有什么情况出现呢?
-</code></pre><h3 id="问题1"><a href="#问题1" class="headerlink" title="问题1"></a>问题1</h3><p>源码:</p>
-<pre><code>-module(spawn_loop_infinite2).
--author(&quot;zhaoweiguo&quot;).
+        <h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>日志服务（Log Service，简称 LOG）是针对日志类数据的一站式服务，无需开发就能快捷完成日志数据采集、消费、投递以及查询分析等功能，提升运维、运营效率，建立 DT 时代海量日志处理能力。</p>
+<a id="more"></a>
+<h3 id="关键定义"><a href="#关键定义" class="headerlink" title="关键定义"></a>关键定义</h3><h5 id="日志（Log）"><a href="#日志（Log）" class="headerlink" title="日志（Log）"></a>日志（Log）</h5><p>日志服务采用半结构数据模式定义一条日志。该模式中包含:<br><figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">主题（Topic）、</span><br><span class="line">时间（<span class="keyword">Time</span>）、</span><br><span class="line">内容（Content）、</span><br><span class="line">来源（Source）</span><br><span class="line">标签（Tags）</span><br><span class="line"></span><br><span class="line">其中Content是K/V对，里面存放的是具体的内容</span><br></pre></td></tr></table></figure></p>
+<h5 id="日志组（LogGroup）"><a href="#日志组（LogGroup）" class="headerlink" title="日志组（LogGroup）"></a>日志组（LogGroup）</h5><p>日志组（LogGroup）是一组日志的集合，是API/SDK写入与读取数据的基本单位，使用LogGroup主要目的是最大限度地减少读取与写入次数，提高业务效率。</p>
+<p>一个LogGroup中的数据包含相同Meta（IP、Source等信息），这个Meta信息即为主题、来源和标签内容。</p>
+<h5 id="项目（Project）"><a href="#项目（Project）" class="headerlink" title="项目（Project）"></a>项目（Project）</h5><p>项目（Project）是日志服务中的资源管理单元，用于资源隔离和控制。你可以把它看作是一个文件夹。</p>
+<h5 id="日志库（Logstore）"><a href="#日志库（Logstore）" class="headerlink" title="日志库（Logstore）"></a>日志库（Logstore）</h5><p>日志库（Logstore）是日志服务中日志数据的采集、存储和查询单元。你可以把它看作文件夹里面的文件。</p>
+<h5 id="分区（Shard）"><a href="#分区（Shard）" class="headerlink" title="分区（Shard）"></a>分区（Shard）</h5><p>Logstore读写日志必定保存在某一个分区（Shard）上。每个日志库（Logstore）分若干个分区，每个分区由MD5左闭右开区间组成，每个区间范围不会相互覆盖，并且所有的区间的范围是MD5整个取值范围。</p>
+<p>分区的目的是为了提高写入效率，数据写入时会根据不同的md5值写入不同的分区。</p>
+<h3 id="运转流程"><a href="#运转流程" class="headerlink" title="运转流程"></a>运转流程</h3><p>简单来讲，主要包括数据收集、查询分析和其他操作。其他操作有包括可视化，告警、实时消费等。其中最基本的需求是收集和查询。</p>
+<h5 id="数据收集"><a href="#数据收集" class="headerlink" title="数据收集"></a>数据收集</h5><p>阿里提供了多种数据采集方式，支持客户端、网页、协议、SDK/API等多种日志无损采集方式，所有采集方式均基于Restful API实现。</p>
+<p>操作系统级别:<br><figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">Logtail</span></span><br></pre></td></tr></table></figure></p>
+<p>语言:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">其中主流的语言都支持</span><br><span class="line">不支持的小众语言可以根据api自己写</span><br></pre></td></tr></table></figure></p>
+<p>数据库:<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MySQL <span class="keyword">Binlog</span></span><br><span class="line"><span class="keyword">JDBC </span>Select</span><br></pre></td></tr></table></figure></p>
+<p>移动端:<br><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">iOS/Android SDK</span><br><span class="line">网页  JS/Web Tracking</span><br><span class="line">智能IoT C Producer Library</span><br></pre></td></tr></table></figure></p>
+<h5 id="查询分析"><a href="#查询分析" class="headerlink" title="查询分析"></a>查询分析</h5><p>特别注意查询与分析是两部分，格式为<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash">Search |<span class="variable">$Analytics</span></span></span><br></pre></td></tr></table></figure></p>
+<p>实例:<br><figure class="highlight oxygene"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">status&gt;<span class="number">200</span> |</span><br><span class="line">    <span class="keyword">select</span> avg(latency),max(latency) ,count(<span class="number">1</span>) <span class="keyword">as</span> c </span><br><span class="line">    <span class="keyword">GROUP</span> <span class="keyword">BY</span>  <span class="function"><span class="keyword">method</span>  </span></span><br><span class="line"><span class="function">    <span class="title">ORDER</span> <span class="title">BY</span> <span class="title">c</span> <span class="title">DESC</span>  <span class="title">LIMIT</span> 20</span></span><br></pre></td></tr></table></figure></p>
+<p>建立索引:</p>
+<p>索引分为两种:全文索引和指定字段查询。一般情况下建议开启全文索引，结构化的数据建议指定字段查询。查询时默认先按字段查询，查询不到会再按全文索引查询。如图所示content是json结构的字段，这儿注意headers.remoteip是2级的，即解析这种结构{content: {remote:{ip:&#39;127.0.0.1&#39;}}}</p>
+<p><img src="/images/alis/log_search_index1.png" alt="索引实例"></p>
+<p>索引建立完成后，可以在快速分析看到:<br><img src="/images/alis/log_search_index2.png" alt="快速分析"></p>
+<h5 id="其他操作"><a href="#其他操作" class="headerlink" title="其他操作"></a>其他操作</h5><p>可视化分析:<br><figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span>统计图表，可以接合分析查看一些简单的图表</span><br><span class="line"><span class="number">2.</span>对接Jaeger，实现跟踪相关功能</span><br><span class="line"><span class="number">3.</span>对接阿里DataV，实现实时大屏</span><br><span class="line"><span class="number">4.</span>对接grafana，实现可视化查看</span><br></pre></td></tr></table></figure></p>
+<p>告警:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">根据需要，把日志分析和统计图表结合，设定警戒线，超过时，发出告警信息。</span><br></pre></td></tr></table></figure></p>
+<p>实时消费:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">可实现类似kafka的功能，作为日志的消息队列</span><br></pre></td></tr></table></figure></p>
+<p>数据投递:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">实现把数据投递到其他阿里产品，实现相关功能</span><br></pre></td></tr></table></figure></p>
 
-%% API
--export([loop/1]).
--export([do_nothing/0]).
--export([loop1/2]).
-
-loop(N) -&gt;
-    {ok, F} = file:open(&quot;aaa.txt&quot;, [append]),
-    loop1(F, N).
-
-loop1(_F, 0) -&gt;
-    ok;
-loop1(F, N) -&gt;
-    Pid = spawn(spawn_loop_infinite, do_nothing, []),
-    file:write(F, io_lib:format(&quot;[~p]:(~p)~n&quot;, [N, Pid])),
-    loop1(F, N-1).
-
-do_nothing() -&gt;
-    ok.
-</code></pre><p>执行命令:</p>
-<pre><code>erl&gt; spawn_loop_infinite2:loop(33000).
-</code></pre><p>打开文件aaa.txt:</p>
-<pre><code>[303]:(&lt;0.32766.0&gt;)
-[302]:(&lt;0.32767.0&gt;)
-[301]:(&lt;0.0.1&gt;)
-[300]:(&lt;0.1.1&gt;)
-[299]:(&lt;0.2.1&gt;)
-</code></pre><p>结论:</p>
-<pre><code>A2增加到32767，A3加1
-</code></pre><h3 id="问题2"><a href="#问题2" class="headerlink" title="问题2"></a>问题2</h3><p>源码:</p>
-<pre><code>% 每次生成100万新进程，打印下一进程的pid，休息0.1秒后再生成100万新进程
--module(spawn_loop_infinite).
--author(&quot;zhaoweiguo&quot;).
-
-%% API
--export([loop/2]).
--export([do_nothing/0]).
-
-loop(N, N) -&gt;
-    io:format(&quot;stop~n&quot;);
-loop(M, N) -&gt;
-    Add = 32768*10,
-    io:format(&quot;~p;&quot;, [N]),
-    {ok, F} = file:open(&quot;fff&quot;++ integer_to_list(N) ++&quot;.txt&quot;, [append]),
-    loop1(Add, N, F),
-    file:close(F),
-    timer:sleep(10),
-    loop(M, N+1).
-
-loop1(0, _N, _F) -&gt;
-    ok;
-loop1(Add, N, F) -&gt;
-    Pid = spawn(spawn_loop_infinite, do_nothing, []),
-    file:write(F, io_lib:format(&quot;[~p]:(~p)~n&quot;, [Add, Pid])),
-    loop1(Add-1, N, F).
-
-do_nothing() -&gt;
-    ok.
-</code></pre><p>在文件fff820.txt中看到::</p>
-<pre><code>[296800]:(&lt;0.32762.8191&gt;)
-[296799]:(&lt;0.32763.8191&gt;)
-[296798]:(&lt;0.32764.8191&gt;)
-[296797]:(&lt;0.32765.8191&gt;)
-[296796]:(&lt;0.32766.8191&gt;)
-[296795]:(&lt;0.32767.7&gt;)
-[296794]:(&lt;0.5.0&gt;)
-[296793]:(&lt;0.7.0&gt;)
-[296792]:(&lt;0.11.0&gt;)
-[296791]:(&lt;0.8.0&gt;)
-[296790]:(&lt;0.17.0&gt;)
-[296789]:(&lt;0.16.0&gt;)
-[296788]:(&lt;0.24.0&gt;)
-[296787]:(&lt;0.6.0&gt;)
-...
-[296755]:(&lt;0.72.0&gt;)
-[296754]:(&lt;0.73.0&gt;)
-[296753]:(&lt;0.74.0&gt;)
-[296752]:(&lt;0.75.0&gt;)
-[296751]:(&lt;0.76.0&gt;)
-[296750]:(&lt;0.77.0&gt;)
-[296749]:(&lt;0.78.0&gt;)
-</code></pre><p>结论:</p>
-<pre><code>A3在增加到8191后就不再增加,改为使用已经回收的进程
-经过很短的混乱后又变的有序起来
-之后每一次A3+1都会先乱,再有序,并且乱的顺序都是对的
-</code></pre><p>其他发现:</p>
-<pre><code>% 有个有趣的发现, 在每次进程到达&lt;0.32766.8191&gt;后产生的下一个进程分别是:
-&lt;0.32767.7&gt;
-&lt;0.32767.15&gt;
-&lt;0.32767.23&gt;
-&lt;0.32767.31&gt;
-&lt;0.32767.39&gt;
-&lt;0.32767.47&gt;
-</code></pre>
       
     </div>
 
@@ -618,7 +547,7 @@ do_nothing() -&gt;
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     
-    <a href="http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/" title="Erlang不断spawn新进程会有什么现象">http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/</a>
+    <a href="http://blog.zhaoweiguo.com/2019/05/05/ali-log-5-minute/" title="5分钟了解阿里云日志平台">http://blog.zhaoweiguo.com/2019/05/05/ali-log-5-minute/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！</li>
@@ -631,11 +560,9 @@ do_nothing() -&gt;
       
         <div class="post-tags">
           
-            <a href="/tags/erlang/" rel="tag"># erlang</a>
+            <a href="/tags/aliyun/" rel="tag"># aliyun</a>
           
-            <a href="/tags/collect/" rel="tag"># collect</a>
-          
-            <a href="/tags/spawn/" rel="tag"># spawn</a>
+            <a href="/tags/log/" rel="tag"># log</a>
           
         </div>
       
@@ -648,8 +575,8 @@ do_nothing() -&gt;
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/01/12/question-certificate-expired/" rel="next" title="网站证书过期导致的一系列问题">
-                <i class="fa fa-chevron-left"></i> 网站证书过期导致的一系列问题
+              <a href="/2019/04/29/ali-iot-5-minute/" rel="next" title="5分钟了解阿里云物联网平台">
+                <i class="fa fa-chevron-left"></i> 5分钟了解阿里云物联网平台
               </a>
             
           </div>
@@ -657,10 +584,6 @@ do_nothing() -&gt;
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2019/02/20/erlang_collect_mnesia_delect_object/" rel="prev" title="mnesia:delect_object只删除索引问题">
-                mnesia:delect_object只删除索引问题 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -880,7 +803,7 @@ do_nothing() -&gt;
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题1"><span class="nav-number">2.</span> <span class="nav-text">问题1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题2"><span class="nav-number">3.</span> <span class="nav-text">问题2</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#关键定义"><span class="nav-number">2.</span> <span class="nav-text">关键定义</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#日志（Log）"><span class="nav-number">2.0.1.</span> <span class="nav-text">日志（Log）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#日志组（LogGroup）"><span class="nav-number">2.0.2.</span> <span class="nav-text">日志组（LogGroup）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#项目（Project）"><span class="nav-number">2.0.3.</span> <span class="nav-text">项目（Project）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#日志库（Logstore）"><span class="nav-number">2.0.4.</span> <span class="nav-text">日志库（Logstore）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#分区（Shard）"><span class="nav-number">2.0.5.</span> <span class="nav-text">分区（Shard）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#运转流程"><span class="nav-number">3.</span> <span class="nav-text">运转流程</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#数据收集"><span class="nav-number">3.0.1.</span> <span class="nav-text">数据收集</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#查询分析"><span class="nav-number">3.0.2.</span> <span class="nav-text">查询分析</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#其他操作"><span class="nav-number">3.0.3.</span> <span class="nav-text">其他操作</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>

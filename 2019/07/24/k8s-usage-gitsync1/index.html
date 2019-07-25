@@ -100,25 +100,25 @@
 
 
 
-  <meta name="description" content="lager_sup1.ets表:lager_config: % 初使化时往表里增加2条数据 1.1 Sink {lager_event, loglevel} =&amp;gt; {Int, []} 例:{lager_event,loglevel}, {255,[]} 其中: Int为8位的整形,即下面的and操作   -define(DEBUG, 128).   -define(INFO, 64).">
-<meta name="keywords" content="erlang,source-analysis,lager">
+  <meta name="description" content="概要 最近因为工作需要, 简单学习了下k8s 我的理念是: 在用中学, 简单学习了基本概念后开始准备实践 一个新项目准备使用k8s部署, 新项目技术为nginx+php+memcache+mysql 方案: 部署一个最简单项目 git公有项目基本同步 git私有项目基本同步 部署一个简单的nginx反向代理html    部署一个最简单项目 先确定已经连接上k8s服务:   123// 如何创建k">
+<meta name="keywords" content="k8s,gitsync">
 <meta property="og:type" content="article">
-<meta property="og:title" content="开源项目lager2-application启动">
-<meta property="og:url" content="http://blog.zhaoweiguo.com/2018/11/02/erlang-source-analysis-lager2/index.html">
+<meta property="og:title" content="kubenates 项目初体验1">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2019/07/24/k8s-usage-gitsync1/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="lager_sup1.ets表:lager_config: % 初使化时往表里增加2条数据 1.1 Sink {lager_event, loglevel} =&amp;gt; {Int, []} 例:{lager_event,loglevel}, {255,[]} 其中: Int为8位的整形,即下面的and操作   -define(DEBUG, 128).   -define(INFO, 64).">
+<meta property="og:description" content="概要 最近因为工作需要, 简单学习了下k8s 我的理念是: 在用中学, 简单学习了基本概念后开始准备实践 一个新项目准备使用k8s部署, 新项目技术为nginx+php+memcache+mysql 方案: 部署一个最简单项目 git公有项目基本同步 git私有项目基本同步 部署一个简单的nginx反向代理html    部署一个最简单项目 先确定已经连接上k8s服务:   123// 如何创建k">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-11-19T10:08:38.969Z">
+<meta property="og:updated_time" content="2019-07-25T02:39:08.083Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="开源项目lager2-application启动">
-<meta name="twitter:description" content="lager_sup1.ets表:lager_config: % 初使化时往表里增加2条数据 1.1 Sink {lager_event, loglevel} =&amp;gt; {Int, []} 例:{lager_event,loglevel}, {255,[]} 其中: Int为8位的整形,即下面的and操作   -define(DEBUG, 128).   -define(INFO, 64).">
+<meta name="twitter:title" content="kubenates 项目初体验1">
+<meta name="twitter:description" content="概要 最近因为工作需要, 简单学习了下k8s 我的理念是: 在用中学, 简单学习了基本概念后开始准备实践 一个新项目准备使用k8s部署, 新项目技术为nginx+php+memcache+mysql 方案: 部署一个最简单项目 git公有项目基本同步 git私有项目基本同步 部署一个简单的nginx反向代理html    部署一个最简单项目 先确定已经连接上k8s服务:   123// 如何创建k">
 
 
 
 
 
 
-  <link rel="canonical" href="http://blog.zhaoweiguo.com/2018/11/02/erlang-source-analysis-lager2/"/>
+  <link rel="canonical" href="http://blog.zhaoweiguo.com/2019/07/24/k8s-usage-gitsync1/"/>
 
 
 
@@ -128,7 +128,7 @@
   };
 </script>
 
-  <title>开源项目lager2-application启动 | 新溪blog</title>
+  <title>kubenates 项目初体验1 | 新溪blog</title>
   
 
 
@@ -348,7 +348,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/11/02/erlang-source-analysis-lager2/">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/07/24/k8s-usage-gitsync1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoweiguo">
@@ -365,7 +365,7 @@
 
         
         
-          <h2 class="post-title" itemprop="name headline">开源项目lager2-application启动
+          <h2 class="post-title" itemprop="name headline">kubenates 项目初体验1
               
             
           </h2>
@@ -390,7 +390,7 @@
                 
               
 
-              <time title="创建时间：2018-11-02 09:19:11" itemprop="dateCreated datePublished" datetime="2018-11-02T09:19:11+08:00">2018-11-02</time>
+              <time title="创建时间：2019-07-24 11:46:03" itemprop="dateCreated datePublished" datetime="2019-07-24T11:46:03+08:00">2019-07-24</time>
             
 
             
@@ -407,7 +407,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-11-19 18:08:38" itemprop="dateModified" datetime="2018-11-19T18:08:38+08:00">2018-11-19</time>
+                <time title="修改时间：2019-07-25 10:39:08" itemprop="dateModified" datetime="2019-07-25T10:39:08+08:00">2019-07-25</time>
               
             
           </span>
@@ -424,7 +424,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/k8s/" itemprop="url" rel="index"><span itemprop="name">k8s</span></a></span>
 
                 
                 
@@ -452,7 +452,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">5.2k</span>
+                <span title="本文字数">3.2k</span>
               
 
               
@@ -466,7 +466,7 @@
                 
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="阅读时长">5 分钟</span>
+                <span title="阅读时长">3 分钟</span>
               
             </div>
           
@@ -486,193 +486,56 @@
       
 
       
-        <h3 id="lager-sup"><a href="#lager-sup" class="headerlink" title="lager_sup"></a>lager_sup</h3><p>1.ets表:lager_config:</p>
-<pre><code>% 初使化时往表里增加2条数据
-1.1 Sink
-{lager_event, loglevel} =&gt; {Int, []}
-例:{lager_event,loglevel}, {255,[]}
-其中: Int为8位的整形,即下面的and操作
-  -define(DEBUG, 128).
-  -define(INFO, 64).
-  -define(NOTICE, 32).
-  -define(WARNING, 16).
-  -define(ERROR, 8).
-  -define(CRITICAL, 4).
-  -define(ALERT, 2).
-  -define(EMERGENCY, 1).
-  -define(LOG_NONE, 0).
+        <h3 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h3><ul>
+<li>最近因为工作需要, 简单学习了下k8s</li>
+<li>我的理念是: 在用中学, 简单学习了基本概念后开始准备实践</li>
+<li>一个新项目准备使用k8s部署, 新项目技术为nginx+php+memcache+mysql</li>
+<li>方案:<ul>
+<li>部署一个最简单项目</li>
+<li>git公有项目基本同步</li>
+<li>git私有项目基本同步</li>
+<li>部署一个简单的nginx反向代理html</li>
+</ul>
+</li>
+</ul>
+<h3 id="部署一个最简单项目"><a href="#部署一个最简单项目" class="headerlink" title="部署一个最简单项目"></a>部署一个最简单项目</h3><ul>
+<li><p>先确定已经连接上k8s服务:</p>
+  <figure class="highlight actionscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 如何创建k8s服务后续章节专门写（本章节的k8s服务是直接使用阿里的托管k8s）</span></span><br><span class="line"><span class="comment">// 基本命令使用也认为各位都已经了解</span></span><br><span class="line">$ kubectl <span class="keyword">get</span> po</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h5 id="使用go建立一个新项目"><a href="#使用go建立一个新项目" class="headerlink" title="使用go建立一个新项目:"></a>使用go建立一个新项目:</h5><ul>
+<li><p>go项目源码</p>
+  <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">$ cat main.<span class="keyword">go</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>  &#123;</span><br><span class="line">  router := gin.Default()</span><br><span class="line">  router.GET(<span class="string">"/file"</span>, <span class="function"><span class="keyword">func</span><span class="params">(c *gin.Context)</span></span> &#123;</span><br><span class="line">    data := <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">interface</span>&#123;&#125;&#123;</span><br><span class="line">      <span class="string">"lang"</span>: <span class="string">"55555555555"</span>,</span><br><span class="line">      <span class="string">"tag"</span>:  <span class="string">"9999999"</span>,</span><br><span class="line">    &#125;</span><br><span class="line">    c.AsciiJSON(http.StatusOK, data)</span><br><span class="line">  &#125;)</span><br><span class="line">  <span class="comment">// Listen and serve on 0.0.0.0:8080</span></span><br><span class="line">  s := &amp;http.Server&#123;</span><br><span class="line">    Addr:           <span class="string">":8080"</span>,</span><br><span class="line">    Handler:        router,</span><br><span class="line">    ReadTimeout:    <span class="number">10</span> * time.Second,</span><br><span class="line">    WriteTimeout:   <span class="number">10</span> * time.Second,</span><br><span class="line">    MaxHeaderBytes: <span class="number">1</span> &lt;&lt; <span class="number">20</span>,</span><br><span class="line">  &#125;</span><br><span class="line">  s.ListenAndServe()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编译</p>
+  <figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">GOARCH</span>=amd64 <span class="attribute">GOOS</span>=linux go build -o gordondemo <span class="built_in">..</span>/main.go</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Dockerfile文件</p>
+  <figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> alpine        <span class="comment"># 使用最简单镜像alpine</span></span><br><span class="line"><span class="keyword">ADD</span><span class="bash"> gordondemo /   <span class="comment"># 把生成的二进制文件放到根目录/中</span></span></span><br><span class="line"><span class="bash">ENTRYPOINT [<span class="string">"/gordondemo"</span>]   <span class="comment"># 设定入口文件为 /gordondemo (即前面的二进制文件)</span></span></span><br><span class="line"><span class="bash">EXPOSE 8080        <span class="comment"># 设定开放的http端口8080</span></span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>打包并推送镜像</p>
+  <figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ docker build -t registry<span class="selector-class">.cn-beijing</span><span class="selector-class">.aliyuncs</span><span class="selector-class">.com</span>/zhaoweiguo/gordondemo:v8 .</span><br><span class="line">$ docker push registry<span class="selector-class">.cn-beijing</span><span class="selector-class">.aliyuncs</span><span class="selector-class">.com</span>/zhaoweiguo/gordondemo:v8</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编辑Deployment的yaml文件</p>
+  <figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">$ cat deployment.yaml</span><br><span class="line"><span class="symbol">apiVersion:</span> apps/v1</span><br><span class="line"><span class="symbol">kind:</span> Deployment</span><br><span class="line"><span class="symbol">metadata:</span></span><br><span class="line"><span class="symbol">  name:</span> gordondemo</span><br><span class="line"><span class="symbol">  labels:</span></span><br><span class="line"><span class="symbol">    app:</span> gordondemo</span><br><span class="line"><span class="symbol">spec:</span></span><br><span class="line"><span class="symbol">  replicas:</span> <span class="number">1</span>    <span class="meta"># 指定pod复制数</span></span><br><span class="line"><span class="symbol">  template:</span></span><br><span class="line"><span class="symbol">    metadata:</span></span><br><span class="line"><span class="symbol">      name:</span> gordondemo   </span><br><span class="line"><span class="symbol">      labels:</span></span><br><span class="line"><span class="symbol">        app:</span> gordondemo   <span class="meta"># 指定pod名</span></span><br><span class="line"><span class="symbol">    spec:</span></span><br><span class="line"><span class="symbol">      containers:</span></span><br><span class="line">        - name: gordondemo</span><br><span class="line"><span class="symbol">          image:</span> registry.cn-beijing.aliyuncs.com<span class="meta-keyword">/octopus-test/</span>gordondemo:v8</span><br><span class="line"><span class="symbol">          imagePullPolicy:</span> IfNotPresent</span><br><span class="line">          <span class="meta"># command: [<span class="string">"/app/data-query-service/startdocker.sh"</span>, <span class="string">"data-query-service.jar"</span>]</span></span><br><span class="line"><span class="symbol">          resources:</span></span><br><span class="line"><span class="symbol">            requests:</span></span><br><span class="line"><span class="symbol">              memory:</span> <span class="string">"256Mi"</span></span><br><span class="line"><span class="symbol">            limits:</span></span><br><span class="line"><span class="symbol">              memory:</span> <span class="string">"512Mi"</span></span><br><span class="line"><span class="symbol">          ports:</span></span><br><span class="line">            - containerPort: <span class="number">8080</span></span><br><span class="line"><span class="symbol">      restartPolicy:</span> Always</span><br><span class="line"><span class="symbol">  selector:</span></span><br><span class="line"><span class="symbol">    matchLabels:</span></span><br><span class="line"><span class="symbol">      app:</span> gordondemo</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>执行Deployment</p>
+  <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl apply -f deployment.yaml</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编辑Service的yaml文件</p>
+  <figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这儿直接使用阿里云的slb服务</span></span><br><span class="line">$ cat service.yaml</span><br><span class="line"><span class="symbol">apiVersion:</span> v1</span><br><span class="line"><span class="symbol">kind:</span> Service</span><br><span class="line"><span class="symbol">metadata:</span></span><br><span class="line"><span class="symbol">  annotations:</span></span><br><span class="line">    service.beta.kubernetes.io/alicloud-loadbalancer-protocol-port: <span class="string">"http:80"</span></span><br><span class="line"><span class="symbol">  labels:</span></span><br><span class="line"><span class="symbol">    app:</span> gordondemo</span><br><span class="line"><span class="symbol">  name:</span> gordondemo</span><br><span class="line"><span class="symbol">  namespace:</span> default</span><br><span class="line"><span class="symbol">spec:</span></span><br><span class="line"><span class="symbol">  ports:</span></span><br><span class="line">    - port: <span class="number">80</span></span><br><span class="line"><span class="symbol">      protocol:</span> TCP</span><br><span class="line"><span class="symbol">      targetPort:</span> <span class="number">8080</span></span><br><span class="line"><span class="symbol">  selector:</span></span><br><span class="line"><span class="symbol">    app:</span> gordondemo</span><br><span class="line"><span class="symbol">  sessionAffinity:</span> None</span><br><span class="line"><span class="symbol">  type:</span> LoadBalancer</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>执行Service</p>
+  <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> kubectl apply -f service.yaml</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看</p>
+  <figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl <span class="builtin-name">get</span> deployment</span><br><span class="line">NAME         DESIRED   CURRENT   UP-TO-DATE   AVAILABLE      AGE</span><br><span class="line">gordondemo      1         1         1            1           10s</span><br><span class="line">$ kubectl <span class="builtin-name">get</span> svc</span><br><span class="line">NAME           <span class="built_in"> TYPE </span>          CLUSTER-IP      EXTERNAL-IP      PORT(S)       AGE</span><br><span class="line">gordondemo     LoadBalancer   172.21.7.224    xx.xx.xx.xx    80:31807/TCP     10s</span><br><span class="line">$ kubectl <span class="builtin-name">get</span> po</span><br><span class="line">NAME                             READY      STATUS      RESTARTS     AGE</span><br><span class="line">gordondemo-65f4dbd959-7ps4v       1/1       Running        0          10s</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>请求成功</p>
+  <figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// EXTERNAL-IP 对应的就是阿里slb的ip地址</span></span><br><span class="line">$ curl xx<span class="selector-class">.xx</span><span class="selector-class">.xx</span><span class="selector-class">.xx</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
 
-1.2 Handlers
-{_global, handlers} =&gt; []
-</code></pre><p>2.三个子进程one_for_one:</p>
-<pre><code>{lager, {gen_event, start_link, [{local, lager_event}]},
-        permanent, 5000, worker, dynamic}
-{lager_handler_watcher_sup, {lager_handler_watcher_sup, start_link, []},
-        permanent, 5000, supervisor, [lager_handler_watcher_sup]}
-//可选,根据env(crash_log)的值
-{lager_crash_log, {lager_crash_log, start_link, [File, MaxBytes,
-  RotationSize, RotationDate, RotationCount, RotationMod]},
-  permanent, 5000, worker, [lager_crash_log]}
-</code></pre><a id="more"></a>
-<p>3.lager_event:</p>
-<pre><code>% 后面操作中增加事件
-</code></pre><p>4.lager_handler_watcher_sup.erl:</p>
-<pre><code>simple_one_for_one:
-{lager_handler_watcher, {lager_handler_watcher, start_link, []},
-    temporary, 5000, worker, [lager_handler_watcher]}
-% 后面通过start_child增加
-</code></pre><p>5.lager_crash_log.erl:</p>
-<pre><code>% 后面单独对它分析
-</code></pre><h3 id="lager-app-boot-0"><a href="#lager-app-boot-0" class="headerlink" title="lager_app:boot/0"></a>lager_app:boot/0</h3><h5 id="Handler-gt-lager-backend-throttle"><a href="#Handler-gt-lager-backend-throttle" class="headerlink" title="Handler=&gt;lager_backend_throttle"></a>Handler=&gt;lager_backend_throttle</h5><p>相关参数</p>
-<pre><code>{async_threshold, 20},      % 默认undefined
-{async_threshold_window, 5} % 默认undefined
-
-a.如没设定async_threshold或值小于0
-不执行以下操作
-
-b.如没设定async_threshold_window
-async_threshold_window = async_threshold * 0.2(向下取整)
-
-c.两参数不为整数
-throw异常
-
-d. 都正常
-</code></pre><p>启动handler=&gt;lager_backend_throttle:</p>
-<pre><code>% 启动一个lager_handler_watcher_sup的child: 
-supervisor:start_child(lager_handler_watcher_sup, [Sink, lager_backend_throttle, [Threshold, Window]])
-其中:
-% Sink=lager_event
-% Threshold=env(async_threshold)
-% Window=env(async_threshold_window)
-
-说明:
-会先生成simple_one_for_one的lager_handler_watcher,再启动gen_event
-会增加参数{sink, Sink}
-</code></pre><h5 id="Handler-gt-lager-manager-killer"><a href="#Handler-gt-lager-manager-killer" class="headerlink" title="Handler=&gt;lager_manager_killer"></a>Handler=&gt;lager_manager_killer</h5><p>参数:</p>
-<pre><code>{killer_hwm, 1000}              % 默认undefined
-{killer_reinstall_after, 5000}  % 默认5000
-% This means if the sink&#39;s mailbox size exceeds 1000 messages,
-% kill the entire sink and reload it after 5000 milliseconds.
-
-% a. 没有配置killer_hwm参数
-不执行以下操作
-
-% b.没有配置killer_reinstall_after参数
-默认为5000
-
-% c.两参数不是大于0整数
-throw异常
-
-% d.一切正常
-</code></pre><p>启动handler=&gt;lager_manager_killer:</p>
-<pre><code>% 启动一个lager_handler_watcher_sup的child: 
-supervisor:start_child(lager_handler_watcher_sup, [Sink, lager_manager_killer, [HWM, ReinstallTimer]])
-其中:
-% Sink: lager_event
-% HWM: env(killer_hwm)
-% ReinstallTimer: env(killer_reinstall_after)
-
-说明:
-会先生成simple_one_for_one的lager_handler_watcher,再启动gen_event
-</code></pre><h5 id="配置文件配置handlers"><a href="#配置文件配置handlers" class="headerlink" title="配置文件配置handlers"></a>配置文件配置handlers</h5><p>配置文件:</p>
-<pre><code>{handlers, [
-  {lager_console_backend, [{level, info}]},
-  {lager_file_backend, [{file, &quot;error.log&quot;}, {level, error}]},
-  {lager_file_backend, [{file, &quot;console.log&quot;}, {level, info}]}
- ]},
-
-% a.没有设备配置文件
-不执行以下操作
-
-% b.handlers不是列表
-throw异常
-
-% c.一切正常
-</code></pre><p>把配件文件转为格式:{Module, Config}，即:</p>
-<pre><code>[
-  {lager_console_backend, [{level, info}]},
-  {
-    {lager_file_backend, &quot;error.log&quot;}, 
-    [{file, &quot;error.log&quot;}, {level, error}]
-  },
-  {
-    {lager_file_backend, &quot;console.log&quot;}, 
-    [{file, &quot;console.log&quot;}, {level, info}]
-  }
-]
-</code></pre><p>对上面配置文件handlers列表中的每个handler，执行:</p>
-<pre><code>lager_app:check_handler_config(Module, Config)
-1. 如果是lager_console_backend类型:
-  直接返回ok
-2. 如果是lager_file_backend类型:
-  a. Fs=get(__lager_file_backend_filenames) % 进程字典
-    有些字典: 返回值
-    无字典: 返回ordsets:new()
-  b. put(__lager_file_backend_filenames, ordsets:add_element(F, Fs))
-    参数:
-    F: &quot;error.log&quot; | &quot;console.log&quot;
-    Fs: 进程字典指针
-</code></pre><p>启动handler=&gt;按配置文件启动3个:</p>
-<pre><code>start_handler(Sink, Module, Config)
-  % Sink: lager_event
-  % Module: 
-    % lager_console_backend | 
-    % {lager_file_backend, &quot;error.log&quot;} | 
-    % {lager_file_backend, &quot;console.log&quot;}
-  % Config: [{file, &quot;error.log&quot;}, {level, error}]
-  % 说明: handlers配置,对list中的每一项启动一个child
-  {ok, Watcher} = supervisor:start_child(lager_handler_watcher_sup, [Sink, Module, Config])
-</code></pre><p>往表lager_config中插入数据:</p>
-<pre><code>{{_global, handlers} =&gt; [{Module, Watcher, Sink} | _OtherList]}
-其中:
-Module: {lager_file_backend, &quot;error.log&quot;}
-Watcher: 上一步start_child的pid
-Sink: lager_event
-</code></pre><h5 id="update-loglevel-config模块"><a href="#update-loglevel-config模块" class="headerlink" title="update_loglevel_config模块"></a>update_loglevel_config模块</h5><p>获取Traces:</p>
-<pre><code>% 后面单独对它分析
-</code></pre><p>get_loglevels(lager_event):</p>
-<pre><code>1.获取所有handlers:
-  gen_event:which_handlers(Sink)
-
-2.执行call/4
-  对名为lager_event的gen_event,对它所有的handlers,执行:
-      call/4(request:get_loglevel)
-
-3.合并得到最小log级别,确定什么级别的日志会自动丢弃
-
-4.更新表lager_config中值:
-
-key: {lager_event, loglevel}
-value: {MinLog, Traces}
-如:
-{lager_event,loglevel}, {255,[]}
-</code></pre><h5 id="start-error-logger-handler-3"><a href="#start-error-logger-handler-3" class="headerlink" title="start_error_logger_handler/3"></a>start_error_logger_handler/3</h5><p>参数:</p>
-<pre><code>{error_logger_redirect, true}   % 默认:true
-{error_logger_hwm, 50}          % 默认:0
-{error_logger_whitelist, [Logger.ErrorHandler]} %  Stop lager removing Logger&#39;s:error_logger handler
-{error_logger_groupleader_strategy, undefined}  % 默认为undefined
-</code></pre><p>步骤:</p>
-<pre><code>1.如error_logger_redirect =&gt; false:
-  直接返回[]
-2.参数error_logger_groupleader_strategy的值
-  2.1 如为: undefined:
-    直接返回: handle
-  2.2 如为: handle | ignore | mirror
-    直接返回: 此值
-  2.3 throw 异常
-
-3.supervisor:start_child(lager_handler_watcher_sup, [error_logger, error_logger_lager_h, [HWM, GlStrategy]])
-  HWM: 配置error_logger_hwm的值
-  GlStrategy: 配置error_logger_groupleader_strategy的值
-</code></pre><h3 id="boot-all-extra"><a href="#boot-all-extra" class="headerlink" title="boot(all_extra)"></a>boot(all_extra)</h3><p>参数::</p>
-<pre><code>extra_sinks
-# 后面单独对它分析
-</code></pre><h3 id="boot-39-traces-39"><a href="#boot-39-traces-39" class="headerlink" title="boot(&#39;traces&#39;)"></a>boot(&#39;traces&#39;)</h3><p>参数::</p>
-<pre><code>traces
-</code></pre><p>说明::</p>
-<pre><code>1. 需要用到goldrush, 后面单独对它分析
-2. traces相关, 后面单独对它分析
-</code></pre>
       
     </div>
 
@@ -705,7 +568,7 @@ value: {MinLog, Traces}
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     
-    <a href="http://blog.zhaoweiguo.com/2018/11/02/erlang-source-analysis-lager2/" title="开源项目lager2-application启动">http://blog.zhaoweiguo.com/2018/11/02/erlang-source-analysis-lager2/</a>
+    <a href="http://blog.zhaoweiguo.com/2019/07/24/k8s-usage-gitsync1/" title="kubenates 项目初体验1">http://blog.zhaoweiguo.com/2019/07/24/k8s-usage-gitsync1/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！</li>
@@ -718,11 +581,9 @@ value: {MinLog, Traces}
       
         <div class="post-tags">
           
-            <a href="/tags/erlang/" rel="tag"># erlang</a>
+            <a href="/tags/k8s/" rel="tag"># k8s</a>
           
-            <a href="/tags/source-analysis/" rel="tag"># source-analysis</a>
-          
-            <a href="/tags/lager/" rel="tag"># lager</a>
+            <a href="/tags/gitsync/" rel="tag"># gitsync</a>
           
         </div>
       
@@ -735,8 +596,8 @@ value: {MinLog, Traces}
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/09/29/erlang-source-analysis-tsung1/" rel="next" title="看源码前准备工作">
-                <i class="fa fa-chevron-left"></i> 看源码前准备工作
+              <a href="/2019/05/24/ali-tsdb-5-minute/" rel="next" title="5分钟了解阿里时序时空数据库">
+                <i class="fa fa-chevron-left"></i> 5分钟了解阿里时序时空数据库
               </a>
             
           </div>
@@ -744,10 +605,6 @@ value: {MinLog, Traces}
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/11/03/erlang-source-analysis-lager3/" rel="prev" title="开源项目lager3-设置阀值相关">
-                开源项目lager3-设置阀值相关 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -975,7 +832,7 @@ value: {MinLog, Traces}
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#lager-sup"><span class="nav-number">1.</span> <span class="nav-text">lager_sup</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lager-app-boot-0"><span class="nav-number">2.</span> <span class="nav-text">lager_app:boot/0</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Handler-gt-lager-backend-throttle"><span class="nav-number">2.0.1.</span> <span class="nav-text">Handler=&gt;lager_backend_throttle</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Handler-gt-lager-manager-killer"><span class="nav-number">2.0.2.</span> <span class="nav-text">Handler=&gt;lager_manager_killer</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#配置文件配置handlers"><span class="nav-number">2.0.3.</span> <span class="nav-text">配置文件配置handlers</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#update-loglevel-config模块"><span class="nav-number">2.0.4.</span> <span class="nav-text">update_loglevel_config模块</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#start-error-logger-handler-3"><span class="nav-number">2.0.5.</span> <span class="nav-text">start_error_logger_handler/3</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#boot-all-extra"><span class="nav-number">3.</span> <span class="nav-text">boot(all_extra)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#boot-39-traces-39"><span class="nav-number">4.</span> <span class="nav-text">boot(&#39;traces&#39;)</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#概要"><span class="nav-number">1.</span> <span class="nav-text">概要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#部署一个最简单项目"><span class="nav-number">2.</span> <span class="nav-text">部署一个最简单项目</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#使用go建立一个新项目"><span class="nav-number">2.0.1.</span> <span class="nav-text">使用go建立一个新项目:</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>

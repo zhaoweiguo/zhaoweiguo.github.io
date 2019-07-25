@@ -100,18 +100,18 @@
 
 
 
-  <meta name="description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  -record(gordon_test, {  idr,    % {id, pid}  id,  pid,  locale,  time = os:timestamp()  }).  初使化代码:  mnesia:">
+  <meta name="description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  1234567-record(gordon_test, &amp;#123;    idr,    % &amp;#123;id, pid&amp;#125;    id,    pid,    locale,    time = os:t">
 <meta name="keywords" content="erlang,mnesia,collect">
 <meta property="og:type" content="article">
 <meta property="og:title" content="mnesia:delect_object只删除索引问题">
 <meta property="og:url" content="http://blog.zhaoweiguo.com/2019/02/20/erlang_collect_mnesia_delect_object/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  -record(gordon_test, {  idr,    % {id, pid}  id,  pid,  locale,  time = os:timestamp()  }).  初使化代码:  mnesia:">
+<meta property="og:description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  1234567-record(gordon_test, &amp;#123;    idr,    % &amp;#123;id, pid&amp;#125;    id,    pid,    locale,    time = os:t">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-03-12T02:11:30.783Z">
+<meta property="og:updated_time" content="2019-06-27T03:11:01.420Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="mnesia:delect_object只删除索引问题">
-<meta name="twitter:description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  -record(gordon_test, {  idr,    % {id, pid}  id,  pid,  locale,  time = os:timestamp()  }).  初使化代码:  mnesia:">
+<meta name="twitter:description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  1234567-record(gordon_test, &amp;#123;    idr,    % &amp;#123;id, pid&amp;#125;    id,    pid,    locale,    time = os:t">
 
 
 
@@ -249,7 +249,7 @@
       
     
 
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">21</span></a>
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">22</span></a>
 
   </li>
         
@@ -268,7 +268,7 @@
       
     
 
-    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">6</span></a>
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">7</span></a>
 
   </li>
         
@@ -287,7 +287,7 @@
       
     
 
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">21</span></a>
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">23</span></a>
 
   </li>
 
@@ -407,7 +407,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-03-12 10:11:30" itemprop="dateModified" datetime="2019-03-12T10:11:30+08:00">2019-03-12</time>
+                <time title="修改时间：2019-06-27 11:11:01" itemprop="dateModified" datetime="2019-06-27T11:11:01+08:00">2019-06-27</time>
               
             
           </span>
@@ -452,7 +452,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">1.8k</span>
+                <span title="本文字数">1.9k</span>
               
 
               
@@ -488,47 +488,30 @@
       
         <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据</p>
 <h3 id="问题重现"><a href="#问题重现" class="headerlink" title="问题重现"></a>问题重现</h3><ol>
-<li><p>表结构:</p>
-<p> -record(gordon_test, {</p>
-<pre><code> idr,    % {id, pid}
- id,
- pid,
- locale,
- time = os:timestamp()
-</code></pre><p> }).</p>
-</li>
-<li><p>初使化代码:</p>
-<p> mnesia:create_table(gordon_test, [</p>
-<pre><code> {ram_copies, [node() | nodes()]},
- {attributes, record_info(fields, gordon_test)}
-</code></pre><p> ]),<br> mnesia:add_table_index(gordon_test, id),<br> mnesia:add_table_index(gordon_test, pid).</p>
-</li>
-<li><p>插入数据:</p>
-<p> mnesia:dirty_write(gordon_test, {gordon_test, {1, 1}, 1, 1, &quot;&quot;, &quot;&quot;, os:timestamp()}).<br> mnesia:dirty_write(gordon_test, {gordon_test, {2, 2}, 2, 2, &quot;&quot;, &quot;&quot;, os:timestamp()}).<br> mnesia:dirty_write(gordon_test, {gordon_test, {3, 3}, 3, 3, &quot;&quot;, &quot;&quot;, os:timestamp()}).</p>
-</li>
+<li>表结构:</li>
 </ol>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-<span class="built_in">record</span>(gordon_test, &#123;</span><br><span class="line">    idr,    % &#123;<span class="built_in">id</span>, pid&#125;</span><br><span class="line">    <span class="built_in">id</span>,</span><br><span class="line">    pid,</span><br><span class="line">    locale,</span><br><span class="line">    <span class="built_in">time</span> = os:timestamp()</span><br><span class="line">&#125;).</span><br></pre></td></tr></table></figure>
+<ol>
+<li>初使化代码:</li>
+</ol>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mnesia:create_table(gordon_test, [</span><br><span class="line">    &#123;ram_copies, [<span class="keyword">node</span><span class="title">() | nodes</span>()]&#125;,</span><br><span class="line">    &#123;<span class="keyword">attributes</span>, record_<span class="literal">inf</span>o(fields, gordon_test)&#125;</span><br><span class="line">]),</span><br><span class="line">mnesia:add_table_index(gordon_test, id),</span><br><span class="line">mnesia:add_table_index(gordon_test, pid).</span><br></pre></td></tr></table></figure>
+<ol>
+<li>插入数据:</li>
+</ol>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">mnesia:</span>dirty_write(gordon_test, &#123;gordon_test, &#123;<span class="number">1</span>, <span class="number">1</span>&#125;, <span class="number">1</span>, <span class="number">1</span>, <span class="string">""</span>, <span class="string">""</span>, <span class="string">os:</span>timestamp()&#125;).</span><br><span class="line"><span class="string">mnesia:</span>dirty_write(gordon_test, &#123;gordon_test, &#123;<span class="number">2</span>, <span class="number">2</span>&#125;, <span class="number">2</span>, <span class="number">2</span>, <span class="string">""</span>, <span class="string">""</span>, <span class="string">os:</span>timestamp()&#125;).</span><br><span class="line"><span class="string">mnesia:</span>dirty_write(gordon_test, &#123;gordon_test, &#123;<span class="number">3</span>, <span class="number">3</span>&#125;, <span class="number">3</span>, <span class="number">3</span>, <span class="string">""</span>, <span class="string">""</span>, <span class="string">os:</span>timestamp()&#125;).</span><br></pre></td></tr></table></figure>
 <p>3.查询:</p>
-<pre><code>Id = 3,
-Pid = 3,
-% 查出id=3的所有记录，都能查出一条记录
-mnesia:dirty_index_read(gordon_test, Id, #gordon_test.id),
-mnesia:dirty_index_match_object(#gordon_test{idr = &#39;$1&#39;,id=Id, _=&#39;_&#39;}, #gordon_test.id),
-</code></pre><ol>
-<li><p>执行删除:</p>
-<p> mnesia:dirty_delete_object(X#gordon_test{locale = aaaa}).<br> or<br> Trans = fun() -&gt;</p>
-<pre><code> mnesia:delete_object(X#gordon_test{locale = aaaa})
-     end,
-</code></pre><p> mnesia:transaction(Trans)</p>
-</li>
-<li><p>两次查询，dirty_index_read查不到数据:</p>
-<p> % 数据查询为空<br> mnesia:dirty<em>index_read(gordon_test, Id, #gordon_test.id),<br> % 数据不变<br> mnesia:dirty_index_match_object(#gordon_test{idr = &#39;$1&#39;,id=Id, </em>=&#39;_&#39;}, #gordon_test.id),</p>
-</li>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Id = 3,</span><br><span class="line">Pid = 3,</span><br><span class="line">% 查出id=3的所有记录，都能查出一条记录</span><br><span class="line"><span class="section">mnesia:dirty_index_read(gordon_test, Id, #gordon_test.id),</span></span><br><span class="line"><span class="section">mnesia:dirty_index_match_object(#gordon_test&#123;idr = '$1',id=Id, _='_'&#125;, #gordon_test.id),</span></span><br></pre></td></tr></table></figure>
+<ol>
+<li>执行删除:</li>
 </ol>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">mnesia:</span>dirty_delete_object(X<span class="comment">#gordon_test&#123;locale = aaaa&#125;).</span></span><br><span class="line">or</span><br><span class="line">Trans = <span class="function"><span class="keyword">fun</span>() <span class="title">-</span></span>&gt;</span><br><span class="line">    <span class="symbol">mnesia:</span>delete_object(X<span class="comment">#gordon_test&#123;locale = aaaa&#125;)</span></span><br><span class="line">        <span class="keyword">end</span>,</span><br><span class="line"><span class="symbol">mnesia:</span>transaction(Trans)</span><br></pre></td></tr></table></figure>
+<ol>
+<li>两次查询，dirty_index_read查不到数据:</li>
+</ol>
+<figure class="highlight clean"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">% 数据查询为空</span><br><span class="line">mnesia:dirty_index_read(gordon_test, Id, #gordon_test.id),</span><br><span class="line">% 数据不变</span><br><span class="line">mnesia:dirty_index_match_object(#gordon_test&#123;idr = <span class="string">'$1'</span>,id=Id, _=<span class="string">'_'</span>&#125;, #gordon_test.id),</span><br></pre></td></tr></table></figure>
 <h3 id="问题定位"><a href="#问题定位" class="headerlink" title="问题定位"></a>问题定位</h3><p>查文档:</p>
-<pre><code>If a table is of type bag, it can sometimes be needed to delete only some of the records with a certain key. This can be done with the function delete_object/3. A complete record must be supplied to this function.
-
-The semantics of this function is context-sensitive. For details, see mnesia:activity/4. In transaction-context, it acquires a lock of type LockKind on the record. Currently, the lock types write and sticky_write are supported.
-</code></pre><h3 id="深层研究"><a href="#深层研究" class="headerlink" title="深层研究"></a>深层研究</h3><p>待继续 @todo</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">If</span> a table is of<span class="built_in"> type </span>bag, it can sometimes be needed <span class="keyword">to</span> delete only some of the records with a certain key. </span><br><span class="line">This can be done with the function delete_object/3. A complete record must be supplied <span class="keyword">to</span> this function.</span><br><span class="line"></span><br><span class="line">The semantics of this function is context-sensitive. <span class="keyword">For</span> details, see mnesia:activity/4. </span><br><span class="line"><span class="keyword">In</span> transaction-context, it acquires a lock of<span class="built_in"> type </span>LockKind on the record. </span><br><span class="line">Currently, the lock types write <span class="keyword">and</span> sticky_write are supported.</span><br></pre></td></tr></table></figure>
+<h3 id="深层研究"><a href="#深层研究" class="headerlink" title="深层研究"></a>深层研究</h3><p>待继续 @todo</p>
 
       
     </div>
@@ -680,7 +663,7 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-count">22</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -705,7 +688,9 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
                     
                       
                     
-                    <span class="site-state-item-count">6</span>
+                      
+                    
+                    <span class="site-state-item-count">7</span>
                     <span class="site-state-item-name">分类</span>
                   
                 </div>
@@ -760,7 +745,11 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
                     
                       
                     
-                    <span class="site-state-item-count">21</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
                     <span class="site-state-item-name">标签</span>
                   
                 </div>
@@ -867,7 +856,7 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
     
       <span class="post-meta-item-text">站点总字数：</span>
     
-    <span title="站点总字数">88k</span>
+    <span title="站点总字数">91k</span>
   
 
   
@@ -878,7 +867,7 @@ The semantics of this function is context-sensitive. For details, see mnesia:act
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">1:20</span>
+    <span title="站点阅读时长">1:23</span>
   
 </div>
 

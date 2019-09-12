@@ -100,25 +100,25 @@
 
 
 
-  <meta name="description" content="概要前一篇文章完成了git同步相关工作，使用nginx做反向代理，本篇完成PHP项目的部署，主要包括以下内容:  使用ConfigMap完成Nginx的配置 基于官方php-fpm镜像安装所需要的PHP插件并生成新的镜像备用 使用阿里LoadBalance完成服务部署  使用ConfigMap完成Nginx的配置">
+  <meta name="description" content="概要前一篇文章完成了git同步相关工作，使用nginx做反向代理，本篇完成PHP项目的部署，主要包括以下内容:  使用ConfigMap完成Nginx的配置 基于官方php-fpm镜像安装所需要的PHP插件并生成新的镜像备用 使用阿里LoadBalance完成服务部署  使用ConfigMap完成Nginx的配置配置内容:12345678910111213141516171819202122232">
 <meta name="keywords" content="k8s,php">
 <meta property="og:type" content="article">
 <meta property="og:title" content="kubenates 项目初体验3——nginx+php+memcached">
-<meta property="og:url" content="http://blog.zhaoweiguo.com/2019/08/16/k8s-usage-php1/index.html">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2019/08/16/k8s-usage3-php/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="概要前一篇文章完成了git同步相关工作，使用nginx做反向代理，本篇完成PHP项目的部署，主要包括以下内容:  使用ConfigMap完成Nginx的配置 基于官方php-fpm镜像安装所需要的PHP插件并生成新的镜像备用 使用阿里LoadBalance完成服务部署  使用ConfigMap完成Nginx的配置">
+<meta property="og:description" content="概要前一篇文章完成了git同步相关工作，使用nginx做反向代理，本篇完成PHP项目的部署，主要包括以下内容:  使用ConfigMap完成Nginx的配置 基于官方php-fpm镜像安装所需要的PHP插件并生成新的镜像备用 使用阿里LoadBalance完成服务部署  使用ConfigMap完成Nginx的配置配置内容:12345678910111213141516171819202122232">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-16T09:47:49.506Z">
+<meta property="og:updated_time" content="2019-09-12T06:48:39.412Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kubenates 项目初体验3——nginx+php+memcached">
-<meta name="twitter:description" content="概要前一篇文章完成了git同步相关工作，使用nginx做反向代理，本篇完成PHP项目的部署，主要包括以下内容:  使用ConfigMap完成Nginx的配置 基于官方php-fpm镜像安装所需要的PHP插件并生成新的镜像备用 使用阿里LoadBalance完成服务部署  使用ConfigMap完成Nginx的配置">
+<meta name="twitter:description" content="概要前一篇文章完成了git同步相关工作，使用nginx做反向代理，本篇完成PHP项目的部署，主要包括以下内容:  使用ConfigMap完成Nginx的配置 基于官方php-fpm镜像安装所需要的PHP插件并生成新的镜像备用 使用阿里LoadBalance完成服务部署  使用ConfigMap完成Nginx的配置配置内容:12345678910111213141516171819202122232">
 
 
 
 
 
 
-  <link rel="canonical" href="http://blog.zhaoweiguo.com/2019/08/16/k8s-usage-php1/"/>
+  <link rel="canonical" href="http://blog.zhaoweiguo.com/2019/08/16/k8s-usage3-php/"/>
 
 
 
@@ -348,7 +348,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/08/16/k8s-usage-php1/">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/08/16/k8s-usage3-php/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoweiguo">
@@ -407,7 +407,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-08-16 17:47:49" itemprop="dateModified" datetime="2019-08-16T17:47:49+08:00">2019-08-16</time>
+                <time title="修改时间：2019-09-12 14:48:39" itemprop="dateModified" datetime="2019-09-12T14:48:39+08:00">2019-09-12</time>
               
             
           </span>
@@ -452,7 +452,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">157</span>
+                <span title="本文字数">3.9k</span>
               
 
               
@@ -466,7 +466,7 @@
                 
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="阅读时长">1 分钟</span>
+                <span title="阅读时长">4 分钟</span>
               
             </div>
           
@@ -492,7 +492,19 @@
 <li>基于官方php-fpm镜像安装所需要的PHP插件并生成新的镜像备用</li>
 <li>使用阿里LoadBalance完成服务部署</li>
 </ul>
-<h2 id="使用ConfigMap完成Nginx的配置"><a href="#使用ConfigMap完成Nginx的配置" class="headerlink" title="使用ConfigMap完成Nginx的配置"></a>使用ConfigMap完成Nginx的配置</h2>
+<h2 id="使用ConfigMap完成Nginx的配置"><a href="#使用ConfigMap完成Nginx的配置" class="headerlink" title="使用ConfigMap完成Nginx的配置"></a>使用ConfigMap完成Nginx的配置</h2><p>配置内容:<br><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: v1</span><br><span class="line">kind: ConfigMap</span><br><span class="line">metadata:</span><br><span class="line">    name: nginx-config</span><br><span class="line">    namespace: nginx</span><br><span class="line">data:</span><br><span class="line">    chnupdate.conf: |</span><br><span class="line">       <span class="built_in"> server </span>&#123;</span><br><span class="line">            listen       80;</span><br><span class="line">            server_name  web.zhaoweiguo.com;</span><br><span class="line">            root   /opt/service-new/webroot;</span><br><span class="line">            access_log  /var/log/nginx/access.log;</span><br><span class="line">            error_log  /var/log/nginx/error.log debug;</span><br><span class="line">            add_header Access-Control-Allow-Origin  *;</span><br><span class="line">            client_max_body_size  128M;</span><br><span class="line">            location / &#123;</span><br><span class="line">                 try_files <span class="variable">$uri</span> /index.php<span class="variable">$is_args</span><span class="variable">$args</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            location ~ \.php$ &#123;</span><br><span class="line">                root   /opt/service-new/webroot;</span><br><span class="line">                fastcgi_pass   127.0.0.1:9000;</span><br><span class="line">                fastcgi_index  index.php;</span><br><span class="line">                fastcgi_param  SCRIPT_FILENAME  <span class="variable">$document_root</span>/<span class="variable">$fastcgi_script_name</span>;</span><br><span class="line">                include        fastcgi_params;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure></p>
+<p>注意:<br><figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span> 这儿设定好的目录是/opt/service-new/webroot</span><br><span class="line"><span class="number">2.</span> php服务是<span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>的<span class="number">9000</span>端口</span><br></pre></td></tr></table></figure></p>
+<h2 id="使用Secret设置git密钥"><a href="#使用Secret设置git密钥" class="headerlink" title="使用Secret设置git密钥"></a>使用Secret设置git密钥</h2><p>获取git服务的known_hosts内容:<br><figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$&gt;</span> ssh-keyscan <span class="variable">$YOUR_GIT_HOST</span> &gt; <span class="regexp">/tmp/known</span>_hosts</span><br><span class="line">例<span class="symbol">:</span></span><br><span class="line"><span class="variable">$&gt;</span> ssh-keyscan gitee.com &gt; <span class="regexp">/tmp/known</span>_hosts</span><br></pre></td></tr></table></figure></p>
+<p>获取known_hosts和密钥的base64:<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash">&gt; cat /tmp/known_hosts | base64</span></span><br><span class="line"><span class="meta">$</span><span class="bash">&gt; cat /Users/zhaoweiguo/.ssh/gordon.git | base64</span></span><br></pre></td></tr></table></figure></p>
+<p>新建名为zwgSecret的Secret:</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: v1</span><br><span class="line">kind: Secret</span><br><span class="line">metadata:</span><br><span class="line">    name: zwgSecret</span><br><span class="line">    namespace: nginx</span><br><span class="line">data:</span><br><span class="line">    ssh: LS0tLS1CRUdJTiB<span class="built_in">..</span><span class="built_in">..</span><span class="built_in">..</span><span class="attribute">tCg</span>==</span><br><span class="line">    known_hosts: Z2l0Y29<span class="built_in">..</span><span class="built_in">..</span><span class="built_in">..</span>EQnZ1BMFNrMzN</span><br></pre></td></tr></table></figure>
+<p>or</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$&gt; kubectl create<span class="built_in"> secret </span>generic zwgSecret \</span><br><span class="line">      <span class="attribute">--from-file</span>=ssh=/Users/zhaoweiguo/.ssh/gordon.git \</span><br><span class="line">      <span class="attribute">--from-file</span>=known_hosts=/tmp/known_hosts</span><br></pre></td></tr></table></figure>
+<h2 id="使用Deployment设置php-nginx服务"><a href="#使用Deployment设置php-nginx服务" class="headerlink" title="使用Deployment设置php,nginx服务"></a>使用Deployment设置php,nginx服务</h2><p>说明:</p>
+<figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span> 一个pod下面有<span class="number">3</span>个容器git-sync, php, nginx</span><br><span class="line"><span class="number">2.</span> git-sync容器只负责把代码clone到指定位置,并保证代码是最新的</span><br><span class="line"><span class="number">3.</span> php容器</span><br></pre></td></tr></table></figure>
+<p>配置文件:</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">apiVersion:</span> apps/v1</span><br><span class="line"><span class="symbol">kind:</span> Deployment</span><br><span class="line"><span class="symbol">metadata:</span></span><br><span class="line"><span class="symbol">    name:</span> php-appupdate-deployment</span><br><span class="line"><span class="symbol">spec:</span></span><br><span class="line"><span class="symbol">    replicas:</span> <span class="number">1</span></span><br><span class="line"><span class="symbol">    selector:</span></span><br><span class="line"><span class="symbol">        matchLabels:</span></span><br><span class="line"><span class="symbol">            app:</span> php-appupdate</span><br><span class="line"><span class="symbol">    template:</span></span><br><span class="line"><span class="symbol">        metadata:</span></span><br><span class="line"><span class="symbol">            labels:</span></span><br><span class="line"><span class="symbol">                app:</span> php-appupdate</span><br><span class="line"><span class="symbol">        spec:</span></span><br><span class="line"><span class="symbol">            containers:</span></span><br><span class="line">              - name: git-sync <span class="meta"># 启动 git-sync 容器</span></span><br><span class="line"><span class="symbol">                image:</span> registry.cn-hangzhou.aliyuncs.com<span class="meta-keyword">/xxxxxxxx/</span>git-sync:v3<span class="number">.1</span><span class="number">.1</span></span><br><span class="line"><span class="symbol">                args:</span></span><br><span class="line">                  - <span class="string">"-ssh"</span></span><br><span class="line">                  - <span class="string">"-repo=git@git.zhaoweiguo.com:gordon/smart_upload.git"</span></span><br><span class="line">                  - <span class="string">"-dest=service-new"</span></span><br><span class="line">                  - <span class="string">"-branch=master"</span></span><br><span class="line">                  - <span class="string">"-depth=1"</span></span><br><span class="line">                  - <span class="string">"-root=/gitpath"</span></span><br><span class="line"><span class="symbol">                securityContext:</span></span><br><span class="line"><span class="symbol">                  runAsUser:</span> <span class="number">65533</span> <span class="meta"># git-sync user(指定用户)</span></span><br><span class="line"><span class="symbol">                volumeMounts:</span> <span class="meta"># 挂载数据卷</span></span><br><span class="line">                  - mountPath: /gitpath</span><br><span class="line"><span class="symbol">                    name:</span> web-root</span><br><span class="line">                  - name: git-secret</span><br><span class="line"><span class="symbol">                    mountPath:</span> <span class="meta-keyword">/etc/</span>git-secret</span><br><span class="line">              - name: nginx</span><br><span class="line"><span class="symbol">                image:</span> registry.cn-hangzhou.aliyuncs.com<span class="meta-keyword">/xxxxxxxx/</span>nginx:alpine</span><br><span class="line"><span class="symbol">                volumeMounts:</span></span><br><span class="line">                  - name: nginx-config</span><br><span class="line"><span class="symbol">                    mountPath:</span> <span class="meta-keyword">/etc/</span>nginx/conf.d</span><br><span class="line">                  - name: web-root</span><br><span class="line"><span class="symbol">                    mountPath:</span> /opt</span><br><span class="line">              - name: php</span><br><span class="line"><span class="symbol">                image:</span> registry.cn-hangzhou.aliyuncs.com<span class="meta-keyword">/xxxxxxxx/</span>php:<span class="number">5.5</span>-fpm-v4</span><br><span class="line"><span class="symbol">                imagePullPolicy:</span> IfNotPresent</span><br><span class="line"><span class="symbol">                volumeMounts:</span></span><br><span class="line">                  - name: web-root</span><br><span class="line"><span class="symbol">                    mountPath:</span> /opt</span><br><span class="line"><span class="symbol">            volumes:</span></span><br><span class="line">              - name: nginx-config</span><br><span class="line"><span class="symbol">                configMap:</span></span><br><span class="line"><span class="symbol">                  name:</span> nginx-config</span><br><span class="line">              - name: web-root</span><br><span class="line"><span class="symbol">                emptyDir:</span> &#123;&#125;</span><br><span class="line">              - name: git-secret</span><br><span class="line"><span class="symbol">                secret:</span></span><br><span class="line"><span class="symbol">                  secretName:</span> zwgSecret</span><br><span class="line"><span class="symbol">                  defaultMode:</span> <span class="number">288</span> <span class="meta"># = mode 0440</span></span><br><span class="line"><span class="symbol">            securityContext:</span></span><br><span class="line"><span class="symbol">              fsGroup:</span> <span class="number">65533</span> <span class="meta"># to make SSH key readable(指定用户组)</span></span><br></pre></td></tr></table></figure>
+
       
     </div>
 
@@ -525,7 +537,7 @@
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     
-    <a href="http://blog.zhaoweiguo.com/2019/08/16/k8s-usage-php1/" title="kubenates 项目初体验3——nginx+php+memcached">http://blog.zhaoweiguo.com/2019/08/16/k8s-usage-php1/</a>
+    <a href="http://blog.zhaoweiguo.com/2019/08/16/k8s-usage3-php/" title="kubenates 项目初体验3——nginx+php+memcached">http://blog.zhaoweiguo.com/2019/08/16/k8s-usage3-php/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！</li>
@@ -553,7 +565,7 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/07/28/k8s-usage-gitsync2/" rel="next" title="kubenates 项目初体验2——git同步项目">
+              <a href="/2019/07/28/k8s-usage2-gitsync/" rel="next" title="kubenates 项目初体验2——git同步项目">
                 <i class="fa fa-chevron-left"></i> kubenates 项目初体验2——git同步项目
               </a>
             
@@ -791,7 +803,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概要"><span class="nav-number">1.</span> <span class="nav-text">概要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用ConfigMap完成Nginx的配置"><span class="nav-number">2.</span> <span class="nav-text">使用ConfigMap完成Nginx的配置</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概要"><span class="nav-number">1.</span> <span class="nav-text">概要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用ConfigMap完成Nginx的配置"><span class="nav-number">2.</span> <span class="nav-text">使用ConfigMap完成Nginx的配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用Secret设置git密钥"><span class="nav-number">3.</span> <span class="nav-text">使用Secret设置git密钥</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用Deployment设置php-nginx服务"><span class="nav-number">4.</span> <span class="nav-text">使用Deployment设置php,nginx服务</span></a></li></ol></div>
             
 
           </div>
@@ -832,7 +844,7 @@
     
       <span class="post-meta-item-text">站点总字数：</span>
     
-    <span title="站点总字数">96k</span>
+    <span title="站点总字数">99k</span>
   
 
   
@@ -843,7 +855,7 @@
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">1:27</span>
+    <span title="站点阅读时长">1:30</span>
   
 </div>
 

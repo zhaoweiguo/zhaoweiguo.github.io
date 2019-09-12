@@ -100,25 +100,25 @@
 
 
 
-  <meta name="description" content="概要 本项目主要实现了基于git的项目同步, 技术为nginx+html  git公有项目同步 git私有项目同步 部署一个简单的nginx反向代理html    git公有项目同步 基于开源项目: git-sync2 最简单的https公有项目同步2  使用git-sync做项目同步 使用nginx做反向代理 两个容器在同一个Pod内，挂载同一个磁盘完成项目同步   配置实例:   123456">
+  <meta name="description" content="概要 本项目主要实现了基于git的项目同步, 技术为nginx+html  git公有项目同步 git私有项目同步 部署一个简单的nginx反向代理html    git公有项目同步 基于开源项目: git-sync1 最简单的https公有项目同步2  使用git-sync做项目同步 使用nginx做反向代理 两个容器在同一个Pod内，挂载同一个磁盘完成项目同步   配置实例:   123456">
 <meta name="keywords" content="k8s,gitsync">
 <meta property="og:type" content="article">
 <meta property="og:title" content="kubenates 项目初体验2——git同步项目">
-<meta property="og:url" content="http://blog.zhaoweiguo.com/2019/07/28/k8s-usage-gitsync2/index.html">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2019/07/28/k8s-usage2-gitsync/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="概要 本项目主要实现了基于git的项目同步, 技术为nginx+html  git公有项目同步 git私有项目同步 部署一个简单的nginx反向代理html    git公有项目同步 基于开源项目: git-sync2 最简单的https公有项目同步2  使用git-sync做项目同步 使用nginx做反向代理 两个容器在同一个Pod内，挂载同一个磁盘完成项目同步   配置实例:   123456">
+<meta property="og:description" content="概要 本项目主要实现了基于git的项目同步, 技术为nginx+html  git公有项目同步 git私有项目同步 部署一个简单的nginx反向代理html    git公有项目同步 基于开源项目: git-sync1 最简单的https公有项目同步2  使用git-sync做项目同步 使用nginx做反向代理 两个容器在同一个Pod内，挂载同一个磁盘完成项目同步   配置实例:   123456">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-16T09:16:47.846Z">
+<meta property="og:updated_time" content="2019-09-11T09:44:20.053Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kubenates 项目初体验2——git同步项目">
-<meta name="twitter:description" content="概要 本项目主要实现了基于git的项目同步, 技术为nginx+html  git公有项目同步 git私有项目同步 部署一个简单的nginx反向代理html    git公有项目同步 基于开源项目: git-sync2 最简单的https公有项目同步2  使用git-sync做项目同步 使用nginx做反向代理 两个容器在同一个Pod内，挂载同一个磁盘完成项目同步   配置实例:   123456">
+<meta name="twitter:description" content="概要 本项目主要实现了基于git的项目同步, 技术为nginx+html  git公有项目同步 git私有项目同步 部署一个简单的nginx反向代理html    git公有项目同步 基于开源项目: git-sync1 最简单的https公有项目同步2  使用git-sync做项目同步 使用nginx做反向代理 两个容器在同一个Pod内，挂载同一个磁盘完成项目同步   配置实例:   123456">
 
 
 
 
 
 
-  <link rel="canonical" href="http://blog.zhaoweiguo.com/2019/07/28/k8s-usage-gitsync2/"/>
+  <link rel="canonical" href="http://blog.zhaoweiguo.com/2019/07/28/k8s-usage2-gitsync/"/>
 
 
 
@@ -348,7 +348,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/07/28/k8s-usage-gitsync2/">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/07/28/k8s-usage2-gitsync/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoweiguo">
@@ -407,7 +407,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-08-16 17:16:47" itemprop="dateModified" datetime="2019-08-16T17:16:47+08:00">2019-08-16</time>
+                <time title="修改时间：2019-09-11 17:44:20" itemprop="dateModified" datetime="2019-09-11T17:44:20+08:00">2019-09-11</time>
               
             
           </span>
@@ -496,7 +496,7 @@
 </li>
 </ul>
 <h2 id="git公有项目同步"><a href="#git公有项目同步" class="headerlink" title="git公有项目同步"></a>git公有项目同步</h2><ul>
-<li>基于开源项目: git-sync<sup><a href="#fn_2" id="reffn_2">2</a></sup></li>
+<li>基于开源项目: git-sync<sup><a href="#fn_1" id="reffn_1">1</a></sup></li>
 <li><p>最简单的https公有项目同步<sup><a href="#fn_2" id="reffn_2">2</a></sup></p>
 <ul>
 <li>使用git-sync做项目同步</li>
@@ -581,7 +581,7 @@
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     
-    <a href="http://blog.zhaoweiguo.com/2019/07/28/k8s-usage-gitsync2/" title="kubenates 项目初体验2——git同步项目">http://blog.zhaoweiguo.com/2019/07/28/k8s-usage-gitsync2/</a>
+    <a href="http://blog.zhaoweiguo.com/2019/07/28/k8s-usage2-gitsync/" title="kubenates 项目初体验2——git同步项目">http://blog.zhaoweiguo.com/2019/07/28/k8s-usage2-gitsync/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！</li>
@@ -609,7 +609,7 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/07/24/k8s-usage-gitsync1/" rel="next" title="kubenates 项目初体验1——最简单项目">
+              <a href="/2019/07/24/k8s-usage1-simple/" rel="next" title="kubenates 项目初体验1——最简单项目">
                 <i class="fa fa-chevron-left"></i> kubenates 项目初体验1——最简单项目
               </a>
             
@@ -619,7 +619,7 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/08/16/k8s-usage-php1/" rel="prev" title="kubenates 项目初体验3——nginx+php+memcached">
+              <a href="/2019/08/16/k8s-usage3-php/" rel="prev" title="kubenates 项目初体验3——nginx+php+memcached">
                 kubenates 项目初体验3——nginx+php+memcached <i class="fa fa-chevron-right"></i>
               </a>
             
@@ -892,7 +892,7 @@
     
       <span class="post-meta-item-text">站点总字数：</span>
     
-    <span title="站点总字数">96k</span>
+    <span title="站点总字数">99k</span>
   
 
   
@@ -903,7 +903,7 @@
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">1:27</span>
+    <span title="站点阅读时长">1:30</span>
   
 </div>
 

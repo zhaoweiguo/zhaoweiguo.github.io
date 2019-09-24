@@ -100,22 +100,22 @@
 
 
 
-  <meta name="description" content="前情提要本人使用Idea做Golang开发，之前一直是用公有项目，可通过快捷键自动获取(如下图)，但私有git项目则不能如此顺利   方法1: 切换成ssh协议免密使用ssh协议clone代码，可能通过配置私钥实现免密登录。但go get命令默认是走https协议，那想办法让go get走ssh协议就解决这个问题了，网上查到的解决方案大多数是这种解法。 命令:123// 增加如下代码到文件~/.g">
+  <meta name="description" content="前情提要本人使用Idea做Golang开发，之前一直是用公有项目，可通过快捷键自动获取(如下图)，但私有git项目则不能如此顺利 不使用Go Modules(vgo)界面: 使用Go Modules(vgo): 方法1: 切换成ssh协议免密使用ssh协议clone代码，可能通过配置私钥实现免密登录。但go get命令默认是走https协议，那想办法让go get走ssh协议就解决这个问题了，网上">
 <meta name="keywords" content="golang,private git">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用go get获取私有git项目">
 <meta property="og:url" content="http://blog.zhaoweiguo.com/2019/09/24/golang-env-private-git/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="前情提要本人使用Idea做Golang开发，之前一直是用公有项目，可通过快捷键自动获取(如下图)，但私有git项目则不能如此顺利   方法1: 切换成ssh协议免密使用ssh协议clone代码，可能通过配置私钥实现免密登录。但go get命令默认是走https协议，那想办法让go get走ssh协议就解决这个问题了，网上查到的解决方案大多数是这种解法。 命令:123// 增加如下代码到文件~/.g">
+<meta property="og:description" content="前情提要本人使用Idea做Golang开发，之前一直是用公有项目，可通过快捷键自动获取(如下图)，但私有git项目则不能如此顺利 不使用Go Modules(vgo)界面: 使用Go Modules(vgo): 方法1: 切换成ssh协议免密使用ssh协议clone代码，可能通过配置私钥实现免密登录。但go get命令默认是走https协议，那想办法让go get走ssh协议就解决这个问题了，网上">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://blog.zhaoweiguo.com/images/golangs/go-get-git-private1.png">
 <meta property="og:image" content="http://blog.zhaoweiguo.com/images/golangs/go-get-git-private2.png">
 <meta property="og:image" content="http://blog.zhaoweiguo.com/images/golangs/go-get-git-private3.png">
 <meta property="og:image" content="http://blog.zhaoweiguo.com/images/golangs/go-get-git-private4.png">
-<meta property="og:updated_time" content="2019-09-24T07:45:01.312Z">
+<meta property="og:updated_time" content="2019-09-24T07:50:22.631Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用go get获取私有git项目">
-<meta name="twitter:description" content="前情提要本人使用Idea做Golang开发，之前一直是用公有项目，可通过快捷键自动获取(如下图)，但私有git项目则不能如此顺利   方法1: 切换成ssh协议免密使用ssh协议clone代码，可能通过配置私钥实现免密登录。但go get命令默认是走https协议，那想办法让go get走ssh协议就解决这个问题了，网上查到的解决方案大多数是这种解法。 命令:123// 增加如下代码到文件~/.g">
+<meta name="twitter:description" content="前情提要本人使用Idea做Golang开发，之前一直是用公有项目，可通过快捷键自动获取(如下图)，但私有git项目则不能如此顺利 不使用Go Modules(vgo)界面: 使用Go Modules(vgo): 方法1: 切换成ssh协议免密使用ssh协议clone代码，可能通过配置私钥实现免密登录。但go get命令默认是走https协议，那想办法让go get走ssh协议就解决这个问题了，网上">
 <meta name="twitter:image" content="http://blog.zhaoweiguo.com/images/golangs/go-get-git-private1.png">
 
 
@@ -412,7 +412,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-09-24 15:45:01" itemprop="dateModified" datetime="2019-09-24T15:45:01+08:00">2019-09-24</time>
+                <time title="修改时间：2019-09-24 15:50:22" itemprop="dateModified" datetime="2019-09-24T15:50:22+08:00">2019-09-24</time>
               
             
           </span>
@@ -492,8 +492,8 @@
 
       
         <h2 id="前情提要"><a href="#前情提要" class="headerlink" title="前情提要"></a>前情提要</h2><p>本人使用Idea做Golang开发，之前一直是用公有项目，可通过快捷键自动获取(如下图)，但私有git项目则不能如此顺利</p>
-<p><img src="/images/golangs/go-get-git-private1.png" alt="不使用Go Modules(vgo)"></p>
-<p><img src="/images/golangs/go-get-git-private2.png" alt="使用Go Modules(vgo)"></p>
+<p>不使用Go Modules(vgo)界面:<br><img src="/images/golangs/go-get-git-private1.png" alt="不使用Go Modules(vgo)"></p>
+<p>使用Go Modules(vgo):<br><img src="/images/golangs/go-get-git-private2.png" alt="使用Go Modules(vgo)"></p>
 <h2 id="方法1-切换成ssh协议免密"><a href="#方法1-切换成ssh协议免密" class="headerlink" title="方法1: 切换成ssh协议免密"></a>方法1: 切换成ssh协议免密</h2><p>使用ssh协议clone代码，可能通过配置私钥实现免密登录。但go get命令默认是走https协议，那想办法让go get走ssh协议就解决这个问题了，网上查到的解决方案大多数是这种解法。</p>
 <p>命令:<br><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 增加如下代码到文件~/.gitconfig文件中:</span></span><br><span class="line">[<span class="meta">url <span class="meta-string">"ssh://git@gitlab.com/"</span></span>]</span><br><span class="line">  insteadOf = https:<span class="comment">//gitlab.com/</span></span><br></pre></td></tr></table></figure></p>
 <p>或者<br><figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">//</span> 执行如下命令:</span><br><span class="line">git config <span class="params">--global</span> url.<span class="string">"git@gitlab.com:"</span><span class="string">.insteadof</span> <span class="string">"https://gitlab.com/"</span></span><br></pre></td></tr></table></figure></p>

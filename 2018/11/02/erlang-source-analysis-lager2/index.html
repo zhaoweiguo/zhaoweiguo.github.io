@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="lager_sup1.ets表:lager_config: % 初使化时往表里增加2条数据 1.1 Sink {lager_event, loglevel} =&amp;gt; {Int, []} 例:{lager_event,loglevel}, {255,[]} 其中: Int为8位的整形,即下面的and操作   -define(DEBUG, 128).   -define(INFO, 64).">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-11-19T10:08:38.969Z">
+<meta property="og:updated_time" content="2018-11-19T10:08:38.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="开源项目lager2-application启动">
 <meta name="twitter:description" content="lager_sup1.ets表:lager_config: % 初使化时往表里增加2条数据 1.1 Sink {lager_event, loglevel} =&amp;gt; {Int, []} 例:{lager_event,loglevel}, {255,[]} 其中: Int为8位的整形,即下面的and操作   -define(DEBUG, 128).   -define(INFO, 64).">
@@ -434,6 +434,19 @@
 
           
             
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/02/erlang-source-analysis-lager2/#comments" itemprop="discussionUrl">
+                <span class="post-meta-item-text">评论数：</span>
+                
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/11/02/erlang-source-analysis-lager2/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -735,8 +748,8 @@ value: {MinLog, Traces}
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/09/29/erlang-source-analysis-tsung2/" rel="next" title="源码分析基础工作">
-                <i class="fa fa-chevron-left"></i> 源码分析基础工作
+              <a href="/2018/09/29/erlang-source-analysis-tsung1/" rel="next" title="看源码前准备工作">
+                <i class="fa fa-chevron-left"></i> 看源码前准备工作
               </a>
             
           </div>
@@ -768,6 +781,13 @@ value: {MinLog, Traces}
 
           </div>
           
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
 
   
 
@@ -1171,9 +1191,49 @@ value: {MinLog, Traces}
 
   
 
-
+  
+    <script id="dsq-count-scr" src="https://xinxi.disqus.com/count.js" async></script>
+  
 
   
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.url = 'http://blog.zhaoweiguo.com/2018/11/02/erlang-source-analysis-lager2/';
+        this.page.identifier = '2018/11/02/erlang-source-analysis-lager2/';
+        this.page.title = '开源项目lager2-application启动';
+        this.language = 'zh-CN';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://xinxi.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
 
 
 

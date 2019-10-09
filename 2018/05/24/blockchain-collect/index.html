@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="源码相关:  https://github.com/imfly  https://github.com/Ebookcoin/ebookcoin  https://github.com/ethereum/go-ethereum  https://github.com/ethersphere/eth-utils  https://github.com/ethereum/wiki/wiki/Networ">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-09-05T07:39:54.589Z">
+<meta property="og:updated_time" content="2018-09-05T07:39:54.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="区块链技术相关收集（长期）">
 <meta name="twitter:description" content="源码相关:  https://github.com/imfly  https://github.com/Ebookcoin/ebookcoin  https://github.com/ethereum/go-ethereum  https://github.com/ethersphere/eth-utils  https://github.com/ethereum/wiki/wiki/Networ">
@@ -434,6 +434,19 @@
 
           
             
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/05/24/blockchain-collect/#comments" itemprop="discussionUrl">
+                <span class="post-meta-item-text">评论数：</span>
+                
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/05/24/blockchain-collect/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -587,6 +600,13 @@
 
           </div>
           
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
 
   
 
@@ -990,9 +1010,49 @@
 
   
 
-
+  
+    <script id="dsq-count-scr" src="https://xinxi.disqus.com/count.js" async></script>
+  
 
   
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.url = 'http://blog.zhaoweiguo.com/2018/05/24/blockchain-collect/';
+        this.page.identifier = '2018/05/24/blockchain-collect/';
+        this.page.title = '区块链技术相关收集（长期）';
+        this.language = 'zh-CN';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://xinxi.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
 
 
 

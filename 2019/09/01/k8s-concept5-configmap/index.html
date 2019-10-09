@@ -434,6 +434,19 @@
 
           
             
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/09/01/k8s-concept5-configmap/#comments" itemprop="discussionUrl">
+                <span class="post-meta-item-text">评论数：</span>
+                
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2019/09/01/k8s-concept5-configmap/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -558,8 +571,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/09/01/k8s-concept3-volumn/" rel="next" title="kubenates 重要定义3——Volumn">
-                <i class="fa fa-chevron-left"></i> kubenates 重要定义3——Volumn
+              <a href="/2019/08/26/k8s-concept2-service/" rel="next" title="kubenates 重要定义2——Service">
+                <i class="fa fa-chevron-left"></i> kubenates 重要定义2——Service
               </a>
             
           </div>
@@ -568,8 +581,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/09/08/k8s-concept4-secret/" rel="prev" title="kubenates 重要定义4——Secret">
-                kubenates 重要定义4——Secret <i class="fa fa-chevron-right"></i>
+              <a href="/2019/09/01/k8s-concept3-volumn/" rel="prev" title="kubenates 重要定义3——Volumn">
+                kubenates 重要定义3——Volumn <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -591,6 +604,13 @@
 
           </div>
           
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
 
   
 
@@ -994,9 +1014,49 @@
 
   
 
-
+  
+    <script id="dsq-count-scr" src="https://xinxi.disqus.com/count.js" async></script>
+  
 
   
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.url = 'http://blog.zhaoweiguo.com/2019/09/01/k8s-concept5-configmap/';
+        this.page.identifier = '2019/09/01/k8s-concept5-configmap/';
+        this.page.title = 'kubenates 重要定义';
+        this.language = 'zh-CN';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://xinxi.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
 
 
 

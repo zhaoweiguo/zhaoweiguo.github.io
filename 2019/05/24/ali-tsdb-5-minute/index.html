@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="简介时序时空数据库（Time Series &amp;amp; Spatial Temporal Database，简称 TSDB）是一种高性能、低成本、稳定可靠的在线时序时空数据库服务，提供高效读写、高压缩比存储、时序数据插值及聚合计算等服务，广泛应用于物联网（IoT）设备监控系统、企业能源管理系统（EMS）、生产安全监控系统和电力检测系统等行业场景；除此以外，还提供时空场景的查询和分析的能力。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-05-24T10:12:40.499Z">
+<meta property="og:updated_time" content="2019-05-24T10:12:40.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="5分钟了解阿里时序时空数据库">
 <meta name="twitter:description" content="简介时序时空数据库（Time Series &amp;amp; Spatial Temporal Database，简称 TSDB）是一种高性能、低成本、稳定可靠的在线时序时空数据库服务，提供高效读写、高压缩比存储、时序数据插值及聚合计算等服务，广泛应用于物联网（IoT）设备监控系统、企业能源管理系统（EMS）、生产安全监控系统和电力检测系统等行业场景；除此以外，还提供时空场景的查询和分析的能力。">
@@ -434,6 +434,19 @@
 
           
             
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/05/24/ali-tsdb-5-minute/#comments" itemprop="discussionUrl">
+                <span class="post-meta-item-text">评论数：</span>
+                
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2019/05/24/ali-tsdb-5-minute/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -611,6 +624,13 @@
 
           </div>
           
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
 
   
 
@@ -1014,9 +1034,49 @@
 
   
 
-
+  
+    <script id="dsq-count-scr" src="https://xinxi.disqus.com/count.js" async></script>
+  
 
   
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.url = 'http://blog.zhaoweiguo.com/2019/05/24/ali-tsdb-5-minute/';
+        this.page.identifier = '2019/05/24/ali-tsdb-5-minute/';
+        this.page.title = '5分钟了解阿里时序时空数据库';
+        this.language = 'zh-CN';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://xinxi.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
 
 
 

@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="创建Target System创建一个符合OTP架构的项目ch3: ├── LICENSE ├── README.md ├── rebar.config ├── rebar.lock └── src     ├── ch3.app.src     ├── ch3.erl     ├── ch3_app.erl     ├── ch3_sup.erl     └── target_system.er">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-09-05T07:22:38.503Z">
+<meta property="og:updated_time" content="2018-09-05T07:22:38.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Erlang原生方法对release版本升降级">
 <meta name="twitter:description" content="创建Target System创建一个符合OTP架构的项目ch3: ├── LICENSE ├── README.md ├── rebar.config ├── rebar.lock └── src     ├── ch3.app.src     ├── ch3.erl     ├── ch3_app.erl     ├── ch3_sup.erl     └── target_system.er">
@@ -433,6 +433,19 @@
           
 
           
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/09/04/erlang-release-updowngrade-normal/#comments" itemprop="discussionUrl">
+                <span class="post-meta-item-text">评论数：</span>
+                
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/09/04/erlang-release-updowngrade-normal/" itemprop="commentCount"></span>
+                </a>
+              </span>
             
           
 
@@ -940,8 +953,8 @@ remove_all_files(Dir, Files) -&gt;
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/09/29/erlang-source-analysis-tsung1/" rel="prev" title="看源码前准备工作">
-                看源码前准备工作 <i class="fa fa-chevron-right"></i>
+              <a href="/2018/09/29/erlang-source-analysis-tsung2/" rel="prev" title="源码分析基础工作">
+                源码分析基础工作 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -963,6 +976,13 @@ remove_all_files(Dir, Files) -&gt;
 
           </div>
           
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
 
   
 
@@ -1366,9 +1386,49 @@ remove_all_files(Dir, Files) -&gt;
 
   
 
-
+  
+    <script id="dsq-count-scr" src="https://xinxi.disqus.com/count.js" async></script>
+  
 
   
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.url = 'http://blog.zhaoweiguo.com/2018/09/04/erlang-release-updowngrade-normal/';
+        this.page.identifier = '2018/09/04/erlang-release-updowngrade-normal/';
+        this.page.title = '使用Erlang原生方法对release版本升降级';
+        this.language = 'zh-CN';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://xinxi.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
 
 
 

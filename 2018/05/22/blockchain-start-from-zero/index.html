@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="安装环境说明12&amp;gt;cat /etc/issueDebian GNU/Linux 9 \n \l 注: debian基本版本也可用，其他linux系统可微调后使用 Golang的安装:1.打开go下载链接https://golang.org/dl///以debian为例，安装当前最新版本1.10.2 12&amp;gt;wget  https://dl.google.com/go/go1.10.2.l">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-03-03T06:56:03.161Z">
+<meta property="og:updated_time" content="2019-03-03T06:56:03.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从零开始创建专属自己的以太坊">
 <meta name="twitter:description" content="安装环境说明12&amp;gt;cat /etc/issueDebian GNU/Linux 9 \n \l 注: debian基本版本也可用，其他linux系统可微调后使用 Golang的安装:1.打开go下载链接https://golang.org/dl///以debian为例，安装当前最新版本1.10.2 12&amp;gt;wget  https://dl.google.com/go/go1.10.2.l">
@@ -434,6 +434,19 @@
 
           
             
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/05/22/blockchain-start-from-zero/#comments" itemprop="discussionUrl">
+                <span class="post-meta-item-text">评论数：</span>
+                
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/05/22/blockchain-start-from-zero/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -596,6 +609,13 @@
 
           </div>
           
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
 
   
 
@@ -999,9 +1019,49 @@
 
   
 
-
+  
+    <script id="dsq-count-scr" src="https://xinxi.disqus.com/count.js" async></script>
+  
 
   
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.url = 'http://blog.zhaoweiguo.com/2018/05/22/blockchain-start-from-zero/';
+        this.page.identifier = '2018/05/22/blockchain-start-from-zero/';
+        this.page.title = '从零开始创建专属自己的以太坊';
+        this.language = 'zh-CN';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://xinxi.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
 
 
 

@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="参考项目: https://github.com/klarna/brod https://github.com/erlang-lager/lager http://kafka.apache.org https://github.com/newforks/lager_kafka_backend 测试目的: 项目使用lager写日志时，如果日志量非常大，会导致消息队列堆积，进而引起更严重的问题, 于是">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-11-22T03:52:39.406Z">
+<meta property="og:updated_time" content="2018-11-22T03:52:39.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="lager实战2:写文件、写kafka的性能测试">
 <meta name="twitter:description" content="参考项目: https://github.com/klarna/brod https://github.com/erlang-lager/lager http://kafka.apache.org https://github.com/newforks/lager_kafka_backend 测试目的: 项目使用lager写日志时，如果日志量非常大，会导致消息队列堆积，进而引起更严重的问题, 于是">
@@ -434,6 +434,19 @@
 
           
             
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/21/erlang-tune-lager2/#comments" itemprop="discussionUrl">
+                <span class="post-meta-item-text">评论数：</span>
+                
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/11/21/erlang-tune-lager2/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -732,6 +745,13 @@ time:332 | {0,0,332}
 
           </div>
           
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
 
   
 
@@ -1110,9 +1130,49 @@ time:332 | {0,0,332}
 
   
 
-
+  
+    <script id="dsq-count-scr" src="https://xinxi.disqus.com/count.js" async></script>
+  
 
   
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.url = 'http://blog.zhaoweiguo.com/2018/11/21/erlang-tune-lager2/';
+        this.page.identifier = '2018/11/21/erlang-tune-lager2/';
+        this.page.title = 'lager实战2:写文件、写kafka的性能测试';
+        this.language = 'zh-CN';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://xinxi.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
 
 
 

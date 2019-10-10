@@ -1066,6 +1066,246 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/09/29/erlang-source-analysis-tsung2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+      <meta itemprop="image" content="/images/icon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/09/29/erlang-source-analysis-tsung2/" class="post-title-link" itemprop="http://blog.zhaoweiguo.com/page/3/index.html">源码分析基础工作</a>
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-09-29 11:46:03" itemprop="dateCreated datePublished" datetime="2018-09-29T11:46:03+08:00">2018-09-29</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-19 18:18:23" itemprop="dateModified" datetime="2018-11-19T18:18:23+08:00">2018-11-19</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/09/29/erlang-source-analysis-tsung2/#comments" itemprop="discussionUrl">
+                <span class="post-meta-item-text">评论数：</span>
+                
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/09/29/erlang-source-analysis-tsung2/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">8.8k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">8 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>执行application:start(tsung_controller)时:</p>
+<pre><code>{start_phases, [{load_config, []},{start_os_monitoring,[{timeout,30000}]},
+                {start_clients,[]}]}
+{mod,          {tsung_controller, []}}
+</code></pre><h3 id="应用启动相关"><a href="#应用启动相关" class="headerlink" title="应用启动相关"></a>应用启动相关</h3><p>ts_config_server相关::</p>
+<pre><code>global
+-record(state, {
+  config,
+  logdir,   % 日志文件目录
+  curcfg = 0,       % number of configured launchers
+  client_static_users = 0, % number of clients that already have their static users
+  static_users = 0, % static users not yet given to a client
+  ports,            % dict, used if we need to choose the client port
+  users=1,          % userid (incremental counter)
+  start_date,       %
+  hostname,         % controller的hostname
+  last_beam_id = 0, % last tsung beam id (used to set nodenames)
+  ending_beams = 0, % number of beams with no new users to start
+  lastips,          % store next ip to choose for each client host
+  total_weight      % total weight of client machines
+}
+</code></pre>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/09/29/erlang-source-analysis-tsung2/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+         
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/09/29/erlang-source-analysis-tsung1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1258,246 +1498,6 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
           
             <div class="post-button text-center">
               <a class="btn" href="/2018/09/29/erlang-source-analysis-tsung1/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-         
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-       
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/09/29/erlang-source-analysis-tsung2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zhaoweiguo">
-      <meta itemprop="description" content="Just do it now.">
-      <meta itemprop="image" content="/images/icon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="新溪blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/09/29/erlang-source-analysis-tsung2/" class="post-title-link" itemprop="http://blog.zhaoweiguo.com/page/3/index.html">源码分析基础工作</a>
-              
-            
-          </h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-09-29 11:46:03" itemprop="dateCreated datePublished" datetime="2018-09-29T11:46:03+08:00">2018-09-29</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2018-11-19 18:18:23" itemprop="dateModified" datetime="2018-11-19T18:18:23+08:00">2018-11-19</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2018/09/29/erlang-source-analysis-tsung2/#comments" itemprop="discussionUrl">
-                <span class="post-meta-item-text">评论数：</span>
-                
-                  <span class="post-comments-count disqus-comment-count"
-                        data-disqus-identifier="2018/09/29/erlang-source-analysis-tsung2/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-symbolscount">
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">本文字数：</span>
-                
-                <span title="本文字数">8.8k</span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">8 分钟</span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>执行application:start(tsung_controller)时:</p>
-<pre><code>{start_phases, [{load_config, []},{start_os_monitoring,[{timeout,30000}]},
-                {start_clients,[]}]}
-{mod,          {tsung_controller, []}}
-</code></pre><h3 id="应用启动相关"><a href="#应用启动相关" class="headerlink" title="应用启动相关"></a>应用启动相关</h3><p>ts_config_server相关::</p>
-<pre><code>global
--record(state, {
-  config,
-  logdir,   % 日志文件目录
-  curcfg = 0,       % number of configured launchers
-  client_static_users = 0, % number of clients that already have their static users
-  static_users = 0, % static users not yet given to a client
-  ports,            % dict, used if we need to choose the client port
-  users=1,          % userid (incremental counter)
-  start_date,       %
-  hostname,         % controller的hostname
-  last_beam_id = 0, % last tsung beam id (used to set nodenames)
-  ending_beams = 0, % number of beams with no new users to start
-  lastips,          % store next ip to choose for each client host
-  total_weight      % total weight of client machines
-}
-</code></pre>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/09/29/erlang-source-analysis-tsung2/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -3060,7 +3060,7 @@ $ cat /etc/security/limits.conf
   
 
   
-    <script id="dsq-count-scr" src="https://xinxi.disqus.com/count.js" async></script>
+    <script id="dsq-count-scr" src="https://zhaoweiguo.disqus.com/count.js" async></script>
   
 
   

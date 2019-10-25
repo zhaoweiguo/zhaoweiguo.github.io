@@ -101,7 +101,7 @@
 
 
   <meta name="description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  1234567-record(gordon_test, &amp;#123;    idr,    % &amp;#123;id, pid&amp;#125;    id,    pid,    locale,    time = os:t">
-<meta name="keywords" content="erlang,mnesia,collect">
+<meta name="keywords" content="erlang,collect,mnesia">
 <meta property="og:type" content="article">
 <meta property="og:title" content="mnesia:delect_object只删除索引问题">
 <meta property="og:url" content="http://blog.zhaoweiguo.com/2019/02/20/erlang_collect_mnesia_delect_object/index.html">
@@ -572,9 +572,9 @@
           
             <a href="/tags/erlang/" rel="tag"># erlang</a>
           
-            <a href="/tags/mnesia/" rel="tag"># mnesia</a>
-          
             <a href="/tags/collect/" rel="tag"># collect</a>
+          
+            <a href="/tags/mnesia/" rel="tag"># mnesia</a>
           
         </div>
       

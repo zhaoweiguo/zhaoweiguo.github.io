@@ -249,7 +249,7 @@
       
     
 
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档<span class="badge">31</span></a>
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档<span class="badge">32</span></a>
 
   </li>
         
@@ -268,7 +268,7 @@
       
     
 
-    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类<span class="badge">8</span></a>
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类<span class="badge">9</span></a>
 
   </li>
         
@@ -287,7 +287,7 @@
       
     
 
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签<span class="badge">29</span></a>
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签<span class="badge">31</span></a>
 
   </li>
 
@@ -332,6 +332,226 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/11/05/erlang-source-analysis-lager5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+      <meta itemprop="image" content="/images/icon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/11/05/erlang-source-analysis-lager5/" class="post-title-link" itemprop="http://blog.zhaoweiguo.com/page/3/index.html">开源项目lager5-其他边边角角</a>
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-11-05 09:19:11" itemprop="dateCreated datePublished" datetime="2018-11-05T09:19:11+08:00">2018-11-05</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-04 19:35:15" itemprop="dateModified" datetime="2018-12-04T19:35:15+08:00">2018-12-04</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/05/erlang-source-analysis-lager5/#comments" itemprop="discussionUrl">
+                <span class="post-meta-item-text">评论数：</span>
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/11/05/erlang-source-analysis-lager5/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">2.7k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">2 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="trace-filter"><a href="#trace-filter" class="headerlink" title="trace_filter"></a>trace_filter</h3><p>执行lager_util:trace_filter(none):</p>
+<pre><code>glc:compile(lager_default_tracer, glc:null(false))
+</code></pre><p>lager_app:add_configured_traces/1:</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/11/05/erlang-source-analysis-lager5/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+         
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -1063,6 +1283,245 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/09/29/erlang-source-analysis-tsung2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+      <meta itemprop="image" content="/images/icon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/09/29/erlang-source-analysis-tsung2/" class="post-title-link" itemprop="http://blog.zhaoweiguo.com/page/3/index.html">源码分析基础工作</a>
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-09-29 11:46:03" itemprop="dateCreated datePublished" datetime="2018-09-29T11:46:03+08:00">2018-09-29</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-19 18:18:23" itemprop="dateModified" datetime="2018-11-19T18:18:23+08:00">2018-11-19</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/09/29/erlang-source-analysis-tsung2/#comments" itemprop="discussionUrl">
+                <span class="post-meta-item-text">评论数：</span>
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/09/29/erlang-source-analysis-tsung2/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">8.8k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">8 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>执行application:start(tsung_controller)时:</p>
+<pre><code>{start_phases, [{load_config, []},{start_os_monitoring,[{timeout,30000}]},
+                {start_clients,[]}]}
+{mod,          {tsung_controller, []}}
+</code></pre><h3 id="应用启动相关"><a href="#应用启动相关" class="headerlink" title="应用启动相关"></a>应用启动相关</h3><p>ts_config_server相关::</p>
+<pre><code>global
+-record(state, {
+  config,
+  logdir,   % 日志文件目录
+  curcfg = 0,       % number of configured launchers
+  client_static_users = 0, % number of clients that already have their static users
+  static_users = 0, % static users not yet given to a client
+  ports,            % dict, used if we need to choose the client port
+  users=1,          % userid (incremental counter)
+  start_date,       %
+  hostname,         % controller的hostname
+  last_beam_id = 0, % last tsung beam id (used to set nodenames)
+  ending_beams = 0, % number of beams with no new users to start
+  lastips,          % store next ip to choose for each client host
+  total_weight      % total weight of client machines
+}
+</code></pre>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/09/29/erlang-source-analysis-tsung2/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+         
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/09/29/erlang-source-analysis-tsung1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1254,245 +1713,6 @@ do_log(Severity, Metadata, Format, Args, Size, SeverityAsInt, LevelThreshold, Tr
           
             <div class="post-button text-center">
               <a class="btn" href="/2018/09/29/erlang-source-analysis-tsung1/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-         
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-       
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/09/29/erlang-source-analysis-tsung2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zhaoweiguo">
-      <meta itemprop="description" content="Just do it now.">
-      <meta itemprop="image" content="/images/icon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="新溪blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/09/29/erlang-source-analysis-tsung2/" class="post-title-link" itemprop="http://blog.zhaoweiguo.com/page/3/index.html">源码分析基础工作</a>
-              
-            
-          </h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-09-29 11:46:03" itemprop="dateCreated datePublished" datetime="2018-09-29T11:46:03+08:00">2018-09-29</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2018-11-19 18:18:23" itemprop="dateModified" datetime="2018-11-19T18:18:23+08:00">2018-11-19</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2018/09/29/erlang-source-analysis-tsung2/#comments" itemprop="discussionUrl">
-                <span class="post-meta-item-text">评论数：</span>
-                
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/09/29/erlang-source-analysis-tsung2/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-symbolscount">
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">本文字数：</span>
-                
-                <span title="本文字数">8.8k</span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">8 分钟</span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>执行application:start(tsung_controller)时:</p>
-<pre><code>{start_phases, [{load_config, []},{start_os_monitoring,[{timeout,30000}]},
-                {start_clients,[]}]}
-{mod,          {tsung_controller, []}}
-</code></pre><h3 id="应用启动相关"><a href="#应用启动相关" class="headerlink" title="应用启动相关"></a>应用启动相关</h3><p>ts_config_server相关::</p>
-<pre><code>global
--record(state, {
-  config,
-  logdir,   % 日志文件目录
-  curcfg = 0,       % number of configured launchers
-  client_static_users = 0, % number of clients that already have their static users
-  static_users = 0, % static users not yet given to a client
-  ports,            % dict, used if we need to choose the client port
-  users=1,          % userid (incremental counter)
-  start_date,       %
-  hostname,         % controller的hostname
-  last_beam_id = 0, % last tsung beam id (used to set nodenames)
-  ending_beams = 0, % number of beams with no new users to start
-  lastips,          % store next ip to choose for each client host
-  total_weight      % total weight of client machines
-}
-</code></pre>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/09/29/erlang-source-analysis-tsung2/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -2449,225 +2669,6 @@ $ cat /etc/security/limits.conf
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/05/24/blockchain-collect/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zhaoweiguo">
-      <meta itemprop="description" content="Just do it now.">
-      <meta itemprop="image" content="/images/icon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="新溪blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/05/24/blockchain-collect/" class="post-title-link" itemprop="http://blog.zhaoweiguo.com/page/3/index.html">区块链技术相关收集（长期）</a>
-              
-            
-          </h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-05-24 15:19:13" itemprop="dateCreated datePublished" datetime="2018-05-24T15:19:13+08:00">2018-05-24</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2018-09-05 15:39:54" itemprop="dateModified" datetime="2018-09-05T15:39:54+08:00">2018-09-05</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/blockchain/" itemprop="url" rel="index"><span itemprop="name">blockchain</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2018/05/24/blockchain-collect/#comments" itemprop="discussionUrl">
-                <span class="post-meta-item-text">评论数：</span>
-                
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/05/24/blockchain-collect/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-symbolscount">
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">本文字数：</span>
-                
-                <span title="本文字数">1k</span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">1 分钟</span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h4 id="源码相关"><a href="#源码相关" class="headerlink" title="源码相关:"></a>源码相关:</h4><p>  <a href="https://github.com/imfly" target="_blank" rel="noopener">https://github.com/imfly</a><br>  <a href="https://github.com/Ebookcoin/ebookcoin" target="_blank" rel="noopener">https://github.com/Ebookcoin/ebookcoin</a><br>  <a href="https://github.com/ethereum/go-ethereum" target="_blank" rel="noopener">https://github.com/ethereum/go-ethereum</a><br>  <a href="https://github.com/ethersphere/eth-utils" target="_blank" rel="noopener">https://github.com/ethersphere/eth-utils</a><br>  <a href="https://github.com/ethereum/wiki/wiki/Network-Status" target="_blank" rel="noopener">https://github.com/ethereum/wiki/wiki/Network-Status</a><br>  <a href="https://github.com/ethereum/go-ethereum/wiki/Setting-up-monitoring-on-local-cluster" target="_blank" rel="noopener">https://github.com/ethereum/go-ethereum/wiki/Setting-up-monitoring-on-local-cluster</a></p>
-<h4 id="以太坊"><a href="#以太坊" class="headerlink" title="以太坊:"></a>以太坊:</h4><p>  <a href="https://ethereum.gitbooks.io/frontier-guide/content/listing_accounts.html" target="_blank" rel="noopener">https://ethereum.gitbooks.io/frontier-guide/content/listing_accounts.html</a></p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/05/24/blockchain-collect/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-         
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-       
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2719,7 +2720,7 @@ $ cat /etc/security/limits.conf
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">31</span>
+                    <span class="site-state-item-count">32</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2748,7 +2749,9 @@ $ cat /etc/security/limits.conf
                     
                       
                     
-                    <span class="site-state-item-count">8</span>
+                      
+                    
+                    <span class="site-state-item-count">9</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -2819,7 +2822,11 @@ $ cat /etc/security/limits.conf
                     
                       
                     
-                    <span class="site-state-item-count">29</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">31</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -2910,7 +2917,7 @@ $ cat /etc/security/limits.conf
     
       <span class="post-meta-item-text">站点总字数：</span>
     
-    <span title="站点总字数">106k</span>
+    <span title="站点总字数">110k</span>
   
 
   
@@ -2921,7 +2928,7 @@ $ cat /etc/security/limits.conf
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">1:36</span>
+    <span title="站点阅读时长">1:40</span>
   
 </div>
 

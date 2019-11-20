@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html class="theme-next gemini" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css">
+
+
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon.png?v=6.6.0">
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.6.0',
+    sidebar: {"position":"left","width":300,"b2t":true,"scrollpercent":true,"onmobile":true,"display":"post"},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="概要Drone是Go语言编写的，基于容器技术的CI/CD系统。它具有以下几个关键特性。 Everything is a Docker Container1234567对Docker原生支持使的: drone无需在构建脚本中额外增加 docker 相关的命令就能:1. 使用Docker化的集成环境方便的实现对多语言编译2. 利用集成Docker环境的优势: 环境隔离、标准化镜像利益于: 对原生 Do">
+<meta name="keywords" content="drone,cicd">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用Drone搭建CICD服务">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2019/11/18/drone_server_startup/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="概要Drone是Go语言编写的，基于容器技术的CI/CD系统。它具有以下几个关键特性。 Everything is a Docker Container1234567对Docker原生支持使的: drone无需在构建脚本中额外增加 docker 相关的命令就能:1. 使用Docker化的集成环境方便的实现对多语言编译2. 利用集成Docker环境的优势: 环境隔离、标准化镜像利益于: 对原生 Do">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://blog.zhaoweiguo.com/images/drones/gitlab_token_create.png">
+<meta property="og:image" content="http://blog.zhaoweiguo.com/images/drones/gitlab_token_created.png">
+<meta property="og:updated_time" content="2019-11-20T06:31:23.686Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用Drone搭建CICD服务">
+<meta name="twitter:description" content="概要Drone是Go语言编写的，基于容器技术的CI/CD系统。它具有以下几个关键特性。 Everything is a Docker Container1234567对Docker原生支持使的: drone无需在构建脚本中额外增加 docker 相关的命令就能:1. 使用Docker化的集成环境方便的实现对多语言编译2. 利用集成Docker环境的优势: 环境隔离、标准化镜像利益于: 对原生 Do">
+<meta name="twitter:image" content="http://blog.zhaoweiguo.com/images/drones/gitlab_token_create.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://blog.zhaoweiguo.com/2019/11/18/drone_server_startup/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>使用Drone搭建CICD服务 | 新溪blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">新溪blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <h1 class="site-subtitle" itemprop="description">新溪-gordon之胡写乱画</h1>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-bullhorn"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档<span class="badge">32</span></a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类<span class="badge">9</span></a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签<span class="badge">31</span></a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+  
+  
+
+  
+
+    <span class="exturl github-corner" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8vemhhb3dlaWd1by5naXRodWIuaW8=" title="Fork me on GitHub" aria-label="Fork me on GitHub"><svg width="80" height="80" viewbox="0 0 250 250" style="fill: #222; color: #fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></span>
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/11/18/drone_server_startup/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+      <meta itemprop="image" content="/images/icon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">使用Drone搭建CICD服务
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-18 10:11:12" itemprop="dateCreated datePublished" datetime="2019-11-18T10:11:12+08:00">2019-11-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-11-20 14:31:23" itemprop="dateModified" datetime="2019-11-20T14:31:23+08:00">2019-11-20</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/drone/" itemprop="url" rel="index"><span itemprop="name">drone</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/11/18/drone_server_startup/#comments" itemprop="discussionUrl">
+                <span class="post-meta-item-text">评论数：</span>
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/11/18/drone_server_startup/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">3.4k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">3 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h2><p>Drone是Go语言编写的，基于容器技术的CI/CD系统。它具有以下几个关键特性。</p>
+<p>Everything is a Docker Container<br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">对Docker原生支持使的: drone无需在构建脚本中额外增加 docker 相关的命令就能:</span><br><span class="line"><span class="number">1</span>. 使用Docker化的集成环境方便的实现对多语言编译</span><br><span class="line"><span class="number">2</span>. 利用集成Docker环境的优势: 环境隔离、标准化镜像</span><br><span class="line">利益于: 对原生 Docker 支持</span><br><span class="line"><span class="keyword">Any</span> <span class="keyword">Source</span> Code Manager</span><br><span class="line"><span class="keyword">Any</span> Platform</span><br><span class="line"><span class="keyword">Any</span> Language</span><br></pre></td></tr></table></figure></p>
+<a id="more"></a>
+<p>One Server, Multiple Agents<br><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Server与git平台交互, 提供web服务</span><br><span class="line">Agents具体负责相关的编译、部署等操作</span><br><span class="line">当使用用户多、load高时可以扩展Agents来实现水平扩容</span><br><span class="line">在 1.0 版本之后，只需要一个 drone 服务</span><br><span class="line">  里面面就内建了<span class="built_in"> server </span>及 agent，这很适合用非常小团队快速安装 drone</span><br></pre></td></tr></table></figure></p>
+<p>Configuration as a code<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">使用<span class="selector-class">.drone</span><span class="selector-class">.yml</span>文件来设定测试及部署流程</span><br><span class="line">Pipelines被配置成你提交到git仓库的简单、易读的文件</span><br><span class="line">Pipeline的每一步骤都自动运行在独立的Docker容器中</span><br></pre></td></tr></table></figure></p>
+<p>丰富的插件:<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">构建后发送消息: DingTalk, Wechat, Gtalk, Email</span></span><br><span class="line"><span class="section">构建成功后发布: npm, docker, github release, google container...</span></span><br><span class="line"><span class="section">构建成功后部署: Kubernetes, rsync, scp, ftp...</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="调研其他CI-CD系统"><a href="#调研其他CI-CD系统" class="headerlink" title="调研其他CI/CD系统"></a>调研其他CI/CD系统</h2><h4 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h4><ol>
+<li>开源软件。可用于商业相关服务的自动化部署</li>
+<li>尽量少一些运维部署操作。我们团队都是开发人员，没有专门的运维，开发人员主要工作是编码而不是其它</li>
+<li>较好的支持k8s微服务。目前使用了比较多服务使用了k8s</li>
+<li>尽量简单，适合小团队使用。服务部署完成后，项目组其他成员可以快速掌握使用</li>
+<li>可以与我们搭建的gitlab私有仓库配合使用</li>
+</ol>
+<h4 id="常用的CI-CD系统"><a href="#常用的CI-CD系统" class="headerlink" title="常用的CI/CD系统"></a>常用的CI/CD系统</h4><p>CI/CD已经形成了一套标准流程，有多个开源不开源的工具可以实现。常用的CI/CD工具有:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>CI系统</th>
+<th style="text-align:center">是否开源</th>
+<th style="text-align:right">授权协议</th>
+<th style="text-align:right">开发语言</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Jenkins</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:right">MIT</td>
+<td style="text-align:right">Java</td>
+</tr>
+<tr>
+<td>gitlab-ci</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:right">MIT</td>
+<td style="text-align:right">Golang</td>
+</tr>
+<tr>
+<td>prow</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:right">Apache-2.0</td>
+<td style="text-align:right">Golang</td>
+</tr>
+<tr>
+<td>Strider</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:right">MIT</td>
+<td style="text-align:right">JavaScript</td>
+</tr>
+<tr>
+<td>Travis</td>
+<td style="text-align:center">🚫</td>
+<td style="text-align:right">商业软件</td>
+<td style="text-align:right">Ruby</td>
+</tr>
+<tr>
+<td>teamcity</td>
+<td style="text-align:center">🚫</td>
+<td style="text-align:right">商业软件</td>
+<td style="text-align:right">Java .NET</td>
+</tr>
+<tr>
+<td>Codeship</td>
+<td style="text-align:center">🚫</td>
+<td style="text-align:right">商业软件</td>
+<td style="text-align:right">未知</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这其中:</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">1. </span>Travis、Codeship、teamcity使用商用协议</span><br><span class="line"><span class="bullet">2. </span>Strider不适用k8s环境的自动化部署</span><br><span class="line"><span class="bullet">3. </span>prow是专用于k8s项目，是Kubernetes测试框架test-infra的一部分,而且目前好像只适用于github平台</span><br><span class="line"></span><br><span class="line">只剩下Jenkins和gitlab-ci适合我们目前开发团队的使用</span><br></pre></td></tr></table></figure>
+<h4 id="Jenkins"><a href="#Jenkins" class="headerlink" title="Jenkins"></a>Jenkins</h4><p>优点:<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">功能完善、插件丰富: 有1000多个插件可供选择</span></span><br><span class="line"><span class="section">权限控制粒度高: 可以精确控制每个用户的权限</span></span><br><span class="line"><span class="section">稳定性高、文档丰富、使用人数多: 出现问题好解决</span></span><br></pre></td></tr></table></figure></p>
+<p>缺点:<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">复杂: 1000多个插件, 不下大功夫, 如何知道应该用哪个插件</span></span><br><span class="line"><span class="section">权限控制复杂: 精确控制每个用户的权限, 但需要花大量时间配置</span></span><br><span class="line">需要对配置文件单独进行版本控制(实现还比较麻烦)</span><br></pre></td></tr></table></figure></p>
+<h4 id="gitlab-ci"><a href="#gitlab-ci" class="headerlink" title="gitlab-ci"></a>gitlab-ci</h4><p>优点:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">执行步骤在没有大的中, 自带版本控制</span><br><span class="line">与gitlab高度整合</span><br></pre></td></tr></table></figure></p>
+<p>缺点:<br><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">配置复杂</span><br><span class="line">与gitlab耦合紧密</span><br><span class="line">开发语言<span class="keyword">ruby</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="drone安装"><a href="#drone安装" class="headerlink" title="drone安装"></a>drone安装</h2><h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><p>drone支持各git仓库平台, 如github, gitlab, gogs, gitea等。使用不同的仓库平台，安装方式稍有不同。本文以gitlab为例进行说明，其他仓库平台请看<span class="exturl" data-url="aHR0cHM6Ly9kb2NzLmRyb25lLmlvL2luc3RhbGxhdGlvbi9vdmVydmlldy8=" title="https://docs.drone.io/installation/overview/">文档<i class="fa fa-external-link"></i></span></p>
+<h4 id="在Gitlab上创建OAuth应用"><a href="#在Gitlab上创建OAuth应用" class="headerlink" title="在Gitlab上创建OAuth应用"></a>在Gitlab上创建OAuth应用</h4><p>打开Application页面:<br><figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">右上角头像<span class="function"> -&gt;</span> 设置<span class="function"><span class="params">(setting)</span> -&gt;</span> 应用(Application)</span><br><span class="line">输入框输入下面<span class="number">2</span>个参数:</span><br><span class="line">  <span class="number">1.</span> Application名: 这个可以随便输入为可识别的名字</span><br><span class="line">  <span class="number">2.</span> Redirect URI: 回调地址, 注意这个地址与后面启动服务的地址+/login</span><br><span class="line">如下图所示:</span><br></pre></td></tr></table></figure></p>
+<p><img src="/images/drones/gitlab_token_create.png" alt="Application页面"></p>
+<p>创建成功页面如下图所示:<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">需要记住下面两个值:</span></span><br><span class="line">Application ID和Secret的值, 后面会用到</span><br></pre></td></tr></table></figure></p>
+<p><img src="/images/drones/gitlab_token_created.png" alt="Application创建成功页面"></p>
+<h4 id="创建共享密钥"><a href="#创建共享密钥" class="headerlink" title="创建共享密钥"></a>创建共享密钥</h4><p>共享密钥用于在Drone Server与各Drone Runner间通信认证时使用, 本篇使用内建的Server, 此值暂时用处不大, 不明白的可以先记住有这么一个事。<br>可用如下命令生成:<br><figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ openssl <span class="keyword">rand</span> -<span class="keyword">hex</span> <span class="number">16</span></span><br><span class="line">bea26a2221fd8090ea38720fc445eca6</span><br></pre></td></tr></table></figure></p>
+<h4 id="服务启动"><a href="#服务启动" class="headerlink" title="服务启动"></a>服务启动</h4><p>服务启动命令如下:<br><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">docker run \</span><br><span class="line">  -<span class="ruby">-volume=<span class="regexp">/var/lib</span><span class="regexp">/drone:/data</span> \</span></span><br><span class="line"><span class="ruby">  --env=DRONE_GIT_ALWAYS_AUTH=<span class="literal">false</span> \</span></span><br><span class="line"><span class="ruby">  --env=DRONE_GITLAB_SERVER=<span class="symbol">http:</span>/<span class="regexp">/gitlab.com \</span></span></span><br><span class="line"><span class="ruby">  --env=DRONE_GITLAB_CLIENT_ID=$&#123;DRONE_GITLAB_CLIENT_ID&#125; \</span></span><br><span class="line"><span class="ruby">  --env=DRONE_GITLAB_CLIENT_SECRET=$&#123;DRONE_GITLAB_CLIENT_SECRET&#125; \</span></span><br><span class="line"><span class="ruby">  --env=DRONE_RPC_SECRET=$&#123;DRONE_RPC_SECRET&#125; \</span></span><br><span class="line"><span class="ruby">  --env=DRONE_SERVER_HOST=$&#123;DRONE_SERVER_HOST&#125; \</span></span><br><span class="line"><span class="ruby">  --env=DRONE_SERVER_PROTO=$&#123;DRONE_SERVER_PROTO&#125; \</span></span><br><span class="line"><span class="ruby">  --env=DRONE_TLS_AUTOCERT=<span class="literal">false</span> \</span></span><br><span class="line"><span class="ruby">  --env=DRONE_USER_CREATE=<span class="symbol">username:</span>zhaoweiguo,<span class="symbol">admin:</span><span class="literal">true</span> \</span></span><br><span class="line"><span class="ruby">  --publish=<span class="number">80</span><span class="symbol">:</span><span class="number">80</span> \</span></span><br><span class="line"><span class="ruby">  --publish=<span class="number">443</span><span class="symbol">:</span><span class="number">443</span> \</span></span><br><span class="line"><span class="ruby">  --restart=always \</span></span><br><span class="line"><span class="ruby">  --detach=<span class="literal">true</span> \</span></span><br><span class="line"><span class="ruby">  --name=drone \</span></span><br><span class="line"><span class="ruby">  drone/<span class="symbol">drone:</span><span class="number">1</span></span></span><br></pre></td></tr></table></figure></p>
+<h4 id="环境变量参数说明"><a href="#环境变量参数说明" class="headerlink" title="环境变量参数说明"></a>环境变量参数说明</h4><p>DRONE_GITLAB_SERVER:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gitlab服务地址</span><br></pre></td></tr></table></figure></p>
+<p>DRONE_GIT_ALWAYS_AUTH:<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">可选<span class="keyword">bool型</span></span><br><span class="line"><span class="keyword">用于在clone公共项目时认证</span></span><br><span class="line"><span class="keyword">此项只有在自托管的Gitlab且启用私有模式时才启用</span></span><br></pre></td></tr></table></figure></p>
+<p>DRONE_GITLAB_CLIENT_ID:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">前面生成Application时得到的Application ID</span><br></pre></td></tr></table></figure></p>
+<p>DRONE_GITLAB_CLIENT_SECRET:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">前面生成Application时得到的Secret</span><br></pre></td></tr></table></figure></p>
+<p>DRONE_RPC_SECRET:<br><figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Drone <span class="built_in">Server</span>与各Drone Runner间通信所需要的认证密钥, 即前面使用openssl命令得到的那串<span class="number">32</span>字串</span><br></pre></td></tr></table></figure></p>
+<p>DRONE_SERVER_HOST:<br><figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Drone <span class="built_in">Server</span>服务的启动地址</span><br></pre></td></tr></table></figure></p>
+<p>DRONE_SERVER_PROTO<br><figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Drone <span class="built_in">Server</span>服务的协议</span><br></pre></td></tr></table></figure></p>
+<p>DRONE_TLS_AUTOCERT:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Drone服务默认</span><br></pre></td></tr></table></figure></p>
+<p>DRONE_USER_CREATE:<br><figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">设置 Drone 的管理员，格式为<span class="symbol">:username</span><span class="symbol">:&lt;username&gt;</span>,<span class="symbol">admin:</span><span class="keyword">true</span></span><br><span class="line">本实例中<span class="symbol">:</span></span><br><span class="line">  &lt;username&gt; 的值 zhaoweiguo 就是我在gitlab上的用户名</span><br><span class="line">  <span class="symbol">admin:</span> 指定此用户名的用户为管理员用户</span><br></pre></td></tr></table></figure></p>
+<h4 id="说明-1"><a href="#说明-1" class="headerlink" title="说明"></a>说明</h4><p>docker run启动成功后, 一个单节点的Drone就算是部署完成...<br>可以通过<span class="exturl" data-url="aHR0cDovL0RST05FX1NFUlZFUl9IT1NU5oiWaHR0cHM6Ly9EUk9ORV9TRVJWRVJfSE9TVOiuv+mXruS6hg==" title="http://DRONE_SERVER_HOST或https://DRONE_SERVER_HOST访问了">http://DRONE_SERVER_HOST或https://DRONE_SERVER_HOST访问了<i class="fa fa-external-link"></i></span></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><span class="exturl" data-url="aHR0cHM6Ly9kZXZlbG9wZXIuYWxpeXVuLmNvbS9hcnRpY2xlLzcwMzE0MQ==" title="https://developer.aliyun.com/article/703141">轻量快速的 CI 工具 Drone<i class="fa fa-external-link"></i></span><br><span class="exturl" data-url="aHR0cHM6Ly9kb2NzLmRyb25lLmlvL2luc3RhbGxhdGlvbi9vdmVydmlldy8=" title="https://docs.drone.io/installation/overview/">官网<i class="fa fa-external-link"></i></span></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+      <div>
+        
+
+
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhaoweiguo</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    
+    <a href="http://blog.zhaoweiguo.com/2019/11/18/drone_server_startup/" title="使用Drone搭建CICD服务">http://blog.zhaoweiguo.com/2019/11/18/drone_server_startup/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/drone/" rel="tag"># drone</a>
+          
+            <a href="/tags/cicd/" rel="tag"># cicd</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/24/golang-env-private-git/" rel="next" title="使用go get获取私有git项目">
+                <i class="fa fa-chevron-left"></i> 使用go get获取私有git项目
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/icon.png" alt="zhaoweiguo">
+            
+              <p class="site-author-name" itemprop="name">zhaoweiguo</p>
+              <p class="site-description motion-element" itemprop="description">Just do it now.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">31</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8=" title="GitHub &rarr; https://github.com/zhaoweiguo"><i class="fa fa-fw fa-github"></i></span>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <span class="exturl" data-url="bWFpbHRvOnN1cHBvcnRAemhhb3dlaWd1by5jb20=" title="E-Mail &rarr; mailto:support@zhaoweiguo.com"><i class="fa fa-fw fa-envelope"></i></span>
+                </span>
+              
+            </div>
+          
+
+          
+             <div class="cc-license motion-element" itemprop="license">
+              
+                
+              
+              
+              
+              <span class="exturl cc-opacity" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></span>
+             </div>
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概要"><span class="nav-number">1.</span> <span class="nav-text">概要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#调研其他CI-CD系统"><span class="nav-number">2.</span> <span class="nav-text">调研其他CI/CD系统</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#需求"><span class="nav-number">2.0.1.</span> <span class="nav-text">需求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#常用的CI-CD系统"><span class="nav-number">2.0.2.</span> <span class="nav-text">常用的CI/CD系统</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Jenkins"><span class="nav-number">2.0.3.</span> <span class="nav-text">Jenkins</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#gitlab-ci"><span class="nav-number">2.0.4.</span> <span class="nav-text">gitlab-ci</span></a></li></ol></li></ol><li class="nav-item nav-level-2"><a class="nav-link" href="#drone安装"><span class="nav-number">3.</span> <span class="nav-text">drone安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#说明"><span class="nav-number">3.0.1.</span> <span class="nav-text">说明</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#在Gitlab上创建OAuth应用"><span class="nav-number">3.0.2.</span> <span class="nav-text">在Gitlab上创建OAuth应用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建共享密钥"><span class="nav-number">3.0.3.</span> <span class="nav-text">创建共享密钥</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#服务启动"><span class="nav-number">3.0.4.</span> <span class="nav-text">服务启动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#环境变量参数说明"><span class="nav-number">3.0.5.</span> <span class="nav-text">环境变量参数说明</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#说明-1"><span class="nav-number">3.0.6.</span> <span class="nav-text">说明</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoweiguo</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">站点总字数：</span>
+    
+    <span title="站点总字数">110k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    
+    <span title="站点阅读时长">1:40</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <span class="exturl theme-link" data-url="aHR0cHM6Ly9oZXhvLmlv">Hexo</span> 强力驱动 v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <span class="exturl theme-link" data-url="aHR0cHM6Ly90aGVtZS1uZXh0Lm9yZw==">NexT.Gemini</span> v6.6.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.6.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.6.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://zhaoweiguo.disqus.com/count.js" async></script>
+  
+
+  
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.url = 'http://blog.zhaoweiguo.com/2019/11/18/drone_server_startup/';
+        this.page.identifier = '2019/11/18/drone_server_startup/';
+        this.page.title = '使用Drone搭建CICD服务';
+        this.language = 'zh-CN';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://zhaoweiguo.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/exturl.js?v=6.6.0"></script>
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

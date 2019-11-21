@@ -100,25 +100,25 @@
 
 
 
-  <meta name="description" content="前言最近和同事聊天的时候，我突然想到进程Pid格式为，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了: 121. A2增加到多少，A3加12. 如果A3的值也增加到这个值后会有什么情况出现呢? 问题1源码: 123456789101112131415161718192021-module(spawn_loop">
-<meta name="keywords" content="erlang,collect,spawn">
+  <meta name="description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  1234567-record(gordon_test, &amp;#123;    idr,    % &amp;#123;id, pid&amp;#125;    id,    pid,    locale,    time = os:t">
+<meta name="keywords" content="erlang,collect,mnesia">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Erlang不断spawn新进程会有什么现象">
-<meta property="og:url" content="http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/index.html">
+<meta property="og:title" content="mnesia:delect_object只删除索引问题">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2019/02/20/erlang-collect-mnesia-delect-object/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="前言最近和同事聊天的时候，我突然想到进程Pid格式为，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了: 121. A2增加到多少，A3加12. 如果A3的值也增加到这个值后会有什么情况出现呢? 问题1源码: 123456789101112131415161718192021-module(spawn_loop">
+<meta property="og:description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  1234567-record(gordon_test, &amp;#123;    idr,    % &amp;#123;id, pid&amp;#125;    id,    pid,    locale,    time = os:t">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-06-27T03:11:01.421Z">
+<meta property="og:updated_time" content="2019-06-27T03:11:01.420Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Erlang不断spawn新进程会有什么现象">
-<meta name="twitter:description" content="前言最近和同事聊天的时候，我突然想到进程Pid格式为，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了: 121. A2增加到多少，A3加12. 如果A3的值也增加到这个值后会有什么情况出现呢? 问题1源码: 123456789101112131415161718192021-module(spawn_loop">
+<meta name="twitter:title" content="mnesia:delect_object只删除索引问题">
+<meta name="twitter:description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  1234567-record(gordon_test, &amp;#123;    idr,    % &amp;#123;id, pid&amp;#125;    id,    pid,    locale,    time = os:t">
 
 
 
 
 
 
-  <link rel="canonical" href="http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/">
+  <link rel="canonical" href="http://blog.zhaoweiguo.com/2019/02/20/erlang-collect-mnesia-delect-object/">
 
 
 
@@ -128,7 +128,7 @@
   };
 </script>
 
-  <title>Erlang不断spawn新进程会有什么现象 | 新溪blog</title>
+  <title>mnesia:delect_object只删除索引问题 | 新溪blog</title>
   
 
 
@@ -249,7 +249,7 @@
       
     
 
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档<span class="badge">32</span></a>
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档<span class="badge">33</span></a>
 
   </li>
         
@@ -348,7 +348,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/02/20/erlang-collect-mnesia-delect-object/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoweiguo">
@@ -365,7 +365,7 @@
 
         
         
-          <h2 class="post-title" itemprop="name headline">Erlang不断spawn新进程会有什么现象
+          <h2 class="post-title" itemprop="name headline">mnesia:delect_object只删除索引问题
               
             
           </h2>
@@ -390,7 +390,7 @@
                 
               
 
-              <time title="创建时间：2019-02-10 10:26:00" itemprop="dateCreated datePublished" datetime="2019-02-10T10:26:00+08:00">2019-02-10</time>
+              <time title="创建时间：2019-02-20 11:46:03" itemprop="dateCreated datePublished" datetime="2019-02-20T11:46:03+08:00">2019-02-20</time>
             
 
             
@@ -439,10 +439,10 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2019/02/10/erlang_collect_spawn_infinite/#comments" itemprop="discussionUrl">
+                <a href="/2019/02/20/erlang-collect-mnesia-delect-object/#comments" itemprop="discussionUrl">
                 <span class="post-meta-item-text">评论数：</span>
                 
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/02/10/erlang_collect_spawn_infinite/" itemprop="commentCount"></span>
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/02/20/erlang-collect-mnesia-delect-object/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -464,7 +464,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">2.3k</span>
+                <span title="本文字数">1.9k</span>
               
 
               
@@ -498,24 +498,32 @@
       
 
       
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近和同事聊天的时候，我突然想到进程Pid格式为<a1, a2, a3>，其中A1代表Node值, A2, A3则代表指定Node下的进程值，开始A3为0。当A2的值增加到一定数后, A3的值加1，那么问题来了:</a1,></p>
-<figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>. <span class="built_in">A2</span>增加到多少，<span class="built_in">A3</span>加<span class="number">1</span></span><br><span class="line"><span class="number">2</span>. 如果<span class="built_in">A3</span>的值也增加到这个值后会有什么情况出现呢?</span><br></pre></td></tr></table></figure>
-<h3 id="问题1"><a href="#问题1" class="headerlink" title="问题1"></a>问题1</h3><p>源码:</p>
-<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">-module</span><span class="params">(spawn_loop_infinite2)</span>.</span><br><span class="line"><span class="keyword">-author</span><span class="params">(<span class="string">"zhaoweiguo"</span>)</span>.</span><br><span class="line"></span><br><span class="line"><span class="comment">%% API</span></span><br><span class="line"><span class="keyword">-export</span><span class="params">([loop/<span class="number">1</span>])</span>.</span><br><span class="line"><span class="keyword">-export</span><span class="params">([do_nothing/<span class="number">0</span>])</span>.</span><br><span class="line"><span class="keyword">-export</span><span class="params">([loop1/<span class="number">2</span>])</span>.</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">loop</span><span class="params">(N)</span> -&gt;</span></span><br><span class="line">    &#123;ok, F&#125; = file:open(<span class="string">"aaa.txt"</span>, [append]),</span><br><span class="line">    loop1(F, N).</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">loop1</span><span class="params">(_F, <span class="number">0</span>)</span> -&gt;</span></span><br><span class="line">    ok;</span><br><span class="line"><span class="function"><span class="title">loop1</span><span class="params">(F, N)</span> -&gt;</span></span><br><span class="line">    Pid = spawn(spawn_loop_infinite, do_nothing, []),</span><br><span class="line">    file:write(F, io_lib:format(<span class="string">"[~p]:(~p)~n"</span>, [N, Pid])),</span><br><span class="line">    loop1(F, N-<span class="number">1</span>).</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">do_nothing</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    ok.</span><br></pre></td></tr></table></figure>
-<p>执行命令:</p>
-<figure class="highlight gcode"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">erl&gt; spaw<span class="symbol">n_loop_infinite2</span>:loop<span class="comment">(33000)</span>.</span><br></pre></td></tr></table></figure>
-<p>打开文件aaa.txt:</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-attr">[303]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.32766</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[302]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.32767</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[301]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.0</span><span class="selector-class">.1</span>&gt;)</span><br><span class="line"><span class="selector-attr">[300]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.1</span><span class="selector-class">.1</span>&gt;)</span><br><span class="line"><span class="selector-attr">[299]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.2</span><span class="selector-class">.1</span>&gt;)</span><br></pre></td></tr></table></figure>
-<p>结论:</p>
-<pre><code>A2增加到32767，A3加1
-</code></pre><h3 id="问题2"><a href="#问题2" class="headerlink" title="问题2"></a>问题2</h3><p>源码:</p>
-<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 每次生成100万新进程，打印下一进程的pid，休息0.1秒后再生成100万新进程</span></span><br><span class="line"><span class="keyword">-module</span><span class="params">(spawn_loop_infinite)</span>.</span><br><span class="line"><span class="keyword">-author</span><span class="params">(<span class="string">"zhaoweiguo"</span>)</span>.</span><br><span class="line"></span><br><span class="line"><span class="comment">%% API</span></span><br><span class="line"><span class="keyword">-export</span><span class="params">([loop/<span class="number">2</span>])</span>.</span><br><span class="line"><span class="keyword">-export</span><span class="params">([do_nothing/<span class="number">0</span>])</span>.</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">loop</span><span class="params">(N, N)</span> -&gt;</span></span><br><span class="line">    io:format(<span class="string">"stop~n"</span>);</span><br><span class="line"><span class="function"><span class="title">loop</span><span class="params">(M, N)</span> -&gt;</span></span><br><span class="line">    Add = <span class="number">32768</span>*<span class="number">10</span>,</span><br><span class="line">    io:format(<span class="string">"~p;"</span>, [N]),</span><br><span class="line">    &#123;ok, F&#125; = file:open(<span class="string">"fff"</span>++ integer_to_list(N) ++<span class="string">".txt"</span>, [append]),</span><br><span class="line">    loop1(Add, N, F),</span><br><span class="line">    file:close(F),</span><br><span class="line">    timer:sleep(<span class="number">10</span>),</span><br><span class="line">    loop(M, N+<span class="number">1</span>).</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">loop1</span><span class="params">(<span class="number">0</span>, _N, _F)</span> -&gt;</span></span><br><span class="line">    ok;</span><br><span class="line"><span class="function"><span class="title">loop1</span><span class="params">(Add, N, F)</span> -&gt;</span></span><br><span class="line">    Pid = spawn(spawn_loop_infinite, do_nothing, []),</span><br><span class="line">    file:write(F, io_lib:format(<span class="string">"[~p]:(~p)~n"</span>, [Add, Pid])),</span><br><span class="line">    loop1(Add-<span class="number">1</span>, N, F).</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">do_nothing</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    ok.</span><br></pre></td></tr></table></figure>
-<p>在文件fff820.txt中看到::</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-attr">[296800]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.32762</span><span class="selector-class">.8191</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296799]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.32763</span><span class="selector-class">.8191</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296798]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.32764</span><span class="selector-class">.8191</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296797]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.32765</span><span class="selector-class">.8191</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296796]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.32766</span><span class="selector-class">.8191</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296795]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.32767</span><span class="selector-class">.7</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296794]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.5</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296793]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.7</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296792]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.11</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296791]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.8</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296790]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.17</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296789]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.16</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296788]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.24</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296787]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.6</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line">...</span><br><span class="line"><span class="selector-attr">[296755]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.72</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296754]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.73</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296753]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.74</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296752]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.75</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296751]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.76</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296750]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.77</span><span class="selector-class">.0</span>&gt;)</span><br><span class="line"><span class="selector-attr">[296749]</span><span class="selector-pseudo">:(</span>&lt;0<span class="selector-class">.78</span><span class="selector-class">.0</span>&gt;)</span><br></pre></td></tr></table></figure>
-<p>结论:</p>
-<figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">A3在增加到<span class="number">8191</span>后就不再增加,改为使用已经回收的进程</span><br><span class="line">经过很短的混乱后又变的有序起来</span><br><span class="line">之后每一次A3+<span class="number">1</span>都会先乱,再有序,并且乱的顺序都是对的</span><br></pre></td></tr></table></figure>
-<p>其他发现:</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">% 有个有趣的发现, 在每次进程到达&lt;0<span class="selector-class">.32766</span><span class="selector-class">.8191</span>&gt;后产生的下一个进程分别是:</span><br><span class="line">&lt;0<span class="selector-class">.32767</span><span class="selector-class">.7</span>&gt;</span><br><span class="line">&lt;0<span class="selector-class">.32767</span><span class="selector-class">.15</span>&gt;</span><br><span class="line">&lt;0<span class="selector-class">.32767</span><span class="selector-class">.23</span>&gt;</span><br><span class="line">&lt;0<span class="selector-class">.32767</span><span class="selector-class">.31</span>&gt;</span><br><span class="line">&lt;0<span class="selector-class">.32767</span><span class="selector-class">.39</span>&gt;</span><br><span class="line">&lt;0<span class="selector-class">.32767</span><span class="selector-class">.47</span>&gt;</span><br></pre></td></tr></table></figure>
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据</p>
+<h3 id="问题重现"><a href="#问题重现" class="headerlink" title="问题重现"></a>问题重现</h3><ol>
+<li>表结构:</li>
+</ol>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-<span class="built_in">record</span>(gordon_test, &#123;</span><br><span class="line">    idr,    % &#123;<span class="built_in">id</span>, pid&#125;</span><br><span class="line">    <span class="built_in">id</span>,</span><br><span class="line">    pid,</span><br><span class="line">    locale,</span><br><span class="line">    <span class="built_in">time</span> = os:timestamp()</span><br><span class="line">&#125;).</span><br></pre></td></tr></table></figure>
+<ol>
+<li>初使化代码:</li>
+</ol>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mnesia:create_table(gordon_test, [</span><br><span class="line">    &#123;ram_copies, [<span class="keyword">node</span><span class="title">() | nodes</span>()]&#125;,</span><br><span class="line">    &#123;<span class="keyword">attributes</span>, record_<span class="literal">inf</span>o(fields, gordon_test)&#125;</span><br><span class="line">]),</span><br><span class="line">mnesia:add_table_index(gordon_test, id),</span><br><span class="line">mnesia:add_table_index(gordon_test, pid).</span><br></pre></td></tr></table></figure>
+<ol>
+<li>插入数据:</li>
+</ol>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">mnesia:</span>dirty_write(gordon_test, &#123;gordon_test, &#123;<span class="number">1</span>, <span class="number">1</span>&#125;, <span class="number">1</span>, <span class="number">1</span>, <span class="string">""</span>, <span class="string">""</span>, <span class="string">os:</span>timestamp()&#125;).</span><br><span class="line"><span class="string">mnesia:</span>dirty_write(gordon_test, &#123;gordon_test, &#123;<span class="number">2</span>, <span class="number">2</span>&#125;, <span class="number">2</span>, <span class="number">2</span>, <span class="string">""</span>, <span class="string">""</span>, <span class="string">os:</span>timestamp()&#125;).</span><br><span class="line"><span class="string">mnesia:</span>dirty_write(gordon_test, &#123;gordon_test, &#123;<span class="number">3</span>, <span class="number">3</span>&#125;, <span class="number">3</span>, <span class="number">3</span>, <span class="string">""</span>, <span class="string">""</span>, <span class="string">os:</span>timestamp()&#125;).</span><br></pre></td></tr></table></figure>
+<p>3.查询:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Id = 3,</span><br><span class="line">Pid = 3,</span><br><span class="line">% 查出id=3的所有记录，都能查出一条记录</span><br><span class="line"><span class="section">mnesia:dirty_index_read(gordon_test, Id, #gordon_test.id),</span></span><br><span class="line"><span class="section">mnesia:dirty_index_match_object(#gordon_test&#123;idr = '$1',id=Id, _='_'&#125;, #gordon_test.id),</span></span><br></pre></td></tr></table></figure>
+<ol>
+<li>执行删除:</li>
+</ol>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">mnesia:</span>dirty_delete_object(X<span class="comment">#gordon_test&#123;locale = aaaa&#125;).</span></span><br><span class="line">or</span><br><span class="line">Trans = <span class="function"><span class="keyword">fun</span>() <span class="title">-</span></span>&gt;</span><br><span class="line">    <span class="symbol">mnesia:</span>delete_object(X<span class="comment">#gordon_test&#123;locale = aaaa&#125;)</span></span><br><span class="line">        <span class="keyword">end</span>,</span><br><span class="line"><span class="symbol">mnesia:</span>transaction(Trans)</span><br></pre></td></tr></table></figure>
+<ol>
+<li>两次查询，dirty_index_read查不到数据:</li>
+</ol>
+<figure class="highlight clean"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">% 数据查询为空</span><br><span class="line">mnesia:dirty_index_read(gordon_test, Id, #gordon_test.id),</span><br><span class="line">% 数据不变</span><br><span class="line">mnesia:dirty_index_match_object(#gordon_test&#123;idr = <span class="string">'$1'</span>,id=Id, _=<span class="string">'_'</span>&#125;, #gordon_test.id),</span><br></pre></td></tr></table></figure>
+<h3 id="问题定位"><a href="#问题定位" class="headerlink" title="问题定位"></a>问题定位</h3><p>查文档:</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">If</span> a table is of<span class="built_in"> type </span>bag, it can sometimes be needed <span class="keyword">to</span> delete only some of the records with a certain key. </span><br><span class="line">This can be done with the function delete_object/3. A complete record must be supplied <span class="keyword">to</span> this function.</span><br><span class="line"></span><br><span class="line">The semantics of this function is context-sensitive. <span class="keyword">For</span> details, see mnesia:activity/4. </span><br><span class="line"><span class="keyword">In</span> transaction-context, it acquires a lock of<span class="built_in"> type </span>LockKind on the record. </span><br><span class="line">Currently, the lock types write <span class="keyword">and</span> sticky_write are supported.</span><br></pre></td></tr></table></figure>
+<h3 id="深层研究"><a href="#深层研究" class="headerlink" title="深层研究"></a>深层研究</h3><p>待继续 @todo</p>
 
       
     </div>
@@ -549,7 +557,7 @@
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     
-    <a href="http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/" title="Erlang不断spawn新进程会有什么现象">http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/</a>
+    <a href="http://blog.zhaoweiguo.com/2019/02/20/erlang-collect-mnesia-delect-object/" title="mnesia:delect_object只删除索引问题">http://blog.zhaoweiguo.com/2019/02/20/erlang-collect-mnesia-delect-object/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！</li>
@@ -566,7 +574,7 @@
           
             <a href="/tags/collect/" rel="tag"># collect</a>
           
-            <a href="/tags/spawn/" rel="tag"># spawn</a>
+            <a href="/tags/mnesia/" rel="tag"># mnesia</a>
           
         </div>
       
@@ -579,8 +587,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/01/12/question-certificate-expired/" rel="next" title="网站证书过期导致的一系列问题">
-                <i class="fa fa-chevron-left"></i> 网站证书过期导致的一系列问题
+              <a href="/2019/02/10/erlang-collect-spawn-infinite/" rel="next" title="Erlang不断spawn新进程会有什么现象">
+                <i class="fa fa-chevron-left"></i> Erlang不断spawn新进程会有什么现象
               </a>
             
           </div>
@@ -589,8 +597,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/02/20/erlang_collect_mnesia_delect_object/" rel="prev" title="mnesia:delect_object只删除索引问题">
-                mnesia:delect_object只删除索引问题 <i class="fa fa-chevron-right"></i>
+              <a href="/2019/03/10/question-dns-domain-expired/" rel="prev" title="域名过期导致的一系列问题">
+                域名过期导致的一系列问题 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -672,7 +680,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">33</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -844,7 +852,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题1"><span class="nav-number">2.</span> <span class="nav-text">问题1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题2"><span class="nav-number">3.</span> <span class="nav-text">问题2</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题重现"><span class="nav-number">2.</span> <span class="nav-text">问题重现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题定位"><span class="nav-number">3.</span> <span class="nav-text">问题定位</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#深层研究"><span class="nav-number">4.</span> <span class="nav-text">深层研究</span></a></li></ol></div>
             
 
           </div>
@@ -885,7 +893,7 @@
     
       <span class="post-meta-item-text">站点总字数：</span>
     
-    <span title="站点总字数">110k</span>
+    <span title="站点总字数">112k</span>
   
 
   
@@ -896,7 +904,7 @@
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">1:40</span>
+    <span title="站点阅读时长">1:42</span>
   
 </div>
 
@@ -1033,9 +1041,9 @@
   
     <script type="text/javascript">
       var disqus_config = function () {
-        this.page.url = 'http://blog.zhaoweiguo.com/2019/02/10/erlang_collect_spawn_infinite/';
-        this.page.identifier = '2019/02/10/erlang_collect_spawn_infinite/';
-        this.page.title = 'Erlang不断spawn新进程会有什么现象';
+        this.page.url = 'http://blog.zhaoweiguo.com/2019/02/20/erlang-collect-mnesia-delect-object/';
+        this.page.identifier = '2019/02/20/erlang-collect-mnesia-delect-object/';
+        this.page.title = 'mnesia:delect_object只删除索引问题';
         this.language = 'zh-CN';
         };
       function loadComments () {

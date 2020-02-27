@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html class="theme-next gemini" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css">
+
+
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon.png?v=6.6.0">
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.6.0',
+    sidebar: {"position":"left","width":300,"b2t":true,"scrollpercent":true,"onmobile":true,"display":"post"},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="简介前段时间grafana监控出问题，定位发现磁盘满了。今天grafana监控又出问题了，是去一看磁盘又满了。肯定是某一个服务在不停的吃磁盘，才7天时间，就吃掉了近200G。 问题定位定位到哪个文件在吃磁盘通过df和du命令一点点定位找到真凶:/var/lib/grafana.db。此文件已经占用486G了。 定位是哪个表数据量大我们grafana用的是sqlite存储配置相关信息，grafana">
+<meta name="keywords" content="golang,erlang">
+<meta property="og:type" content="article">
+<meta property="og:title" content="新溪blog">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="简介前段时间grafana监控出问题，定位发现磁盘满了。今天grafana监控又出问题了，是去一看磁盘又满了。肯定是某一个服务在不停的吃磁盘，才7天时间，就吃掉了近200G。 问题定位定位到哪个文件在吃磁盘通过df和du命令一点点定位找到真凶:/var/lib/grafana.db。此文件已经占用486G了。 定位是哪个表数据量大我们grafana用的是sqlite存储配置相关信息，grafana">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-02-11T10:02:45.266Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="新溪blog">
+<meta name="twitter:description" content="简介前段时间grafana监控出问题，定位发现磁盘满了。今天grafana监控又出问题了，是去一看磁盘又满了。肯定是某一个服务在不停的吃磁盘，才7天时间，就吃掉了近200G。 问题定位定位到哪个文件在吃磁盘通过df和du命令一点点定位找到真凶:/var/lib/grafana.db。此文件已经占用486G了。 定位是哪个表数据量大我们grafana用的是sqlite存储配置相关信息，grafana">
+
+
+
+
+
+
+  <link rel="canonical" href="http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title> | 新溪blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">新溪blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <h1 class="site-subtitle" itemprop="description">新溪-gordon之胡写乱画</h1>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-bullhorn"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档<span class="badge">32</span></a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类<span class="badge">9</span></a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签<span class="badge">30</span></a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+  
+  
+
+  
+
+    <span class="exturl github-corner" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8vemhhb3dlaWd1by5naXRodWIuaW8=" title="Fork me on GitHub" aria-label="Fork me on GitHub"><svg width="80" height="80" viewbox="0 0 250 250" style="fill: #222; color: #fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></span>
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+      <meta itemprop="image" content="/images/icon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-02-11 18:02:39" itemprop="dateCreated datePublished" datetime="2020-02-11T18:02:39+08:00">2020-02-11</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2020-02-11 18:02:45" itemprop="dateModified" datetime="2020-02-11T18:02:45+08:00">2020-02-11</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/02/11/question-grafana-disk-is-full/#comments" itemprop="discussionUrl">
+                <span class="post-meta-item-text">评论数：</span>
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/02/11/question-grafana-disk-is-full/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">2.2k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">2 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>前段时间grafana监控出问题，定位发现磁盘满了。今天grafana监控又出问题了，是去一看磁盘又满了。肯定是某一个服务在不停的吃磁盘，才7天时间，就吃掉了近200G。</p>
+<h1 id="问题定位"><a href="#问题定位" class="headerlink" title="问题定位"></a>问题定位</h1><h3 id="定位到哪个文件在吃磁盘"><a href="#定位到哪个文件在吃磁盘" class="headerlink" title="定位到哪个文件在吃磁盘"></a>定位到哪个文件在吃磁盘</h3><p>通过df和du命令一点点定位找到真凶:/var/lib/grafana.db。此文件已经占用486G了。</p>
+<h3 id="定位是哪个表数据量大"><a href="#定位是哪个表数据量大" class="headerlink" title="定位是哪个表数据量大"></a>定位是哪个表数据量大</h3><p>我们grafana用的是sqlite存储配置相关信息，grafana.db文件就是sqlite的数据文件，登录sqlite:<br><figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$&gt; sqlite3 /var/<span class="class"><span class="keyword">lib</span>/<span class="title">grafana</span>.<span class="title">db</span></span></span><br><span class="line">sqlite&gt; .table</span><br><span class="line">alert                   dashboard_version       quota</span><br><span class="line">alert_notification      data_source             session</span><br><span class="line">annotation              login_attempt           star</span><br><span class="line">annotation_tag          migration_log           tag</span><br><span class="line">api_key                 org                     team</span><br><span class="line">dashboard               org_user                team_member</span><br><span class="line">dashboard_acl           playlist                temp_user</span><br><span class="line">dashboard_provisioning  playlist_item           test_data</span><br><span class="line">dashboard_snapshot      plugin_setting          user</span><br><span class="line">dashboard_tag           preferences             user_auth</span><br><span class="line">$&gt; <span class="keyword">select</span> count(*) from dashboard_version;</span><br><span class="line"><span class="number">4462809</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="为啥这个表这么多数据"><a href="#为啥这个表这么多数据" class="headerlink" title="为啥这个表这么多数据"></a>为啥这个表这么多数据</h3><p>Google、百度各种关键词都查不到相关问题，没办法，只好去github上看Issues了。搜索grafana.db和dashboard_version找到原因。这是grafana的一个bug，5.2.2、5.3.0都有这个问题，我们的版本是5.1.4也有这个问题。这个问题在今年1月份由bergquist提供了解决方案。</p>
+<h5 id="原因"><a href="#原因" class="headerlink" title="原因:"></a>原因:</h5><p>dashboards的来源中2个不同的文件夹下有一个相同的json文件</p>
+<h5 id="原文-from"><a href="#原文-from" class="headerlink" title="原文:from"></a>原文:<span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL2dyYWZhbmEvZ3JhZmFuYS9pc3N1ZXMvMTI4NjQ=" title="https://github.com/grafana/grafana/issues/12864">from<i class="fa fa-external-link"></i></span></h5><p>By mistake, I put twice the same JSON file in two different folders, which are used as a source of provisioned dashboards. And after some time I noticed, that MySQL databases were growing infinitely. After some quick check, I found, that the table &quot;dashboard_version&quot; was the biggest (with millions of &quot;revisions&quot; for &quot;duplicated&quot; dashboard).</p>
+<h5 id="bergquist提供的解决方案"><a href="#bergquist提供的解决方案" class="headerlink" title="bergquist提供的解决方案"></a>bergquist提供的解决方案</h5><p>在文件devenv/dashboards.yaml中增加一句:<br><figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// <span class="keyword">https</span>://github.com/bergquist/grafana/commit/<span class="number">2</span>ea46fa925013abbf92871c3aec17250250a9250</span><br><span class="line">解决说明:</span><br><span class="line">avoid infinite loop <span class="keyword">in</span> <span class="keyword">the</span> dashboard provisioner:</span><br><span class="line"><span class="keyword">if</span> <span class="literal">one</span> dashboard <span class="keyword">with</span> <span class="keyword">an</span> uid is refered <span class="built_in">to</span> <span class="keyword">by</span> <span class="literal">two</span></span><br><span class="line">provsioners <span class="keyword">each</span> provsioner overwrite <span class="keyword">each</span> other.</span><br><span class="line">filling up dashboard_versions quite fast <span class="keyword">if</span> <span class="keyword">using</span></span><br><span class="line">default settings.</span><br></pre></td></tr></table></figure></p>
+<p>这个问题在新版本已经解决了，原因是dashboard的json配置文件中的uid有相同的，导致相互间覆盖。但我验证时，导出所有的dashboard的配置文件，没有发现有相同uid的配置，这个难道是我之前对各配置文件分组引起的？我删除了几个不常用的dashboard，把所有配置都合并到一个文件夹中，没办法证实了。</p>
+<h5 id="本问题解决方案"><a href="#本问题解决方案" class="headerlink" title="本问题解决方案"></a>本问题解决方案</h5><p>但现在的问题是，已经有400多G数据，需要先解决这个问题再使用新版本。首先想到的是迁移到一个新的服务器上，但有个问题，配置文件的导出只能一个个导出dashboard，而且还不能导出类似数据源这类数据。本来这种配置数据迁移可以通过直接迁移数据库解决，但现在本来就是解决数据库太大的问题。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+      <div>
+        
+
+
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhaoweiguo</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    
+    <a href="http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/">http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/02/05/ali-UAT-asm/" rel="next" title="阿里产品ASM用户验收测试初体验">
+                <i class="fa fa-chevron-left"></i> 阿里产品ASM用户验收测试初体验
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/icon.png" alt="zhaoweiguo">
+            
+              <p class="site-author-name" itemprop="name">zhaoweiguo</p>
+              <p class="site-description motion-element" itemprop="description">Just do it now.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">30</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8=" title="GitHub &rarr; https://github.com/zhaoweiguo"><i class="fa fa-fw fa-github"></i></span>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <span class="exturl" data-url="bWFpbHRvOnN1cHBvcnRAemhhb3dlaWd1by5jb20=" title="E-Mail &rarr; mailto:support@zhaoweiguo.com"><i class="fa fa-fw fa-envelope"></i></span>
+                </span>
+              
+            </div>
+          
+
+          
+             <div class="cc-license motion-element" itemprop="license">
+              
+                
+              
+              
+              
+              <span class="exturl cc-opacity" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></span>
+             </div>
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#问题定位"><span class="nav-number">2.</span> <span class="nav-text">问题定位</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#定位到哪个文件在吃磁盘"><span class="nav-number">2.0.1.</span> <span class="nav-text">定位到哪个文件在吃磁盘</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#定位是哪个表数据量大"><span class="nav-number">2.0.2.</span> <span class="nav-text">定位是哪个表数据量大</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为啥这个表这么多数据"><span class="nav-number">2.0.3.</span> <span class="nav-text">为啥这个表这么多数据</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#原因"><span class="nav-number">2.0.3.0.1.</span> <span class="nav-text">原因:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#原文-from"><span class="nav-number">2.0.3.0.2.</span> <span class="nav-text">原文:from</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#bergquist提供的解决方案"><span class="nav-number">2.0.3.0.3.</span> <span class="nav-text">bergquist提供的解决方案</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#本问题解决方案"><span class="nav-number">2.0.3.0.4.</span> <span class="nav-text">本问题解决方案</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">  <span class="exturl" data-url="aHR0cDovL3d3dy5taWl0YmVpYW4uZ292LmNu">京ICP备16018553号 </span>&copy; 2018 – <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoweiguo</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">站点总字数：</span>
+    
+    <span title="站点总字数">115k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    
+    <span title="站点阅读时长">1:45</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <span class="exturl theme-link" data-url="aHR0cHM6Ly9oZXhvLmlv">Hexo</span> 强力驱动 v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <span class="exturl theme-link" data-url="aHR0cHM6Ly90aGVtZS1uZXh0Lm9yZw==">NexT.Gemini</span> v6.6.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.6.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.6.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://zhaoweiguo.disqus.com/count.js" async></script>
+  
+
+  
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.url = 'http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/';
+        this.page.identifier = '2020/02/11/question-grafana-disk-is-full/';
+        this.page.title = '';
+        this.language = 'zh-CN';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://zhaoweiguo.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/exturl.js?v=6.6.0"></script>
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -112,7 +112,7 @@
 <meta property="og:image" content="http://blog.zhaoweiguo.com/images/golangs/go-get-git-private2.png">
 <meta property="og:image" content="http://blog.zhaoweiguo.com/images/golangs/go-get-git-private3.png">
 <meta property="og:image" content="http://blog.zhaoweiguo.com/images/golangs/go-get-git-private4.png">
-<meta property="og:updated_time" content="2019-09-25T11:00:00.139Z">
+<meta property="og:updated_time" content="2020-03-13T09:13:19.425Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用go get获取私有git项目">
 <meta name="twitter:description" content="前情提要本人使用Idea做Golang开发，之前一直是用公有项目，可通过快捷键自动获取(如下图)，但私有git项目则不能如此顺利 不使用Go Modules(vgo)界面: 使用Go Modules(vgo):">
@@ -254,7 +254,7 @@
       
     
 
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档<span class="badge">32</span></a>
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档<span class="badge">31</span></a>
 
   </li>
         
@@ -292,7 +292,7 @@
       
     
 
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签<span class="badge">30</span></a>
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签<span class="badge">32</span></a>
 
   </li>
 
@@ -412,7 +412,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-09-25 19:00:00" itemprop="dateModified" datetime="2019-09-25T19:00:00+08:00">2019-09-25</time>
+                <time title="修改时间：2020-03-13 17:13:19" itemprop="dateModified" datetime="2020-03-13T17:13:19+08:00">2020-03-13</time>
               
             
           </span>
@@ -469,7 +469,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">4.1k</span>
+                <span title="本文字数">4.4k</span>
               
 
               
@@ -533,6 +533,7 @@
 <p>我把中间CA证书导入到docker上后成功时，可以看到:<br><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$&gt; openssl s_client -connect gitlab:443 --showcerts</span><br><span class="line">CONNECTED(00000003)</span><br><span class="line"><span class="attribute">depth</span>=2 C = US, O = DigiCert Inc, OU = www.digicert.com, CN = DigiCert Global Root CA</span><br><span class="line">verify return:1</span><br><span class="line"><span class="attribute">depth</span>=1 C = US, O = DigiCert Inc, CN = DigiCert SHA2 Secure<span class="built_in"> Server </span>CA</span><br><span class="line">verify return:1</span><br><span class="line"><span class="attribute">depth</span>=0 C = CN, L = Beijing, O = Gitlab (Beijing) Limited, CN = gitlab</span><br><span class="line">verify return:1</span><br><span class="line"><span class="built_in">..</span>. <span class="built_in">..</span>.</span><br></pre></td></tr></table></figure></p>
 <p>我这才想起证书链的问题，证书链说明<br><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Root CA证书:        DigiCert Global Root CA</span><br><span class="line">中间CA证书:          DigiCert SHA2 Secure<span class="built_in"> Server </span>CA</span><br><span class="line">终端证书:            gitlab.com(这是假的，为和前面的网站保持一致)</span><br></pre></td></tr></table></figure></p>
 <p>然后把中间CA证书也放到gitlab服务的配置中后，一切都ok了</p>
+<h2 id="2020-03-13更新"><a href="#2020-03-13更新" class="headerlink" title="2020-03-13更新"></a>2020-03-13更新</h2><p>上面说的还是有一些问题，主要是版本不同，带来的问题也不同。首先要先知道1.12版和1.13版的不同，1.13增加了GOSUMDB和GOPRIVATE环境变量1.13版本需要加上以下几个命令到~/.bash_profile(zsh要改~/.zprofile):<br><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="builtin-name">export</span> <span class="attribute">GO111MODULE</span>=on</span><br><span class="line"><span class="builtin-name">export</span> <span class="attribute">GOPROXY</span>=https://goproxy.cn,direct</span><br><span class="line"><span class="builtin-name">export</span> <span class="attribute">GOSUMDB</span>=sum.golang.google.cn</span><br><span class="line"><span class="builtin-name">export</span> <span class="attribute">GOPRIVATE</span>=gitlab.com  # 这儿改成你的私有git域名</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
@@ -687,7 +688,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">31</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -791,7 +792,11 @@
                     
                       
                     
-                    <span class="site-state-item-count">30</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">32</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -857,7 +862,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前情提要"><span class="nav-number">1.</span> <span class="nav-text">前情提要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#方法1-切换成ssh协议免密"><span class="nav-number">2.</span> <span class="nav-text">方法1: 切换成ssh协议免密</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题解决1-搭建的gitlab提供的是http协议"><span class="nav-number">3.</span> <span class="nav-text">问题解决1: 搭建的gitlab提供的是http协议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题解决2-证书不可信问题"><span class="nav-number">4.</span> <span class="nav-text">问题解决2: 证书不可信问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#方法2-使用https协议（用户名-密码）"><span class="nav-number">5.</span> <span class="nav-text">方法2: 使用https协议（用户名+密码）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#踩到的坑"><span class="nav-number">6.</span> <span class="nav-text">踩到的坑</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#坑1-gitlab安装时只使用http协议"><span class="nav-number">6.0.1.</span> <span class="nav-text">坑1: gitlab安装时只使用http协议</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#坑2-证书相关坑"><span class="nav-number">6.0.2.</span> <span class="nav-text">坑2: 证书相关坑</span></a></li></ol></li></ol><li class="nav-item nav-level-2"><a class="nav-link" href="#其他解决方案"><span class="nav-number">7.</span> <span class="nav-text">其他解决方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2019-09-25更新"><span class="nav-number">8.</span> <span class="nav-text">2019-09-25更新</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#验证的经过"><span class="nav-number">8.0.1.</span> <span class="nav-text">验证的经过</span></a></li></ol></li></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前情提要"><span class="nav-number">1.</span> <span class="nav-text">前情提要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#方法1-切换成ssh协议免密"><span class="nav-number">2.</span> <span class="nav-text">方法1: 切换成ssh协议免密</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题解决1-搭建的gitlab提供的是http协议"><span class="nav-number">3.</span> <span class="nav-text">问题解决1: 搭建的gitlab提供的是http协议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题解决2-证书不可信问题"><span class="nav-number">4.</span> <span class="nav-text">问题解决2: 证书不可信问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#方法2-使用https协议（用户名-密码）"><span class="nav-number">5.</span> <span class="nav-text">方法2: 使用https协议（用户名+密码）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#踩到的坑"><span class="nav-number">6.</span> <span class="nav-text">踩到的坑</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#坑1-gitlab安装时只使用http协议"><span class="nav-number">6.0.1.</span> <span class="nav-text">坑1: gitlab安装时只使用http协议</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#坑2-证书相关坑"><span class="nav-number">6.0.2.</span> <span class="nav-text">坑2: 证书相关坑</span></a></li></ol></li></ol><li class="nav-item nav-level-2"><a class="nav-link" href="#其他解决方案"><span class="nav-number">7.</span> <span class="nav-text">其他解决方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2019-09-25更新"><span class="nav-number">8.</span> <span class="nav-text">2019-09-25更新</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#验证的经过"><span class="nav-number">8.0.1.</span> <span class="nav-text">验证的经过</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2020-03-13更新"><span class="nav-number">9.</span> <span class="nav-text">2020-03-13更新</span></a></li></div>
             
 
           </div>
@@ -898,7 +903,7 @@
     
       <span class="post-meta-item-text">站点总字数：</span>
     
-    <span title="站点总字数">115k</span>
+    <span title="站点总字数">120k</span>
   
 
   
@@ -909,7 +914,7 @@
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">1:45</span>
+    <span title="站点阅读时长">1:49</span>
   
 </div>
 

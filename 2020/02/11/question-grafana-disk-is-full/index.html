@@ -101,16 +101,16 @@
 
 
   <meta name="description" content="简介前段时间grafana监控出问题，定位发现磁盘满了。今天grafana监控又出问题了，是去一看磁盘又满了。肯定是某一个服务在不停的吃磁盘，才7天时间，就吃掉了近200G。 问题定位定位到哪个文件在吃磁盘通过df和du命令一点点定位找到真凶:/var/lib/grafana.db。此文件已经占用486G了。 定位是哪个表数据量大我们grafana用的是sqlite存储配置相关信息，grafana">
-<meta name="keywords" content="golang,erlang">
+<meta name="keywords" content="question,grafana">
 <meta property="og:type" content="article">
-<meta property="og:title" content="新溪blog">
+<meta property="og:title" content="【常见问题】Grafana一个bug导致磁盘占用近500G">
 <meta property="og:url" content="http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/index.html">
 <meta property="og:site_name" content="新溪blog">
 <meta property="og:description" content="简介前段时间grafana监控出问题，定位发现磁盘满了。今天grafana监控又出问题了，是去一看磁盘又满了。肯定是某一个服务在不停的吃磁盘，才7天时间，就吃掉了近200G。 问题定位定位到哪个文件在吃磁盘通过df和du命令一点点定位找到真凶:/var/lib/grafana.db。此文件已经占用486G了。 定位是哪个表数据量大我们grafana用的是sqlite存储配置相关信息，grafana">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-02-11T10:02:45.266Z">
+<meta property="og:updated_time" content="2020-07-22T14:34:42.431Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="新溪blog">
+<meta name="twitter:title" content="【常见问题】Grafana一个bug导致磁盘占用近500G">
 <meta name="twitter:description" content="简介前段时间grafana监控出问题，定位发现磁盘满了。今天grafana监控又出问题了，是去一看磁盘又满了。肯定是某一个服务在不停的吃磁盘，才7天时间，就吃掉了近200G。 问题定位定位到哪个文件在吃磁盘通过df和du命令一点点定位找到真凶:/var/lib/grafana.db。此文件已经占用486G了。 定位是哪个表数据量大我们grafana用的是sqlite存储配置相关信息，grafana">
 
 
@@ -128,7 +128,7 @@
   };
 </script>
 
-  <title> | 新溪blog</title>
+  <title>【常见问题】Grafana一个bug导致磁盘占用近500G | 新溪blog</title>
   
 
 
@@ -249,7 +249,7 @@
       
     
 
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档<span class="badge">32</span></a>
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档<span class="badge">31</span></a>
 
   </li>
         
@@ -287,7 +287,7 @@
       
     
 
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签<span class="badge">30</span></a>
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签<span class="badge">32</span></a>
 
   </li>
 
@@ -365,7 +365,7 @@
 
         
         
-          <h2 class="post-title" itemprop="name headline">
+          <h2 class="post-title" itemprop="name headline">【常见问题】Grafana一个bug导致磁盘占用近500G
               
             
           </h2>
@@ -390,7 +390,7 @@
                 
               
 
-              <time title="创建时间：2020-02-11 18:02:39" itemprop="dateCreated datePublished" datetime="2020-02-11T18:02:39+08:00">2020-02-11</time>
+              <time title="创建时间：2020-02-11 13:22:09" itemprop="dateCreated datePublished" datetime="2020-02-11T13:22:09+08:00">2020-02-11</time>
             
 
             
@@ -407,11 +407,29 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2020-02-11 18:02:45" itemprop="dateModified" datetime="2020-02-11T18:02:45+08:00">2020-02-11</time>
+                <time title="修改时间：2020-07-22 22:34:42" itemprop="dateModified" datetime="2020-07-22T22:34:42+08:00">2020-07-22</time>
               
             
           </span>
 
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/question/" itemprop="url" rel="index"><span itemprop="name">question</span></a></span>
+
+                
+                
+              
+            </span>
           
 
           
@@ -522,7 +540,7 @@
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     
-    <a href="http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/">http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/</a>
+    <a href="http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/" title="【常见问题】Grafana一个bug导致磁盘占用近500G">http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！</li>
@@ -532,6 +550,14 @@
     
 
     <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/question/" rel="tag"># question</a>
+          
+            <a href="/tags/grafana/" rel="tag"># grafana</a>
+          
+        </div>
       
 
       
@@ -551,6 +577,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/07/22/ali-cloudnative-whitepaper/" rel="prev" title="浅析阿里《云原生架构白皮书》">
+                浅析阿里《云原生架构白皮书》 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -631,7 +661,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">31</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -735,7 +765,11 @@
                     
                       
                     
-                    <span class="site-state-item-count">30</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">32</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -842,7 +876,7 @@
     
       <span class="post-meta-item-text">站点总字数：</span>
     
-    <span title="站点总字数">115k</span>
+    <span title="站点总字数">120k</span>
   
 
   
@@ -853,7 +887,7 @@
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">1:45</span>
+    <span title="站点阅读时长">1:49</span>
   
 </div>
 
@@ -992,7 +1026,7 @@
       var disqus_config = function () {
         this.page.url = 'http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/';
         this.page.identifier = '2020/02/11/question-grafana-disk-is-full/';
-        this.page.title = '';
+        this.page.title = '【常见问题】Grafana一个bug导致磁盘占用近500G';
         this.language = 'zh-CN';
         };
       function loadComments () {

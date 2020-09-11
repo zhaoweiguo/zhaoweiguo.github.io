@@ -99,6 +99,20 @@
 
 
 
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?042289284b8eb33866001347a3e0b129";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+
+
 
   <meta name="description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  1234567-record(gordon_test, &amp;#123;    idr,    % &amp;#123;id, pid&amp;#125;    id,    pid,    locale,    time = os:t">
 <meta name="keywords" content="erlang,mnesia,collect">

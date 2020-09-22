@@ -126,25 +126,31 @@ var _hmt = _hmt || [];
 
 
 
-  <meta name="description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  1234567-record(gordon_test, &amp;#123;    idr,    % &amp;#123;id, pid&amp;#125;    id,    pid,    locale,    time = os:t">
-<meta name="keywords" content="erlang,mnesia,collect">
+  <meta name="description" content="前言关于Chrome插件，我用的比较多的主要是下面几个 Anything to QRcode，Axure RP Extension for Chrome，Evernote Web Clipper，有道云笔记网页剪报，gitlab-code-view，Google Translate，Octotree。之前还有个Proxy代理的，自从使用SS的pac功能之后就用不到了。上面这几个你知道名字，自己去">
+<meta name="keywords" content="tool,chrome">
 <meta property="og:type" content="article">
-<meta property="og:title" content="mnesia:delect_object只删除索引问题">
-<meta property="og:url" content="http://blog.zhaoweiguo.com/2019/02/20/erlang-collect-mnesia-delect-object/index.html">
+<meta property="og:title" content="抓包工具之——Charles">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2020/09/14/tool-charles/index.html">
 <meta property="og:site_name" content="新溪blog">
-<meta property="og:description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  1234567-record(gordon_test, &amp;#123;    idr,    % &amp;#123;id, pid&amp;#125;    id,    pid,    locale,    time = os:t">
+<meta property="og:description" content="前言关于Chrome插件，我用的比较多的主要是下面几个 Anything to QRcode，Axure RP Extension for Chrome，Evernote Web Clipper，有道云笔记网页剪报，gitlab-code-view，Google Translate，Octotree。之前还有个Proxy代理的，自从使用SS的pac功能之后就用不到了。上面这几个你知道名字，自己去">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-06-27T03:11:01.420Z">
+<meta property="og:image" content="http://blog.zhaoweiguo.com/images/chromes/plugin_tampermonkey1.png">
+<meta property="og:image" content="http://blog.zhaoweiguo.com/images/chromes/plugin_tampermonkey2.png">
+<meta property="og:image" content="http://blog.zhaoweiguo.com/images/chromes/plugin_tampermonkey3.png">
+<meta property="og:image" content="http://blog.zhaoweiguo.com/images/chromes/plugin_tampermonkey4.png">
+<meta property="og:image" content="http://blog.zhaoweiguo.com/images/chromes/plugin_tampermonkey5.png">
+<meta property="og:updated_time" content="2020-09-14T02:44:47.629Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="mnesia:delect_object只删除索引问题">
-<meta name="twitter:description" content="前言最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据 问题重现 表结构:  1234567-record(gordon_test, &amp;#123;    idr,    % &amp;#123;id, pid&amp;#125;    id,    pid,    locale,    time = os:t">
+<meta name="twitter:title" content="抓包工具之——Charles">
+<meta name="twitter:description" content="前言关于Chrome插件，我用的比较多的主要是下面几个 Anything to QRcode，Axure RP Extension for Chrome，Evernote Web Clipper，有道云笔记网页剪报，gitlab-code-view，Google Translate，Octotree。之前还有个Proxy代理的，自从使用SS的pac功能之后就用不到了。上面这几个你知道名字，自己去">
+<meta name="twitter:image" content="http://blog.zhaoweiguo.com/images/chromes/plugin_tampermonkey1.png">
 
 
 
 
 
 
-  <link rel="canonical" href="http://blog.zhaoweiguo.com/2019/02/20/erlang-collect-mnesia-delect-object/">
+  <link rel="canonical" href="http://blog.zhaoweiguo.com/2020/09/14/tool-charles/">
 
 
 
@@ -154,7 +160,7 @@ var _hmt = _hmt || [];
   };
 </script>
 
-  <title>mnesia:delect_object只删除索引问题 | 新溪blog</title>
+  <title>抓包工具之——Charles | 新溪blog</title>
   
 
 
@@ -374,7 +380,7 @@ var _hmt = _hmt || [];
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/02/20/erlang-collect-mnesia-delect-object/">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2020/09/14/tool-charles/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoweiguo">
@@ -391,7 +397,7 @@ var _hmt = _hmt || [];
 
         
         
-          <h2 class="post-title" itemprop="name headline">mnesia:delect_object只删除索引问题
+          <h2 class="post-title" itemprop="name headline">抓包工具之——Charles
               
             
           </h2>
@@ -416,7 +422,7 @@ var _hmt = _hmt || [];
                 
               
 
-              <time title="创建时间：2019-02-20 11:46:03" itemprop="dateCreated datePublished" datetime="2019-02-20T11:46:03+08:00">2019-02-20</time>
+              <time title="创建时间：2020-09-14 23:47:37" itemprop="dateCreated datePublished" datetime="2020-09-14T23:47:37+08:00">2020-09-14</time>
             
 
             
@@ -433,7 +439,7 @@ var _hmt = _hmt || [];
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-27 11:11:01" itemprop="dateModified" datetime="2019-06-27T11:11:01+08:00">2019-06-27</time>
+                <time title="修改时间：2020-09-14 10:44:47" itemprop="dateModified" datetime="2020-09-14T10:44:47+08:00">2020-09-14</time>
               
             
           </span>
@@ -450,7 +456,7 @@ var _hmt = _hmt || [];
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/erlang/" itemprop="url" rel="index"><span itemprop="name">erlang</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tool/" itemprop="url" rel="index"><span itemprop="name">tool</span></a></span>
 
                 
                 
@@ -465,10 +471,10 @@ var _hmt = _hmt || [];
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2019/02/20/erlang-collect-mnesia-delect-object/#comments" itemprop="discussionUrl">
+                <a href="/2020/09/14/tool-charles/#comments" itemprop="discussionUrl">
                 <span class="post-meta-item-text">评论数：</span>
                 
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/02/20/erlang-collect-mnesia-delect-object/" itemprop="commentCount"></span>
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/09/14/tool-charles/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -490,7 +496,7 @@ var _hmt = _hmt || [];
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">1.9k</span>
+                <span title="本文字数">1.6k</span>
               
 
               
@@ -504,7 +510,7 @@ var _hmt = _hmt || [];
                 
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="阅读时长">2 分钟</span>
+                <span title="阅读时长">1 分钟</span>
               
             </div>
           
@@ -524,32 +530,25 @@ var _hmt = _hmt || [];
       
 
       
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近遇到一个奇怪的问题，mnesia数据有时能查出来有时查不出来，细查发现是mnesia:delect_object删除时，只删除了索引，没有删除具体的数据</p>
-<h3 id="问题重现"><a href="#问题重现" class="headerlink" title="问题重现"></a>问题重现</h3><ol>
-<li>表结构:</li>
-</ol>
-<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-<span class="built_in">record</span>(gordon_test, &#123;</span><br><span class="line">    idr,    % &#123;<span class="built_in">id</span>, pid&#125;</span><br><span class="line">    <span class="built_in">id</span>,</span><br><span class="line">    pid,</span><br><span class="line">    locale,</span><br><span class="line">    <span class="built_in">time</span> = os:timestamp()</span><br><span class="line">&#125;).</span><br></pre></td></tr></table></figure>
-<ol>
-<li>初使化代码:</li>
-</ol>
-<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mnesia:create_table(gordon_test, [</span><br><span class="line">    &#123;ram_copies, [<span class="keyword">node</span><span class="title">() | nodes</span>()]&#125;,</span><br><span class="line">    &#123;<span class="keyword">attributes</span>, record_<span class="literal">inf</span>o(fields, gordon_test)&#125;</span><br><span class="line">]),</span><br><span class="line">mnesia:add_table_index(gordon_test, id),</span><br><span class="line">mnesia:add_table_index(gordon_test, pid).</span><br></pre></td></tr></table></figure>
-<ol>
-<li>插入数据:</li>
-</ol>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">mnesia:</span>dirty_write(gordon_test, &#123;gordon_test, &#123;<span class="number">1</span>, <span class="number">1</span>&#125;, <span class="number">1</span>, <span class="number">1</span>, <span class="string">""</span>, <span class="string">""</span>, <span class="string">os:</span>timestamp()&#125;).</span><br><span class="line"><span class="string">mnesia:</span>dirty_write(gordon_test, &#123;gordon_test, &#123;<span class="number">2</span>, <span class="number">2</span>&#125;, <span class="number">2</span>, <span class="number">2</span>, <span class="string">""</span>, <span class="string">""</span>, <span class="string">os:</span>timestamp()&#125;).</span><br><span class="line"><span class="string">mnesia:</span>dirty_write(gordon_test, &#123;gordon_test, &#123;<span class="number">3</span>, <span class="number">3</span>&#125;, <span class="number">3</span>, <span class="number">3</span>, <span class="string">""</span>, <span class="string">""</span>, <span class="string">os:</span>timestamp()&#125;).</span><br></pre></td></tr></table></figure>
-<p>3.查询:</p>
-<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Id = 3,</span><br><span class="line">Pid = 3,</span><br><span class="line">% 查出id=3的所有记录，都能查出一条记录</span><br><span class="line"><span class="section">mnesia:dirty_index_read(gordon_test, Id, #gordon_test.id),</span></span><br><span class="line"><span class="section">mnesia:dirty_index_match_object(#gordon_test&#123;idr = '$1',id=Id, _='_'&#125;, #gordon_test.id),</span></span><br></pre></td></tr></table></figure>
-<ol>
-<li>执行删除:</li>
-</ol>
-<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">mnesia:</span>dirty_delete_object(X<span class="comment">#gordon_test&#123;locale = aaaa&#125;).</span></span><br><span class="line">or</span><br><span class="line">Trans = <span class="function"><span class="keyword">fun</span>() <span class="title">-</span></span>&gt;</span><br><span class="line">    <span class="symbol">mnesia:</span>delete_object(X<span class="comment">#gordon_test&#123;locale = aaaa&#125;)</span></span><br><span class="line">        <span class="keyword">end</span>,</span><br><span class="line"><span class="symbol">mnesia:</span>transaction(Trans)</span><br></pre></td></tr></table></figure>
-<ol>
-<li>两次查询，dirty_index_read查不到数据:</li>
-</ol>
-<figure class="highlight clean"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">% 数据查询为空</span><br><span class="line">mnesia:dirty_index_read(gordon_test, Id, #gordon_test.id),</span><br><span class="line">% 数据不变</span><br><span class="line">mnesia:dirty_index_match_object(#gordon_test&#123;idr = <span class="string">'$1'</span>,id=Id, _=<span class="string">'_'</span>&#125;, #gordon_test.id),</span><br></pre></td></tr></table></figure>
-<h3 id="问题定位"><a href="#问题定位" class="headerlink" title="问题定位"></a>问题定位</h3><p>查文档:</p>
-<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">If</span> a table is of<span class="built_in"> type </span>bag, it can sometimes be needed <span class="keyword">to</span> delete only some of the records with a certain key. </span><br><span class="line">This can be done with the function delete_object/3. A complete record must be supplied <span class="keyword">to</span> this function.</span><br><span class="line"></span><br><span class="line">The semantics of this function is context-sensitive. <span class="keyword">For</span> details, see mnesia:activity/4. </span><br><span class="line"><span class="keyword">In</span> transaction-context, it acquires a lock of<span class="built_in"> type </span>LockKind on the record. </span><br><span class="line">Currently, the lock types write <span class="keyword">and</span> sticky_write are supported.</span><br></pre></td></tr></table></figure>
-<h3 id="深层研究"><a href="#深层研究" class="headerlink" title="深层研究"></a>深层研究</h3><p>待继续 @todo</p>
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>关于Chrome插件，我用的比较多的主要是下面几个 <code>Anything to QRcode</code>，<code>Axure RP Extension for Chrome</code>，<code>Evernote Web Clipper</code>，<code>有道云笔记网页剪报</code>，<code>gitlab-code-view</code>，<code>Google Translate</code>，<code>Octotree</code>。之前还有个Proxy代理的，自从使用SS的pac功能之后就用不到了。上面这几个你知道名字，自己去 <span class="exturl" data-url="aHR0cHM6Ly9jaHJvbWUuZ29vZ2xlLmNvbS93ZWJzdG9yZS9jYXRlZ29yeS9leHRlbnNpb25zP2hsPWVuLVVT" title="https://chrome.google.com/webstore/category/extensions?hl=en-US">chrome web store<i class="fa fa-external-link"></i></span> 上自己搜索安装就好了，很简单。今天要讲的这个插件，属于那种 <strong>难者不会，会者不难</strong> 的情况，你用过之后就会感觉很简单，没用之前很可能一个很小的门槛就把你档在外面。</p>
+<a id="more"></a>
+<p>其实我很早就安装了 <code>TamperMonkey</code> 插件，之前捣鼓了几下，没用明白就放弃了。一方面是我没找到方法；另一方面不知道会有什么后果，不敢轻易尝试，怕引入危害性的插件。今天clone一个很大的github项目，在欣赏它龟速前进美姿的同时，在群里吐嘈了下。有同学指出可以使用「暴力猴」加速。</p>
+<h1 id="安装「暴力猴」失败"><a href="#安装「暴力猴」失败" class="headerlink" title="安装「暴力猴」失败"></a>安装「暴力猴」失败</h1><p>按照这位同学的说法，在 <span class="exturl" data-url="aHR0cHM6Ly93d3cuZXh0ZmFucy5jb20=" title="https://www.extfans.com">https://www.extfans.com<i class="fa fa-external-link"></i></span> 网搜索「暴力猴」，安装到chrome浏览器即可使用。从这位同学的说法上，可以看出就是那种属于「会者不难」的简单感。但我在用的时候发现「搜索有3个暴力猴，应该用哪个？」还求人家出个文档。于是他给出文档：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">打开网址<span class="selector-tag">chrome</span>插件网 搜索暴力猴，我现在用的是带有猴子头像的插件。</span><br><span class="line">下载插件，解压提取<span class="selector-class">.crx</span>后缀文件，打开<span class="selector-tag">chrome</span>浏览器将<span class="selector-class">.crx</span>后缀文件拖入即可安装。</span><br><span class="line">如何使用：1，启用暴力猴插件，2打开<span class="selector-tag">github</span>，点击插件，选择为此站添加脚本，安装此脚本即可使用。</span><br><span class="line">备注：该插件还支持其他网站脚本，比如<span class="selector-tag">csdn</span>去广告，<span class="selector-tag">b</span>站视频下载。打开网页点击插件搜索脚本安装即可使用</span><br></pre></td></tr></table></figure>
+<p>我在extfans网站下载「暴力猴」时，发现每次点击下载，网站都报401错误，不能下载。后来1个小时后下载成功，可能的原因是刚注册的账号被网站认为是恶意请求，这是后话了。</p>
+<h1 id="尝试使用TamperMonkey"><a href="#尝试使用TamperMonkey" class="headerlink" title="尝试使用TamperMonkey"></a>尝试使用TamperMonkey</h1><p>隐约间我想起，以前好像用过类似的插件。于是发现了早已安装的 <strong>TamperMonkey</strong>，点击「Find new scripts...」打开了<span class="exturl" data-url="aHR0cHM6Ly93d3cudGFtcGVybW9ua2V5Lm5ldC9zY3JpcHRzLnBocA==" title="https://www.tampermonkey.net/scripts.php">这个<i class="fa fa-external-link"></i></span>页面。然后找到了脚本资源的存放库<span class="exturl" data-url="aHR0cHM6Ly9ncmVhc3lmb3JrLm9yZy8=" title="https://greasyfork.org/">GreasyFork<i class="fa fa-external-link"></i></span>和<span class="exturl" data-url="aHR0cHM6Ly9vcGVudXNlcmpzLm9yZy8=" title="https://openuserjs.org/">OpenUserJS<i class="fa fa-external-link"></i></span>，然后试图找到github加速的脚本，试了「github」「加速」「speedup」等关键词搜索，打开页面类似下图，没有找到合适的脚本：</p>
+<p><img src="/images/chromes/plugin_tampermonkey1.png" alt="greasyfork.org按关键词github搜索"></p>
+<p><img src="/images/chromes/plugin_tampermonkey2.png" alt="openuserjs.org按关键词github搜索"></p>
+<h1 id="成功安装「暴力猴」"><a href="#成功安装「暴力猴」" class="headerlink" title="成功安装「暴力猴」"></a>成功安装「暴力猴」</h1><p>过了大约1个小时，我再次试了下，下载成功。安装时，先打开<span class="exturl" data-url="Y2hyb21lOi8vZXh0ZW5zaW9ucy8=" title="chrome://extensions/">扩展程序页面<i class="fa fa-external-link"></i></span>，再打开「开发者模式」，对这块不熟悉的同学可以看下面图片：</p>
+<p><img src="/images/chromes/plugin_tampermonkey3.png" alt="openuserjs.org按关键词github搜索"></p>
+<p>最后，把下载的crx文件拖动到浏览器中按提示安装就ok了。</p>
+<p>打开github网站，在「暴力猴」上点击「Find scripts for this site」打开<span class="exturl" data-url="aHR0cHM6Ly9ncmVhc3lmb3JrLm9yZy96aC1DTi9zY3JpcHRzL2J5LXNpdGUvZ2l0aHViLmNvbQ==" title="https://greasyfork.org/zh-CN/scripts/by-site/github.com">页面<i class="fa fa-external-link"></i></span> 第一个就是我们要找的「Github 镜像访问，加速下载」，如下图所示：</p>
+<p><img src="/images/chromes/plugin_tampermonkey4.png" alt="openuserjs.org按关键词github搜索"></p>
+<p>脚本安装成功后，再打开github，可以看到「暴力猴」和「TamperMonkey」都生效了</p>
+<p><img src="/images/chromes/plugin_tampermonkey5.png" alt="openuserjs.org按关键词github搜索"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>上面插件都是greasyfork.org这个网站，开始没有搜索到，我们来看看和后面成功的有啥不同。我们之前查不到时网址是 <span class="exturl" data-url="aHR0cHM6Ly9ncmVhc3lmb3JrLm9yZy96aC1DTi9zY3JpcHRzP3E9Z2l0aHVi" title="https://greasyfork.org/zh-CN/scripts?q=github">https://greasyfork.org/zh-CN/scripts?q=github<i class="fa fa-external-link"></i></span> 而成功的网址是 <span class="exturl" data-url="aHR0cHM6Ly9ncmVhc3lmb3JrLm9yZy96aC1DTi9zY3JpcHRzL2J5LXNpdGUvZ2l0aHViLmNvbQ==" title="https://greasyfork.org/zh-CN/scripts/by-site/github.com">https://greasyfork.org/zh-CN/scripts/by-site/github.com<i class="fa fa-external-link"></i></span> 大家可以看出这其中的区别了吧，就这一点小门槛。</p>
+<p>另外，扒了下以前整理的文档，好早就试过这个网站，当时应该就是这点门槛导致没用起来</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">7.</span>Tampermonkey插件</span><br><span class="line">Chrome上最流行的脚本管理工具，可以去<span class="string">http:</span><span class="comment">//greasyfork.org 上安装许多实用脚本</span></span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -583,7 +582,7 @@ var _hmt = _hmt || [];
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     
-    <a href="http://blog.zhaoweiguo.com/2019/02/20/erlang-collect-mnesia-delect-object/" title="mnesia:delect_object只删除索引问题">http://blog.zhaoweiguo.com/2019/02/20/erlang-collect-mnesia-delect-object/</a>
+    <a href="http://blog.zhaoweiguo.com/2020/09/14/tool-charles/" title="抓包工具之——Charles">http://blog.zhaoweiguo.com/2020/09/14/tool-charles/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！</li>
@@ -596,11 +595,9 @@ var _hmt = _hmt || [];
       
         <div class="post-tags">
           
-            <a href="/tags/erlang/" rel="tag"># erlang</a>
+            <a href="/tags/tool/" rel="tag"># tool</a>
           
-            <a href="/tags/mnesia/" rel="tag"># mnesia</a>
-          
-            <a href="/tags/collect/" rel="tag"># collect</a>
+            <a href="/tags/chrome/" rel="tag"># chrome</a>
           
         </div>
       
@@ -613,8 +610,8 @@ var _hmt = _hmt || [];
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/02/10/erlang-collect-spawn-infinite/" rel="next" title="Erlang不断spawn新进程会有什么现象">
-                <i class="fa fa-chevron-left"></i> Erlang不断spawn新进程会有什么现象
+              <a href="/2020/08/07/tool-tampermonkery/" rel="next" title="Chrome插件——TamperMonkey(油猴、暴力猴)">
+                <i class="fa fa-chevron-left"></i> Chrome插件——TamperMonkey(油猴、暴力猴)
               </a>
             
           </div>
@@ -622,10 +619,6 @@ var _hmt = _hmt || [];
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2019/03/10/question-dns-domain-expired/" rel="prev" title="域名过期导致的一系列问题">
-                域名过期导致的一系列问题 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -886,7 +879,7 @@ var _hmt = _hmt || [];
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题重现"><span class="nav-number">2.</span> <span class="nav-text">问题重现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题定位"><span class="nav-number">3.</span> <span class="nav-text">问题定位</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#深层研究"><span class="nav-number">4.</span> <span class="nav-text">深层研究</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#安装「暴力猴」失败"><span class="nav-number">2.</span> <span class="nav-text">安装「暴力猴」失败</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#尝试使用TamperMonkey"><span class="nav-number">3.</span> <span class="nav-text">尝试使用TamperMonkey</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#成功安装「暴力猴」"><span class="nav-number">4.</span> <span class="nav-text">成功安装「暴力猴」</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
             
 
           </div>
@@ -1075,9 +1068,9 @@ var _hmt = _hmt || [];
   
     <script type="text/javascript">
       var disqus_config = function () {
-        this.page.url = 'http://blog.zhaoweiguo.com/2019/02/20/erlang-collect-mnesia-delect-object/';
-        this.page.identifier = '2019/02/20/erlang-collect-mnesia-delect-object/';
-        this.page.title = 'mnesia:delect_object只删除索引问题';
+        this.page.url = 'http://blog.zhaoweiguo.com/2020/09/14/tool-charles/';
+        this.page.identifier = '2020/09/14/tool-charles/';
+        this.page.title = '抓包工具之——Charles';
         this.language = 'zh-CN';
         };
       function loadComments () {

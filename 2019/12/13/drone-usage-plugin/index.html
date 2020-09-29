@@ -123,9 +123,6 @@ var _hmt = _hmt || [];
 
 
 
-
-
-
   <meta name="description" content="概要前面两篇文章已经介绍了如何部署和如何使用。后面主要是如何写.drone.yml文件了，而.drone.yml文件，是由一个个插件执行一个个的步骤。上一篇也以一个实际的例子简单讲了一些插件的使用与作用，本篇对主要的几个插件进行稍详细的说明。 正常来说，任何一个镜像都可以作为一个插件（如上一篇用到的golang:alpine镜像，就是一个普通的golang镜像）。但在配置文件中使用了setting">
 <meta name="keywords" content="drone,cicd">
 <meta property="og:type" content="article">
@@ -460,18 +457,6 @@ var _hmt = _hmt || [];
 
           
             
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2019/12/13/drone-usage-plugin/#comments" itemprop="discussionUrl">
-                <span class="post-meta-item-text">评论数：</span>
-                
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/12/13/drone-usage-plugin/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
           
 
           
@@ -627,12 +612,9 @@ var _hmt = _hmt || [];
           
 
   
-    <div class="comments" id="comments">
-      <div id="disqus_thread">
-        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
-      </div>
+    <div id="gitalk-container">
     </div>
-
+    
   
 
 
@@ -1047,46 +1029,8 @@ var _hmt = _hmt || [];
 
   
 
-  
-    <script id="dsq-count-scr" src="https://zhaoweiguo.disqus.com/count.js" async></script>
-  
 
-  
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.url = 'http://blog.zhaoweiguo.com/2019/12/13/drone-usage-plugin/';
-        this.page.identifier = '2019/12/13/drone-usage-plugin/';
-        this.page.title = 'Drone各插件的使用';
-        this.language = 'zh-CN';
-        };
-      function loadComments () {
-        var d = document, s = d.createElement('script');
-        s.src = 'https://zhaoweiguo.disqus.com/embed.js';
-        s.setAttribute('data-timestamp', '' + +new Date());
-        (d.head || d.body).appendChild(s);
-      }
-      
-        $(function () {
-          var offsetTop = $('#comments').offset().top - $(window).height();
-          if (offsetTop <= 0) {
-            // load directly when there's no a scrollbar
-            loadComments();
-          } else {
-            $(window).on('scroll.disqus_scroll', function () {
-              // offsetTop may changes because of manually resizing browser window or lazy loading images.
-              var offsetTop = $('#comments').offset().top - $(window).height();
-              var scrollTop = $(window).scrollTop();
 
-              // pre-load comments a bit? (margin or anything else)
-              if (offsetTop - scrollTop < 60) {
-                $(window).off('.disqus_scroll');
-                loadComments();
-              }
-            });
-          }
-        });
-      
-    </script>
   
 
 
@@ -1099,6 +1043,30 @@ var _hmt = _hmt || [];
 
 
 
+  
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.css">
+
+  
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/js-md5@0.7.3/src/md5.min.js"></script>
+    
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'blog-gitalk',
+          owner: '',
+          admin: [''],
+          id: md5(location.pathname),
+          distractionFreeMode: ''
+        })
+        gitalk.render('gitalk-container')           
+       </script>
 
   
 

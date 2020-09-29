@@ -123,9 +123,6 @@ var _hmt = _hmt || [];
 
 
 
-
-
-
   <meta name="description" content="简介我正在学习Istio，正巧碰到阿里云的服务网格(Alibaba Cloud Service Mesh，简称 ASM)进入UAT环境 [1]，于是报名并有幸能抢先体验一把阿里的Service Mesh。阿里这边对UAT的要求是「以真实客户视角从产品开通、控制台易用性、功能完整性和有效性以及帮助文档的完整性、准确性和易读性等维度体验评测产品，在规定时间完成产品评测后按照提交建议和评分模板完成最后的">
 <meta name="keywords" content="aliyun,service mesh,UAT">
 <meta property="og:type" content="article">
@@ -462,18 +459,6 @@ var _hmt = _hmt || [];
 
           
             
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2020/02/05/ali-UAT-asm/#comments" itemprop="discussionUrl">
-                <span class="post-meta-item-text">评论数：</span>
-                
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/02/05/ali-UAT-asm/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
           
 
           
@@ -631,12 +616,9 @@ var _hmt = _hmt || [];
           
 
   
-    <div class="comments" id="comments">
-      <div id="disqus_thread">
-        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
-      </div>
+    <div id="gitalk-container">
     </div>
-
+    
   
 
 
@@ -1051,46 +1033,8 @@ var _hmt = _hmt || [];
 
   
 
-  
-    <script id="dsq-count-scr" src="https://zhaoweiguo.disqus.com/count.js" async></script>
-  
 
-  
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.url = 'http://blog.zhaoweiguo.com/2020/02/05/ali-UAT-asm/';
-        this.page.identifier = '2020/02/05/ali-UAT-asm/';
-        this.page.title = '阿里产品ASM用户验收测试初体验';
-        this.language = 'zh-CN';
-        };
-      function loadComments () {
-        var d = document, s = d.createElement('script');
-        s.src = 'https://zhaoweiguo.disqus.com/embed.js';
-        s.setAttribute('data-timestamp', '' + +new Date());
-        (d.head || d.body).appendChild(s);
-      }
-      
-        $(function () {
-          var offsetTop = $('#comments').offset().top - $(window).height();
-          if (offsetTop <= 0) {
-            // load directly when there's no a scrollbar
-            loadComments();
-          } else {
-            $(window).on('scroll.disqus_scroll', function () {
-              // offsetTop may changes because of manually resizing browser window or lazy loading images.
-              var offsetTop = $('#comments').offset().top - $(window).height();
-              var scrollTop = $(window).scrollTop();
 
-              // pre-load comments a bit? (margin or anything else)
-              if (offsetTop - scrollTop < 60) {
-                $(window).off('.disqus_scroll');
-                loadComments();
-              }
-            });
-          }
-        });
-      
-    </script>
   
 
 
@@ -1103,6 +1047,30 @@ var _hmt = _hmt || [];
 
 
 
+  
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.css">
+
+  
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/js-md5@0.7.3/src/md5.min.js"></script>
+    
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'blog-gitalk',
+          owner: '',
+          admin: [''],
+          id: md5(location.pathname),
+          distractionFreeMode: ''
+        })
+        gitalk.render('gitalk-container')           
+       </script>
 
   
 

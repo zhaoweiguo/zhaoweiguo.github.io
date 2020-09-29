@@ -123,9 +123,6 @@ var _hmt = _hmt || [];
 
 
 
-
-
-
   <meta name="description" content="前言关于Chrome插件，我用的比较多的主要是下面几个 Anything to QRcode，Axure RP Extension for Chrome，Evernote Web Clipper，有道云笔记网页剪报，gitlab-code-view，Google Translate，Octotree。之前还有个Proxy代理的，自从使用SS的pac功能之后就用不到了。上面这几个你知道名字，自己去">
 <meta name="keywords" content="tool,chrome">
 <meta property="og:type" content="article">
@@ -466,18 +463,6 @@ var _hmt = _hmt || [];
 
           
             
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2020/08/07/tool-tampermonkery/#comments" itemprop="discussionUrl">
-                <span class="post-meta-item-text">评论数：</span>
-                
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/08/07/tool-tampermonkery/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
           
 
           
@@ -641,12 +626,9 @@ var _hmt = _hmt || [];
           
 
   
-    <div class="comments" id="comments">
-      <div id="disqus_thread">
-        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
-      </div>
+    <div id="gitalk-container">
     </div>
-
+    
   
 
 
@@ -1061,46 +1043,8 @@ var _hmt = _hmt || [];
 
   
 
-  
-    <script id="dsq-count-scr" src="https://zhaoweiguo.disqus.com/count.js" async></script>
-  
 
-  
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.url = 'http://blog.zhaoweiguo.com/2020/08/07/tool-tampermonkery/';
-        this.page.identifier = '2020/08/07/tool-tampermonkery/';
-        this.page.title = 'Chrome插件——TamperMonkey(油猴、暴力猴)';
-        this.language = 'zh-CN';
-        };
-      function loadComments () {
-        var d = document, s = d.createElement('script');
-        s.src = 'https://zhaoweiguo.disqus.com/embed.js';
-        s.setAttribute('data-timestamp', '' + +new Date());
-        (d.head || d.body).appendChild(s);
-      }
-      
-        $(function () {
-          var offsetTop = $('#comments').offset().top - $(window).height();
-          if (offsetTop <= 0) {
-            // load directly when there's no a scrollbar
-            loadComments();
-          } else {
-            $(window).on('scroll.disqus_scroll', function () {
-              // offsetTop may changes because of manually resizing browser window or lazy loading images.
-              var offsetTop = $('#comments').offset().top - $(window).height();
-              var scrollTop = $(window).scrollTop();
 
-              // pre-load comments a bit? (margin or anything else)
-              if (offsetTop - scrollTop < 60) {
-                $(window).off('.disqus_scroll');
-                loadComments();
-              }
-            });
-          }
-        });
-      
-    </script>
   
 
 
@@ -1113,6 +1057,30 @@ var _hmt = _hmt || [];
 
 
 
+  
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.css">
+
+  
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/js-md5@0.7.3/src/md5.min.js"></script>
+    
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'blog-gitalk',
+          owner: '',
+          admin: [''],
+          id: md5(location.pathname),
+          distractionFreeMode: ''
+        })
+        gitalk.render('gitalk-container')           
+       </script>
 
   
 

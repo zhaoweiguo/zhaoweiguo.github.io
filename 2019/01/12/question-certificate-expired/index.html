@@ -123,9 +123,6 @@ var _hmt = _hmt || [];
 
 
 
-
-
-
   <meta name="description" content="前言谷歌提议将证书有效期缩短到13个月，被其他CA和浏览器厂商无情拒绝，但缩短有效期是人心所向于是，CAB Forum第193号投票确定最长SSL证书有效期由原来的3年(39个月)改为2年(825天) 问题描述这一个项目是物联网相关的，有app和硬件设备两种类型的client因历史原来，两种client用的是一个域名，都使用了ssl证书证书有效期可能很长，但最近到期了因为设备没办法强制升级，一是设">
 <meta name="keywords" content="证书,ECC,question">
 <meta property="og:type" content="article">
@@ -460,18 +457,6 @@ var _hmt = _hmt || [];
 
           
             
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2019/01/12/question-certificate-expired/#comments" itemprop="discussionUrl">
-                <span class="post-meta-item-text">评论数：</span>
-                
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/01/12/question-certificate-expired/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
           
 
           
@@ -649,12 +634,9 @@ Android 平台中，也需要 Android 4+ 才支持 ECC 证书
           
 
   
-    <div class="comments" id="comments">
-      <div id="disqus_thread">
-        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
-      </div>
+    <div id="gitalk-container">
     </div>
-
+    
   
 
 
@@ -1069,46 +1051,8 @@ Android 平台中，也需要 Android 4+ 才支持 ECC 证书
 
   
 
-  
-    <script id="dsq-count-scr" src="https://zhaoweiguo.disqus.com/count.js" async></script>
-  
 
-  
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.url = 'http://blog.zhaoweiguo.com/2019/01/12/question-certificate-expired/';
-        this.page.identifier = '2019/01/12/question-certificate-expired/';
-        this.page.title = '网站证书过期导致的一系列问题';
-        this.language = 'zh-CN';
-        };
-      function loadComments () {
-        var d = document, s = d.createElement('script');
-        s.src = 'https://zhaoweiguo.disqus.com/embed.js';
-        s.setAttribute('data-timestamp', '' + +new Date());
-        (d.head || d.body).appendChild(s);
-      }
-      
-        $(function () {
-          var offsetTop = $('#comments').offset().top - $(window).height();
-          if (offsetTop <= 0) {
-            // load directly when there's no a scrollbar
-            loadComments();
-          } else {
-            $(window).on('scroll.disqus_scroll', function () {
-              // offsetTop may changes because of manually resizing browser window or lazy loading images.
-              var offsetTop = $('#comments').offset().top - $(window).height();
-              var scrollTop = $(window).scrollTop();
 
-              // pre-load comments a bit? (margin or anything else)
-              if (offsetTop - scrollTop < 60) {
-                $(window).off('.disqus_scroll');
-                loadComments();
-              }
-            });
-          }
-        });
-      
-    </script>
   
 
 
@@ -1121,6 +1065,30 @@ Android 平台中，也需要 Android 4+ 才支持 ECC 证书
 
 
 
+  
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.css">
+
+  
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/js-md5@0.7.3/src/md5.min.js"></script>
+    
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'blog-gitalk',
+          owner: '',
+          admin: [''],
+          id: md5(location.pathname),
+          distractionFreeMode: ''
+        })
+        gitalk.render('gitalk-container')           
+       </script>
 
   
 

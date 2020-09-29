@@ -123,9 +123,6 @@ var _hmt = _hmt || [];
 
 
 
-
-
-
   <meta name="description" content="tsung start真实执行命令查看/usr/local/bin/tsung文件: 此文件是sh文件，tsung start实际执行的是start方法 当我们执行tsung -f fetch_user_key.xml start时,我们实际执行: /usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000  --">
 <meta name="keywords" content="erlang,source-analysis,tsung">
 <meta property="og:type" content="article">
@@ -460,18 +457,6 @@ var _hmt = _hmt || [];
 
           
             
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2018/09/29/erlang-source-analysis-tsung1/#comments" itemprop="discussionUrl">
-                <span class="post-meta-item-text">评论数：</span>
-                
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/09/29/erlang-source-analysis-tsung1/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
           
 
           
@@ -770,8 +755,8 @@ var _hmt = _hmt || [];
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/09/04/erlang-release-updowngrade-normal/" rel="next" title="使用Erlang原生方法对release版本升降级">
-                <i class="fa fa-chevron-left"></i> 使用Erlang原生方法对release版本升降级
+              <a href="/2018/09/29/erlang-source-analysis-tsung2/" rel="next" title="源码分析基础工作">
+                <i class="fa fa-chevron-left"></i> 源码分析基础工作
               </a>
             
           </div>
@@ -780,8 +765,8 @@ var _hmt = _hmt || [];
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/09/29/erlang-source-analysis-tsung2/" rel="prev" title="源码分析基础工作">
-                源码分析基础工作 <i class="fa fa-chevron-right"></i>
+              <a href="/2018/11/02/erlang-source-analysis-lager2/" rel="prev" title="开源项目lager2-application启动">
+                开源项目lager2-application启动 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -805,12 +790,9 @@ var _hmt = _hmt || [];
           
 
   
-    <div class="comments" id="comments">
-      <div id="disqus_thread">
-        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
-      </div>
+    <div id="gitalk-container">
     </div>
-
+    
   
 
 
@@ -1225,46 +1207,8 @@ var _hmt = _hmt || [];
 
   
 
-  
-    <script id="dsq-count-scr" src="https://zhaoweiguo.disqus.com/count.js" async></script>
-  
 
-  
-    <script type="text/javascript">
-      var disqus_config = function () {
-        this.page.url = 'http://blog.zhaoweiguo.com/2018/09/29/erlang-source-analysis-tsung1/';
-        this.page.identifier = '2018/09/29/erlang-source-analysis-tsung1/';
-        this.page.title = '看源码前准备工作';
-        this.language = 'zh-CN';
-        };
-      function loadComments () {
-        var d = document, s = d.createElement('script');
-        s.src = 'https://zhaoweiguo.disqus.com/embed.js';
-        s.setAttribute('data-timestamp', '' + +new Date());
-        (d.head || d.body).appendChild(s);
-      }
-      
-        $(function () {
-          var offsetTop = $('#comments').offset().top - $(window).height();
-          if (offsetTop <= 0) {
-            // load directly when there's no a scrollbar
-            loadComments();
-          } else {
-            $(window).on('scroll.disqus_scroll', function () {
-              // offsetTop may changes because of manually resizing browser window or lazy loading images.
-              var offsetTop = $('#comments').offset().top - $(window).height();
-              var scrollTop = $(window).scrollTop();
 
-              // pre-load comments a bit? (margin or anything else)
-              if (offsetTop - scrollTop < 60) {
-                $(window).off('.disqus_scroll');
-                loadComments();
-              }
-            });
-          }
-        });
-      
-    </script>
   
 
 
@@ -1277,6 +1221,30 @@ var _hmt = _hmt || [];
 
 
 
+  
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.css">
+
+  
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/js-md5@0.7.3/src/md5.min.js"></script>
+    
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'blog-gitalk',
+          owner: '',
+          admin: [''],
+          id: md5(location.pathname),
+          distractionFreeMode: ''
+        })
+        gitalk.render('gitalk-container')           
+       </script>
 
   
 

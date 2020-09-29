@@ -1137,12 +1137,14 @@ supervisor:start_child(lager_sup,
     
    <script type="text/javascript">
         var gitalk = new Gitalk({
-          clientID: '',
-          clientSecret: '',
-          repo: 'blog-gitalk',
-          owner: '',
-          admin: [''],
-          id: md5(location.pathname),
+          clientID: '74ff30da6cc8deafe946',
+          clientSecret: '65ff50b923a60ef39f312c2014035b6285eff2d5',
+          repo: 'zhaoweiguo.github.io',
+          owner: 'zhaoweiguo',
+          admin: ['zhaoweiguo'],
+          //id: md5(location.pathname),
+          id: location.pathname,
+          createIssueManually: 'false',
           distractionFreeMode: ''
         })
         gitalk.render('gitalk-container')           

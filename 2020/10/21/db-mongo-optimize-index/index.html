@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html class="theme-next gemini" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css">
+
+
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon.png?v=6.6.0">
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.6.0',
+    sidebar: {"position":"left","width":300,"b2t":true,"scrollpercent":true,"onmobile":true,"display":"post"},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?966bdeee929bf79b618ee84a0a2ca75a";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-178653440-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-178653440-1');
+</script>
+
+
+
+
+  <meta name="description" content="背景Mongo集群CPU报警，查看现象是那一小段突然有一个请求小高峰，经过分析把问题定位到一个新增的接口上，这个接口中有一个Mongo的慢查询，这个慢查询对应的相关信息有:   集合总文档数超过 6 亿条 按条件查询后获取的数据也有几万条 之前已经加了几个索引，但效果不是特别理想">
+<meta name="keywords" content="db,mongodb,optimize">
+<meta property="og:type" content="article">
+<meta property="og:title" content="实战-Mongo优化">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2020/10/21/db-mongo-optimize-index/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="背景Mongo集群CPU报警，查看现象是那一小段突然有一个请求小高峰，经过分析把问题定位到一个新增的接口上，这个接口中有一个Mongo的慢查询，这个慢查询对应的相关信息有:   集合总文档数超过 6 亿条 按条件查询后获取的数据也有几万条 之前已经加了几个索引，但效果不是特别理想">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://blog.zhaoweiguo.com/images/dbs/mongodbs/optimize_index_zwg_log1.png">
+<meta property="og:image" content="http://blog.zhaoweiguo.com/images/dbs/mongodbs/optimize_index_zwg_log2.png">
+<meta property="og:image" content="http://blog.zhaoweiguo.com/images/dbs/mongodbs/optimize_index_zwg_log4.png">
+<meta property="og:image" content="http://blog.zhaoweiguo.com/images/dbs/mongodbs/optimize_index_zwg_log3.png">
+<meta property="og:updated_time" content="2020-10-23T09:48:07.943Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="实战-Mongo优化">
+<meta name="twitter:description" content="背景Mongo集群CPU报警，查看现象是那一小段突然有一个请求小高峰，经过分析把问题定位到一个新增的接口上，这个接口中有一个Mongo的慢查询，这个慢查询对应的相关信息有:   集合总文档数超过 6 亿条 按条件查询后获取的数据也有几万条 之前已经加了几个索引，但效果不是特别理想">
+<meta name="twitter:image" content="http://blog.zhaoweiguo.com/images/dbs/mongodbs/optimize_index_zwg_log1.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://blog.zhaoweiguo.com/2020/10/21/db-mongo-optimize-index/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>实战-Mongo优化 | 新溪blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">新溪blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <h1 class="site-subtitle" itemprop="description">新溪-gordon之胡写乱画</h1>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-bullhorn"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档<span class="badge">34</span></a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类<span class="badge">11</span></a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签<span class="badge">37</span></a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+  
+  
+
+  
+
+    <span class="exturl github-corner" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8vemhhb3dlaWd1by5naXRodWIuaW8=" title="Fork me on GitHub" aria-label="Fork me on GitHub"><svg width="80" height="80" viewbox="0 0 250 250" style="fill: #222; color: #fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></span>
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2020/10/21/db-mongo-optimize-index/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+      <meta itemprop="image" content="/images/icon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">实战-Mongo优化
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-10-21 11:46:32" itemprop="dateCreated datePublished" datetime="2020-10-21T11:46:32+08:00">2020-10-21</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2020-10-23 17:48:07" itemprop="dateModified" datetime="2020-10-23T17:48:07+08:00">2020-10-23</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/db/" itemprop="url" rel="index"><span itemprop="name">db</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">18k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">17 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>Mongo集群CPU报警，查看现象是那一小段突然有一个请求小高峰，经过分析把问题定位到一个新增的接口上，这个接口中有一个Mongo的慢查询，这个慢查询对应的相关信息有:</p>
+<blockquote>
+<ol>
+<li>集合总文档数超过 6 亿条</li>
+<li>按条件查询后获取的数据也有几万条</li>
+<li>之前已经加了几个索引，但效果不是特别理想</li>
+</ol>
+</blockquote>
+<a id="more"></a>
+<h3 id="基本信息"><a href="#基本信息" class="headerlink" title="基本信息"></a>基本信息</h3><p>总数据量:<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; db<span class="selector-class">.zwg_log</span><span class="selector-class">.count</span>()</span><br><span class="line">[<span class="number">693090136</span>]     <span class="comment">// 6.9亿</span></span><br></pre></td></tr></table></figure></p>
+<p>查看文档结构:<br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="selector-tag">db</span><span class="selector-class">.zwg_log</span><span class="selector-class">.find</span>()<span class="selector-class">.limit</span>(3)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="attribute">_id</span>: <span class="string">"add6a2c545fb389a96fed19730772e24"</span>,</span><br><span class="line">    source_id: <span class="string">"xxxx"</span>,</span><br><span class="line">    user_id: <span class="string">"zhaoweiguo"</span>,</span><br><span class="line">    is_delete: <span class="string">"0"</span>,</span><br><span class="line">    is_read: <span class="string">"0"</span>,</span><br><span class="line">    time_created: <span class="built_in">ISODate</span>(<span class="string">"2018-03-11T04:47:14.621Z"</span>),</span><br><span class="line">    time_updated: <span class="built_in">ISODate</span>(<span class="string">"2018-03-11T04:47:14.621Z"</span>)</span><br><span class="line">    ...</span><br><span class="line">&#125;,</span><br><span class="line">&#123;</span><br><span class="line">    <span class="attribute">_id</span>: <span class="string">"add93f066c0e3e4c07f2962884799da4"</span>,</span><br><span class="line">    source_id: <span class="string">"xxxx"</span>,</span><br><span class="line">    user_id: <span class="string">"zhaoweiguo"</span>,</span><br><span class="line">    is_read: <span class="string">"0"</span>,</span><br><span class="line">    is_delete: <span class="string">"0"</span>,</span><br><span class="line">    time_created: <span class="built_in">ISODate</span>(<span class="string">"2017-03-29T23:40:50.485Z"</span>),</span><br><span class="line">    time_updated: <span class="built_in">ISODate</span>(<span class="string">"2017-03-29T23:40:50.485Z"</span>)</span><br><span class="line">    ...</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure></p>
+<p>相关索引主要有:<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">    &#123;</span><br><span class="line"><span class="symbol">      v:</span> <span class="number">2</span>,</span><br><span class="line"><span class="symbol">        key:</span> &#123;</span><br><span class="line"><span class="symbol">            source_id:</span> <span class="number">1.0</span>,</span><br><span class="line"><span class="symbol">            is_delete:</span> <span class="number">1.0</span>,</span><br><span class="line"><span class="symbol">            time_created:</span> <span class="number">-1.0</span></span><br><span class="line">        &#125;,</span><br><span class="line"><span class="symbol">        name:</span> <span class="string">"source_id_1.0_is_delete_1.0_time_created_-1.0"</span></span><br><span class="line">    &#125;</span><br><span class="line">    &#123;</span><br><span class="line"><span class="symbol">        v:</span> <span class="number">2</span>,</span><br><span class="line"><span class="symbol">        key:</span> &#123;</span><br><span class="line"><span class="symbol">            is_delete:</span> <span class="number">1.0</span>,</span><br><span class="line"><span class="symbol">            user_id:</span> <span class="number">1.0</span>,</span><br><span class="line"><span class="symbol">            time_created:</span> <span class="number">-1.0</span></span><br><span class="line">        &#125;,</span><br><span class="line"><span class="symbol">        name:</span> <span class="string">"is_delete_1_user_id_1_time_created_-1"</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line"><span class="symbol">        v:</span> <span class="number">2</span>,</span><br><span class="line"><span class="symbol">        key:</span> &#123;</span><br><span class="line"><span class="symbol">            source_id:</span> <span class="number">1</span>,</span><br><span class="line"><span class="symbol">            user_id:</span> <span class="number">1</span>,</span><br><span class="line"><span class="symbol">            is_delete:</span> <span class="number">1</span>,</span><br><span class="line"><span class="symbol">            is_read:</span> <span class="number">1</span></span><br><span class="line">        &#125;,</span><br><span class="line"><span class="symbol">        name:</span> <span class="string">"source_id_1_user_id_1_is_delete_1_is_read_1"</span></span><br><span class="line">    &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure></p>
+<h3 id="现象分析"><a href="#现象分析" class="headerlink" title="现象分析"></a>现象分析</h3><h4 id="使用默认索引"><a href="#使用默认索引" class="headerlink" title="使用默认索引"></a>使用默认索引</h4><blockquote>
+<p>使用explain命令验证慢查询的请求，发现<br>默认使用的是is<em>delete_1_user_id_1_time_created</em>-1索引</p>
+</blockquote>
+<p>执行语句:<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt; db<span class="selector-class">.zwg_log</span><span class="selector-class">.explain</span>(<span class="string">"executionStats"</span>).find(&#123;</span><br><span class="line">            <span class="string">"source_id"</span>: <span class="string">"XXXXXXXX85877cc4ada3217c7dff2627e11064d8"</span>,</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="string">"0"</span>,</span><br><span class="line">            <span class="string">"is_read"</span>: <span class="string">"0"</span></span><br><span class="line">        &#125;).sort(&#123;<span class="string">"time_created"</span>:-<span class="number">1</span>&#125;).limit(<span class="number">3</span>)</span><br></pre></td></tr></table></figure></p>
+<p>执行结果:<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">executionStages:</span> &#123;</span><br><span class="line"><span class="symbol">    stage:</span> <span class="string">"SINGLE_SHARD"</span>,</span><br><span class="line"><span class="symbol">    nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    executionTimeMillis:</span> <span class="number">180</span>,</span><br><span class="line"><span class="symbol">    totalKeysExamined:</span> <span class="number">22387</span>,</span><br><span class="line"><span class="symbol">    totalDocsExamined:</span> <span class="number">22387</span>,</span><br><span class="line"><span class="symbol">    totalChildMillis:</span> NumberLong(<span class="number">175</span>),</span><br><span class="line"><span class="symbol">    shards:</span> [</span><br><span class="line">        &#123;</span><br><span class="line"><span class="symbol">            shardName:</span> <span class="string">"d-XXXXXXXXe0a5c484"</span>,</span><br><span class="line"><span class="symbol">            executionSuccess:</span> true,</span><br><span class="line"><span class="symbol">            executionStages:</span> &#123;</span><br><span class="line"><span class="symbol">                stage:</span> <span class="string">"LIMIT"</span>,</span><br><span class="line"><span class="symbol">                nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                executionTimeMillisEstimate:</span> <span class="number">117</span>,</span><br><span class="line"><span class="symbol">                works:</span> <span class="number">22388</span>,</span><br><span class="line"><span class="symbol">                inputStage:</span> &#123;</span><br><span class="line"><span class="symbol">                    stage:</span> <span class="string">"FETCH"</span>,</span><br><span class="line"><span class="symbol">                    nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                    executionTimeMillisEstimate:</span> <span class="number">117</span>,</span><br><span class="line"><span class="symbol">                    works:</span> <span class="number">22387</span>,</span><br><span class="line"><span class="symbol">                    docsExamined:</span> <span class="number">22387</span>,</span><br><span class="line"><span class="symbol">                    inputStage:</span> &#123;</span><br><span class="line"><span class="symbol">                        stage:</span> <span class="string">"IXSCAN"</span>,</span><br><span class="line"><span class="symbol">                        nReturned:</span> <span class="number">22387</span>,</span><br><span class="line"><span class="symbol">                        executionTimeMillisEstimate:</span> <span class="number">12</span>,</span><br><span class="line"><span class="symbol">                        works:</span> <span class="number">22387</span>,</span><br><span class="line"><span class="symbol">                        indexName:</span> <span class="string">"is_delete_1_user_id_1_time_created_-1"</span>,</span><br><span class="line"><span class="symbol">                        isMultiKey:</span> true,</span><br><span class="line"><span class="symbol">                        multiKeyPaths:</span> &#123;</span><br><span class="line"><span class="symbol">                            is_delete:</span> [</span><br><span class="line">                            ],</span><br><span class="line"><span class="symbol">                            user_id:</span> [</span><br><span class="line">                                <span class="string">"user_id"</span></span><br><span class="line">                            ],</span><br><span class="line"><span class="symbol">                            time_created:</span> [</span><br><span class="line">                            ]</span><br><span class="line">                        &#125;,</span><br><span class="line"><span class="symbol">                        keysExamined:</span> <span class="number">22387</span>,</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="使用指定索引-source-id-1-user-id-1-is-delete-1-is-read-1"><a href="#使用指定索引-source-id-1-user-id-1-is-delete-1-is-read-1" class="headerlink" title="使用指定索引 source_id_1_user_id_1_is_delete_1_is_read_1"></a>使用指定索引 <code>source_id_1_user_id_1_is_delete_1_is_read_1</code></h4><blockquote>
+<p>指定使用使用source_id_1_user_id_1_is_delete_1_is_read_1索引</p>
+</blockquote>
+<p>执行语句:<br><figure class="highlight sqf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&gt; db.zwg_log.explain(<span class="string">"executionStats"</span>).<span class="built_in">find</span>(&#123;</span><br><span class="line">            <span class="string">"source_id"</span>: <span class="string">"XXXXXXXX85877cc4ada3217c7dff2627e11064d8"</span>,</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="string">"0"</span>,</span><br><span class="line">            <span class="string">"is_read"</span>: <span class="string">"0"</span></span><br><span class="line">        &#125;).<span class="built_in">sort</span>(&#123;<span class="string">"time_created"</span>:-<span class="number">1</span>&#125;).limit(<span class="number">3</span>).<span class="built_in">hint</span>(&#123;</span><br><span class="line">            <span class="string">"source_id"</span>: <span class="number">1</span>,</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="number">1</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="number">1</span>,</span><br><span class="line">            <span class="string">"is_read"</span>: <span class="number">1</span></span><br><span class="line">        &#125;)</span><br></pre></td></tr></table></figure></p>
+<p>返回结果:<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">executionStages:</span> &#123;</span><br><span class="line"><span class="symbol">    stage:</span> <span class="string">"SINGLE_SHARD"</span>,</span><br><span class="line"><span class="symbol">    nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    executionTimeMillis:</span> <span class="number">1272</span>,</span><br><span class="line"><span class="symbol">    totalKeysExamined:</span> <span class="number">5856</span>,</span><br><span class="line"><span class="symbol">    totalDocsExamined:</span> <span class="number">5856</span>,</span><br><span class="line"><span class="symbol">    totalChildMillis:</span> NumberLong(<span class="number">1263</span>),</span><br><span class="line"><span class="symbol">    shards:</span> [</span><br><span class="line">        &#123;</span><br><span class="line"><span class="symbol">            shardName:</span> <span class="string">"d-XXXXXXXXe0a5c484"</span>,</span><br><span class="line"><span class="symbol">            executionSuccess:</span> false,</span><br><span class="line"><span class="symbol">            executionStages:</span> &#123;</span><br><span class="line"><span class="symbol">                stage:</span> <span class="string">"SORT"</span>,</span><br><span class="line"><span class="symbol">                nReturned:</span> <span class="number">0</span>,</span><br><span class="line"><span class="symbol">                executionTimeMillisEstimate:</span> <span class="number">1290</span>,</span><br><span class="line"><span class="symbol">                works:</span> <span class="number">5858</span>,</span><br><span class="line"><span class="symbol">                sortPattern:</span> &#123;</span><br><span class="line"><span class="symbol">                    time_created:</span> <span class="number">-1</span></span><br><span class="line">                &#125;,</span><br><span class="line"><span class="symbol">                memUsage:</span> <span class="number">5806</span>,</span><br><span class="line"><span class="symbol">                memLimit:</span> <span class="number">33554432</span>,</span><br><span class="line"><span class="symbol">                inputStage:</span> &#123;</span><br><span class="line"><span class="symbol">                    stage:</span> <span class="string">"SORT_KEY_GENERATOR"</span>,</span><br><span class="line"><span class="symbol">                    nReturned:</span> <span class="number">5856</span>,</span><br><span class="line"><span class="symbol">                    executionTimeMillisEstimate:</span> <span class="number">1266</span>,</span><br><span class="line"><span class="symbol">                    works:</span> <span class="number">5857</span>,</span><br><span class="line"><span class="symbol">                    inputStage:</span> &#123;</span><br><span class="line"><span class="symbol">                        stage:</span> <span class="string">"FETCH"</span>,</span><br><span class="line"><span class="symbol">                        nReturned:</span> <span class="number">5856</span>,</span><br><span class="line"><span class="symbol">                        executionTimeMillisEstimate:</span> <span class="number">1209</span>,</span><br><span class="line"><span class="symbol">                        works:</span> <span class="number">5856</span>,</span><br><span class="line"><span class="symbol">                        inputStage:</span> &#123;</span><br><span class="line"><span class="symbol">                            stage:</span> <span class="string">"IXSCAN"</span>,</span><br><span class="line"><span class="symbol">                            nReturned:</span> <span class="number">5856</span>,</span><br><span class="line"><span class="symbol">                            executionTimeMillisEstimate:</span> <span class="number">26</span>,</span><br><span class="line"><span class="symbol">                            works:</span> <span class="number">5856</span>,</span><br><span class="line"><span class="symbol">                            indexName:</span> <span class="string">"source_id_1_user_id_1_is_delete_1_is_read_1"</span>,</span><br><span class="line"><span class="symbol">                            keysExamined:</span> <span class="number">5856</span>,</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h4><blockquote>
+<p>使用索引 <code>is_delete_1_user_id_1_time_created_-1</code> 请求时间是180；而使用索引 <code>source_id_1_user_id_1_is_delete_1_is_read_1</code>的请求时间是1272ms。所以Mongo使用这个索引作为最佳索引没有问题。第2个索引时间主要消耗在排序上面了。</p>
+</blockquote>
+<p>如果不按时间排序，则使用 <code>source_id_1_user_id_1_is_delete_1_is_read_1</code> 索引只需要扫描3条记录，时间会是几毫秒。参见:</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&gt; db<span class="selector-class">.zwg_log</span><span class="selector-class">.explain</span>(<span class="string">"executionStats"</span>).find(&#123;</span><br><span class="line">            <span class="string">"source_id"</span>: <span class="string">"XXXXXXXX85877cc4ada3217c7dff2627e11064d8"</span>,</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="string">"0"</span>,</span><br><span class="line">            <span class="string">"is_read"</span>: <span class="string">"0"</span></span><br><span class="line">        &#125;).limit(<span class="number">3</span>).hint(&#123;</span><br><span class="line">            <span class="string">"source_id"</span>: <span class="number">1</span>,</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="number">1</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="number">1</span>,</span><br><span class="line">            <span class="string">"is_read"</span>: <span class="number">1</span></span><br><span class="line">        &#125;)</span><br></pre></td></tr></table></figure>
+<p>结果:<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">executionStats:</span> &#123;</span><br><span class="line"><span class="symbol">    nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    executionTimeMillis:</span> <span class="number">2</span>,</span><br><span class="line"><span class="symbol">    totalKeysExamined:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    totalDocsExamined:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    executionStages:</span> &#123;</span><br><span class="line"><span class="symbol">        stage:</span> <span class="string">"SINGLE_SHARD"</span>,</span><br><span class="line"><span class="symbol">        nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">        executionTimeMillis:</span> <span class="number">2</span>,</span><br><span class="line"><span class="symbol">        totalKeysExamined:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">        totalDocsExamined:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">        totalChildMillis:</span> NumberLong(<span class="number">1</span>),</span><br><span class="line"><span class="symbol">        shards:</span> [</span><br><span class="line">            &#123;</span><br><span class="line"><span class="symbol">                shardName:</span> <span class="string">"d-2ze07ec75d921fa4"</span>,</span><br><span class="line"><span class="symbol">                executionSuccess:</span> true,</span><br><span class="line"><span class="symbol">                executionStages:</span> &#123;</span><br><span class="line"><span class="symbol">                    stage:</span> <span class="string">"LIMIT"</span>,</span><br><span class="line"><span class="symbol">                    nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                    executionTimeMillisEstimate:</span> <span class="number">0</span>,</span><br><span class="line"><span class="symbol">                    limitAmount:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                    inputStage:</span> &#123;</span><br><span class="line"><span class="symbol">                        stage:</span> <span class="string">"FETCH"</span>,</span><br><span class="line"><span class="symbol">                        nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                        executionTimeMillisEstimate:</span> <span class="number">0</span>,</span><br><span class="line"><span class="symbol">                        docsExamined:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                        inputStage:</span> &#123;</span><br><span class="line"><span class="symbol">                            stage:</span> <span class="string">"IXSCAN"</span>,</span><br><span class="line"><span class="symbol">                            nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                            executionTimeMillisEstimate:</span> <span class="number">0</span>,</span><br><span class="line"><span class="symbol">                            works:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                            indexName:</span> <span class="string">"source_id_1_user_id_1_is_read_1_is_delete_1"</span></span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        ]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h3><blockquote>
+<p>原因找到了，优化就比较容易了。</p>
+</blockquote>
+<p>根据上面分析，优化方法就显而易见了：增加一个联合索引<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">db<span class="selector-class">.zwg_log</span><span class="selector-class">.createIndex</span>(&#123;</span><br><span class="line">    <span class="string">"source_id"</span>: <span class="number">1</span>, </span><br><span class="line">    <span class="string">"user_id"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="string">"is_delete"</span>: <span class="number">1</span>, </span><br><span class="line">    <span class="string">"is_read"</span>: <span class="number">1</span>,</span><br><span class="line">    time_created:-<span class="number">1</span></span><br><span class="line">&#125;,  &#123;<span class="attribute">background</span>: true&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>优化后，执行:<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt; db<span class="selector-class">.zwg_log</span><span class="selector-class">.explain</span>(<span class="string">"executionStats"</span>).find(&#123;</span><br><span class="line">            <span class="string">"source_id"</span>: <span class="string">"XXXXXXXX85877cc4ada3217c7dff2627e11064d8"</span>,</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="string">"0"</span>,</span><br><span class="line">            <span class="string">"is_read"</span>: <span class="string">"0"</span></span><br><span class="line">        &#125;).sort(&#123;<span class="string">"time_created"</span>:-<span class="number">1</span>&#125;).limit(<span class="number">3</span>)</span><br></pre></td></tr></table></figure></p>
+<p>结果如下:<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">executionStats:</span> &#123;</span><br><span class="line"><span class="symbol">    nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    executionTimeMillis:</span> <span class="number">2</span>,</span><br><span class="line"><span class="symbol">    totalKeysExamined:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    totalDocsExamined:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    executionStages:</span> &#123;</span><br><span class="line"><span class="symbol">        stage:</span> <span class="string">"SINGLE_SHARD"</span>,</span><br><span class="line"><span class="symbol">        nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">        executionTimeMillis:</span> <span class="number">2</span>,</span><br><span class="line"><span class="symbol">        totalKeysExamined:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">        totalDocsExamined:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">        totalChildMillis:</span> NumberLong(<span class="number">2</span>),</span><br><span class="line"><span class="symbol">        shards:</span> [</span><br><span class="line">            &#123;</span><br><span class="line"><span class="symbol">                shardName:</span> <span class="string">"d-XXXXXXXXe0a5c484"</span>,</span><br><span class="line"><span class="symbol">                executionSuccess:</span> true,</span><br><span class="line"><span class="symbol">                executionStages:</span> &#123;</span><br><span class="line"><span class="symbol">                    stage:</span> <span class="string">"LIMIT"</span>,</span><br><span class="line"><span class="symbol">                    nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                    executionTimeMillisEstimate:</span> <span class="number">0</span>,</span><br><span class="line"><span class="symbol">                    inputStage:</span> &#123;</span><br><span class="line"><span class="symbol">                        stage:</span> <span class="string">"FETCH"</span>,</span><br><span class="line"><span class="symbol">                        filter:</span> &#123;</span><br><span class="line"><span class="symbol">                            is_read:</span> &#123;</span><br><span class="line">                                $eq: <span class="string">"0"</span></span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;,</span><br><span class="line"><span class="symbol">                        nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                        executionTimeMillisEstimate:</span> <span class="number">0</span>,</span><br><span class="line"><span class="symbol">                        inputStage:</span> &#123;</span><br><span class="line"><span class="symbol">                            stage:</span> <span class="string">"IXSCAN"</span>,</span><br><span class="line"><span class="symbol">                            nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                            executionTimeMillisEstimate:</span> <span class="number">0</span>,</span><br><span class="line"><span class="symbol">                            keyPattern:</span> &#123;</span><br><span class="line"><span class="symbol">                                source_id:</span> <span class="number">1</span>,</span><br><span class="line"><span class="symbol">                                user_id:</span> <span class="number">1</span>,</span><br><span class="line"><span class="symbol">                                is_delete:</span> <span class="number">1</span>,</span><br><span class="line"><span class="symbol">                                time_created:</span> <span class="number">-1</span></span><br><span class="line">                            &#125;,</span><br><span class="line"><span class="symbol">                            indexName:</span> <span class="string">"source_id_1_user_id_1_is_delete_1_time_created_-1"</span>,</span><br><span class="line"><span class="symbol">                            isMultiKey:</span> true,</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        ]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure></p>
+<p>就和不排序的请求使用索引 <code>source_id_1_user_id_1_is_delete_1_is_read_1</code> 效果一样了。</p>
+<h3 id="小插曲-特殊数据可能会特别快"><a href="#小插曲-特殊数据可能会特别快" class="headerlink" title="小插曲-特殊数据可能会特别快"></a>小插曲-特殊数据可能会特别快</h3><p>在优化完成后，高兴之余遇到下面这么一个奇怪的问题:</p>
+<blockquote>
+<p>在优化完成后强制指定使用索引 <code>is_delete_1_user_id_1_time_created_-1</code> 时，<br>发现它的执行效率居然和使用新增加的索引一样，都是毫秒级<br>更诡异的是连文档扫描数也一样是3条</p>
+</blockquote>
+<p>指定使用索引 <code>is_delete_1_user_id_1_time_created_-1</code> :<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&gt; db.zwg_log.explain(<span class="string">"allPlansExecution"</span>).find(&#123;</span><br><span class="line">            <span class="string">"source_id"</span>: <span class="string">"XXXXXXXXdbf62d674a034e982586dcc85ecf4e78"</span>,</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="string">"0"</span>,</span><br><span class="line">            <span class="string">"is_read"</span>: <span class="string">"0"</span></span><br><span class="line">        &#125;).sort(&#123;<span class="string">"time_created"</span>:<span class="number">1</span>&#125;).limit(<span class="number">3</span>).hint(&#123;</span><br><span class="line"><span class="symbol">            is_delete:</span> <span class="number">1</span>,</span><br><span class="line"><span class="symbol">            user_id:</span> <span class="number">1</span>,</span><br><span class="line"><span class="symbol">            time_created:</span> <span class="number">-1</span></span><br><span class="line">        &#125;)</span><br></pre></td></tr></table></figure></p>
+<p>结果如下:<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">executionStages:</span> &#123;</span><br><span class="line"><span class="symbol">    stage:</span> <span class="string">"SINGLE_SHARD"</span>,</span><br><span class="line"><span class="symbol">    nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    executionTimeMillis:</span> <span class="number">0</span>,</span><br><span class="line"><span class="symbol">    totalKeysExamined:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    totalDocsExamined:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    totalChildMillis:</span> NumberLong(<span class="number">0</span>),</span><br><span class="line"><span class="symbol">    shards:</span> [</span><br><span class="line">        &#123;</span><br><span class="line"><span class="symbol">            shardName:</span> <span class="string">"d-XXXXXXXXe0a5c484"</span>,</span><br><span class="line"><span class="symbol">            executionSuccess:</span> true,</span><br><span class="line"><span class="symbol">            executionStages:</span> &#123;</span><br><span class="line"><span class="symbol">                stage:</span> <span class="string">"LIMIT"</span>,</span><br><span class="line"><span class="symbol">                nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                inputStage:</span> &#123;</span><br><span class="line"><span class="symbol">                    stage:</span> <span class="string">"FETCH"</span>,</span><br><span class="line"><span class="symbol">                    nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                    executionTimeMillisEstimate:</span> <span class="number">0</span>,</span><br><span class="line"><span class="symbol">                    docsExamined:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                    inputStage:</span> &#123;</span><br><span class="line"><span class="symbol">                        stage:</span> <span class="string">"IXSCAN"</span>,</span><br><span class="line"><span class="symbol">                        nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                        executionTimeMillisEstimate:</span> <span class="number">0</span>,</span><br><span class="line"><span class="symbol">                        indexName:</span> <span class="string">"is_delete_1_user_id_1_time_created_-1"</span>,</span><br><span class="line"><span class="symbol">                        keysExamined:</span> <span class="number">3</span>,</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>看到没有和前面的最优解除了使用的索引不同外，其他几乎完全一样。是什么原因造成的？是缓存吗？是query plans吗？当你对MongoDB不了解时，有很多的可能，你需要一点点排除。</p>
+<h4 id="query-plans分析"><a href="#query-plans分析" class="headerlink" title="query plans分析"></a>query plans分析</h4><p>首先不可能是query plans，因为我们使用的是指定索引。</p>
+<h4 id="缓存加速现象分析"><a href="#缓存加速现象分析" class="headerlink" title="缓存加速现象分析"></a>缓存加速现象分析</h4><blockquote>
+<p>是缓存造成的吗？</p>
+</blockquote>
+<p>缓存的确能加快查询效率，但下面这种现象才真正是缓存造成的加速效果:<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&gt; db.zwg_log.explain(<span class="string">"allPlansExecution"</span>).find(&#123;</span><br><span class="line">            <span class="string">"source_id"</span>: <span class="string">"XXXXXXXX85877cc4ada3217c7dff2627e11064d8"</span>,</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="string">"0"</span>,</span><br><span class="line">            <span class="string">"is_read"</span>: <span class="string">"0"</span></span><br><span class="line">        &#125;).sort(&#123;<span class="string">"time_created"</span>:<span class="number">-1</span>&#125;).limit(<span class="number">3</span>).hint(&#123;</span><br><span class="line"><span class="symbol">            is_delete:</span> <span class="number">1</span>,</span><br><span class="line"><span class="symbol">            user_id:</span> <span class="number">1</span>,</span><br><span class="line"><span class="symbol">            time_created:</span> <span class="number">-1</span></span><br><span class="line">        &#125;)</span><br></pre></td></tr></table></figure></p>
+<p>第一次执行时效率如下:<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">executionStats:</span> &#123;</span><br><span class="line"><span class="symbol">    nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    executionTimeMillis:</span> <span class="number">1032</span>,</span><br><span class="line"><span class="symbol">    totalKeysExamined:</span> <span class="number">22387</span>,</span><br><span class="line"><span class="symbol">    totalDocsExamined:</span> <span class="number">22387</span>,</span><br></pre></td></tr></table></figure></p>
+<p>第二次执行:<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">executionStats:</span> &#123;</span><br><span class="line"><span class="symbol">    nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    executionTimeMillis:</span> <span class="number">339</span>,</span><br><span class="line"><span class="symbol">    totalKeysExamined:</span> <span class="number">22387</span>,</span><br><span class="line"><span class="symbol">    totalDocsExamined:</span> <span class="number">22387</span>,</span><br></pre></td></tr></table></figure></p>
+<p>第三次执行:<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">executionStats:</span> &#123;</span><br><span class="line"><span class="symbol">    nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    executionTimeMillis:</span> <span class="number">180</span>,</span><br><span class="line"><span class="symbol">    totalKeysExamined:</span> <span class="number">22387</span>,</span><br><span class="line"><span class="symbol">    totalDocsExamined:</span> <span class="number">22387</span>,</span><br></pre></td></tr></table></figure></p>
+<p>我们看到，3次同样的执行，虽然因为缓存原因，查询速度越来越快，但文档扫描是不变的。而上面的现象文档扫描只有3次，所以排除缓存造成这么快。</p>
+<h4 id="真实原因"><a href="#真实原因" class="headerlink" title="真实原因"></a>真实原因</h4><p>真实的原因其实是查询这个数据就是只需要扫描3条记录就能得到想要的数据，因为你下面语句执行<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">db<span class="selector-class">.zwg_log</span><span class="selector-class">.find</span>(&#123;</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="string">"0"</span></span><br><span class="line">        &#125;).sort(&#123;time_created:-<span class="number">1</span>&#125;).limit(<span class="number">3</span>)</span><br></pre></td></tr></table></figure></p>
+<p>得到的结果是:<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">    &#123;</span><br><span class="line"><span class="symbol">        _id:</span> <span class="string">"b5cd1fd5382c403292714f7ceb13e7b9"</span>,</span><br><span class="line"><span class="symbol">        source_id:</span> <span class="string">"XXXXXXXXdbf62d674a034e982586dcc85ecf4e78"</span>,</span><br><span class="line"><span class="symbol">        user_id:</span> <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line"><span class="symbol">        is_delete:</span> <span class="string">"0"</span>,</span><br><span class="line"><span class="symbol">        is_read:</span> <span class="string">"0"</span>,</span><br><span class="line">        ...</span><br><span class="line">    &#125;,&#123;</span><br><span class="line"><span class="symbol">        _id:</span> <span class="string">"518cbb3e9fb6b5c0c53e0d99ef6e0bcf"</span>,</span><br><span class="line"><span class="symbol">        source_id:</span> <span class="string">"XXXXXXXXdbf62d674a034e982586dcc85ecf4e78"</span>,</span><br><span class="line"><span class="symbol">        user_id:</span> <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line"><span class="symbol">        is_delete:</span> <span class="string">"0"</span>,</span><br><span class="line"><span class="symbol">        is_read:</span> <span class="string">"0"</span>,</span><br><span class="line">        ...</span><br><span class="line">    &#125;,&#123;</span><br><span class="line"><span class="symbol">        _id:</span> <span class="string">"c3703d2139a1b2f381eb3690678d7985"</span>,</span><br><span class="line"><span class="symbol">        source_id:</span> <span class="string">"XXXXXXXXdbf62d674a034e982586dcc85ecf4e78"</span>,</span><br><span class="line"><span class="symbol">        user_id:</span> <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line"><span class="symbol">        is_delete:</span> <span class="string">"0"</span>,</span><br><span class="line"><span class="symbol">        is_read:</span> <span class="string">"0"</span>,</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>前3条就完全能满足条件，所以这个查询条件下使用索引 <code>is_delete_1_user_id_1_time_created_-1</code> 和使用索引 <code>source_id_1_user_id_1_is_delete_1_is_read_1_time_created_-1</code> 效率是一样的。</p>
+</blockquote>
+<h4 id="使用其他数据证实"><a href="#使用其他数据证实" class="headerlink" title="使用其他数据证实"></a>使用其他数据证实</h4><p>上面的原因是数据恰好合适，我使用其他 <code>source_id</code> 的值应该就不会这么快了吧</p>
+<p>速度超快的文档扫描了3次:</p>
+<p><img src="/images/dbs/mongodbs/optimize_index_zwg_log1.png" alt="速度超快的文档扫描了3次"></p>
+<p>用另一个source_id文档扫描变成了2.2万次:</p>
+<p><img src="/images/dbs/mongodbs/optimize_index_zwg_log2.png" alt="用另一个source_id文档扫描变成了2.2万次"></p>
+<blockquote>
+<p>这种只有数据不同，其他都相同的，基本可以判断为『就是数据比较特殊，并没有代表性』</p>
+</blockquote>
+<h4 id="使用正序查询证实"><a href="#使用正序查询证实" class="headerlink" title="使用正序查询证实"></a>使用正序查询证实</h4><p>现在再看看如果排序按时间正序，效果如何:<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&gt; db.zwg_log.explain(<span class="string">"allPlansExecution"</span>).find(&#123;</span><br><span class="line">            <span class="string">"source_id"</span>: <span class="string">"XXXXXXXXdbf62d674a034e982586dcc85ecf4e78"</span>,</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="string">"0"</span>,</span><br><span class="line">            <span class="string">"is_read"</span>: <span class="string">"0"</span></span><br><span class="line">        &#125;).sort(&#123;<span class="string">"time_created"</span>:<span class="number">1</span>&#125;).limit(<span class="number">3</span>).hint(&#123;</span><br><span class="line"><span class="symbol">            is_delete:</span> <span class="number">1</span>,</span><br><span class="line"><span class="symbol">            user_id:</span> <span class="number">1</span>,</span><br><span class="line"><span class="symbol">            time_created:</span> <span class="number">-1</span></span><br><span class="line">        &#125;)</span><br></pre></td></tr></table></figure></p>
+<p>结果如下:<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">executionStages:</span> &#123;</span><br><span class="line"><span class="symbol">    stage:</span> <span class="string">"SINGLE_SHARD"</span>,</span><br><span class="line"><span class="symbol">    nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">    executionTimeMillis:</span> <span class="number">1141</span>,</span><br><span class="line"><span class="symbol">    totalKeysExamined:</span> <span class="number">9433</span>,</span><br><span class="line"><span class="symbol">    totalDocsExamined:</span> <span class="number">9433</span>,</span><br><span class="line"><span class="symbol">    totalChildMillis:</span> NumberLong(<span class="number">1138</span>),</span><br><span class="line"><span class="symbol">    shards:</span> [</span><br><span class="line">        &#123;</span><br><span class="line"><span class="symbol">            shardName:</span> <span class="string">"d-XXXXXXXXe0a5c484"</span>,</span><br><span class="line"><span class="symbol">            executionSuccess:</span> true,</span><br><span class="line"><span class="symbol">            executionStages:</span> &#123;</span><br><span class="line"><span class="symbol">                stage:</span> <span class="string">"LIMIT"</span>,</span><br><span class="line"><span class="symbol">                nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                executionTimeMillisEstimate:</span> <span class="number">1089</span>,</span><br><span class="line"><span class="symbol">                works:</span> <span class="number">9434</span>,</span><br><span class="line"><span class="symbol">                limitAmount:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                inputStage:</span> &#123;</span><br><span class="line"><span class="symbol">                    stage:</span> <span class="string">"FETCH"</span>,</span><br><span class="line"><span class="symbol">                    nReturned:</span> <span class="number">3</span>,</span><br><span class="line"><span class="symbol">                    executionTimeMillisEstimate:</span> <span class="number">1089</span>,</span><br><span class="line"><span class="symbol">                    works:</span> <span class="number">9433</span>,</span><br><span class="line"><span class="symbol">                    docsExamined:</span> <span class="number">9433</span>,</span><br><span class="line"><span class="symbol">                    inputStage:</span> &#123;</span><br><span class="line"><span class="symbol">                        stage:</span> <span class="string">"IXSCAN"</span>,</span><br><span class="line"><span class="symbol">                        nReturned:</span> <span class="number">9433</span>,</span><br><span class="line"><span class="symbol">                        executionTimeMillisEstimate:</span> <span class="number">47</span>,</span><br><span class="line"><span class="symbol">                        works:</span> <span class="number">9433</span>,</span><br><span class="line"><span class="symbol">                        indexName:</span> <span class="string">"is_delete_1_user_id_1_time_created_-1"</span>,</span><br><span class="line"><span class="symbol">                        keysExamined:</span> <span class="number">9433</span>,</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>好了，我们看到，只需把排序从倒序改为正序，时间就从毫秒级变成秒级。</p>
+</blockquote>
+<p>为啥会有这种现象？为啥之前只需要扫描3条记录，现在需要扫描9433条了呢？</p>
+<h4 id="更深一步数据分析"><a href="#更深一步数据分析" class="headerlink" title="更深一步数据分析"></a>更深一步数据分析</h4><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt; db<span class="selector-class">.zwg_log</span><span class="selector-class">.count</span>(&#123;</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="string">"0"</span>,</span><br><span class="line">        &#125;)</span><br><span class="line">[<span class="number">22410</span>]   <span class="comment">// 2.2万条</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt; db<span class="selector-class">.zwg_log</span><span class="selector-class">.count</span>(&#123;</span><br><span class="line">            <span class="string">"source_id"</span>: <span class="string">"XXXXXXXXdbf62d674a034e982586dcc85ecf4e78"</span>,</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="string">"0"</span>,</span><br><span class="line">            <span class="string">"is_read"</span>: <span class="string">"0"</span></span><br><span class="line">        &#125;)</span><br><span class="line">[<span class="number">12918</span>]    <span class="comment">// 1.2万条</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt; db<span class="selector-class">.zwg_log</span><span class="selector-class">.count</span>(&#123;</span><br><span class="line">            <span class="string">"source_id"</span>: <span class="string">"XXXXXXXX85877cc4ada3217c7dff2627e11064d8"</span>,</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="string">"0"</span>,</span><br><span class="line">            <span class="string">"is_read"</span>: <span class="string">"0"</span></span><br><span class="line">        &#125;)</span><br><span class="line">[<span class="number">5856</span>]    <span class="comment">// 5856条</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这个表中有此用户相关数据是2.2万条，而满足 <code>source_id=&quot;XXXXXXXXdbf62d674a034e982586dcc85ecf4e78&quot;</code> 的数据大都是最新生成的，所以按时间倒序时能快速命中，而按时间正序时，由于前面的数据都不满足 <code>source_id=&quot;XXXXXXXXdbf62d674a034e982586dcc85ecf4e78&quot;</code> 这个条件，所以需要把前面的都扫描完成，才会命中所需要的数据。</p>
+</blockquote>
+<p>如果在表 <code>zwg_log</code> 中按时间倒序前 <code>12918</code> 条数据的 <code>source_id</code> 都等于 <code>XXXXXXXXdbf62d674a034e982586dcc85ecf4e78</code>:<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">db<span class="selector-class">.zwg_log</span><span class="selector-class">.find</span>(&#123;</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="string">"0"</span></span><br><span class="line">        &#125;).sort(&#123;time_created:-<span class="number">1</span>&#125;).limit(<span class="number">12918</span>)</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>那么当按时间正序使用索引 <code>is_delete_1_user_id_1_time_created_</code> 查询时，需要的文档扫描数为 <code>22410-12918+3=9495</code> 也就是这种情况需要扫描9495条。而上面的分析文档扫描了9433次，这说明 <code>source_id=&quot;XXXXXXXXdbf62d674a034e982586dcc85ecf4e78&quot;</code> 的数据并不完全是最新的 ，以上。</p>
+</blockquote>
+<h3 id="小插曲-排序与不排序的区别"><a href="#小插曲-排序与不排序的区别" class="headerlink" title="小插曲-排序与不排序的区别"></a>小插曲-排序与不排序的区别</h3><h4 id="现象"><a href="#现象" class="headerlink" title="现象"></a>现象</h4><p>还有一个问题，如果我查询不指定排序，正常不指定的话应该使用 <code>source_id_1_user_id_1_is_delete_1_is_read_1</code> 索引吧，但很奇怪的是有时使用 <code>source_id_1.0_is_delete_1.0_time_created_-1</code> 这个索引。</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">db<span class="selector-class">.zwg_log</span><span class="selector-class">.find</span>(&#123;</span><br><span class="line">            <span class="string">"source_id"</span>: <span class="string">"XXXXXXXXdbf62d674a034e982586dcc85ecf4e78"</span>,</span><br><span class="line">            <span class="string">"user_id"</span>: <span class="string">"XXXXXXXX79441a98e6952befe5db9148"</span>,</span><br><span class="line">            <span class="string">"is_delete"</span>: <span class="string">"0"</span>,</span><br><span class="line">            <span class="string">"is_read"</span>: <span class="string">"0"</span></span><br><span class="line">        &#125;).limit(<span class="number">3</span>).explain()</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>怀疑是与MongoDB的查询计划(Query Plans)有关</p>
+</blockquote>
+<h4 id="查询计划相关知识"><a href="#查询计划相关知识" class="headerlink" title="查询计划相关知识"></a>查询计划相关知识</h4><p>Mongo 自带了一个查询优化器会为我们选择最合适的查询方案:</p>
+<blockquote>
+<ol>
+<li>如果一个索引能够精确匹配一个查询，那么查询优化器就会使用这个索引。</li>
+<li>如果不能精确匹配呢？可能会有几个索引都适合你的查询，那 MongoDB 是怎样选择的呢？</li>
+</ol>
+</blockquote>
+<p>  MongoDB 的查询计划会将多个索引并行的去执行，最先返回第 101 个结果的就是胜者，<br>  其他查询计划都会被终止，执行优胜的查询计划；<br>  这个查询计划会被缓存，接下来相同的查询条件都会使用它；</p>
+<p>缓存的查询计划在以下条件下会清空并重新评估:</p>
+<blockquote>
+<p>集合收到 1000 次写操作<br>执行 reindex<br>添加或删除索引<br>mongod 进程重启</p>
+</blockquote>
+<h4 id="可能的原因"><a href="#可能的原因" class="headerlink" title="可能的原因"></a>可能的原因</h4><blockquote>
+<p>可能和上面一个小插曲一样，因为数据原因。</p>
+</blockquote>
+<p>因为 <code>user_id</code> 与 <code>souce_id</code> 是一对多的关系。所以按 <code>souce_id</code> 查询与按 <code>source_id + user_id</code> 查询得到的结果相同；并且 <code>is_read</code> 的值都为0。 所以使用索引 <code>source_id_1.0_is_delete_1.0_time_created_-1</code> 和使用索引 <code>source_id_1.0_is_delete_1.0_time_created_-1</code> 都只需要扫描3次。</p>
+<blockquote>
+<p>但这儿和上面说的『如果一个索引能够精确匹配一个查询，那么查询优化器就会使用这个索引。』相悖<br>现场如下：</p>
+</blockquote>
+<p>1、is<em>read=1时，使用索引 ``source_id_1.0_is_delete_1.0_time_created</em>-1``<br><img src="/images/dbs/mongodbs/optimize_index_zwg_log4.png" alt="is_read=1时"></p>
+<p>2、is_read=0时，使用索引 <code>source_id_1_user_id_1_is_delete_1_is_read_1</code><br><img src="/images/dbs/mongodbs/optimize_index_zwg_log3.png" alt="is_read=1时"></p>
+<p>后续待研究确认……</p>
+<h3 id="扩展思考"><a href="#扩展思考" class="headerlink" title="扩展思考"></a>扩展思考</h3><p>这种表是否合适分片？分片后是否会提高查询效率？</p>
+<blockquote>
+<p>我们DB是分片DB，这个文档目前还不是分片的<br>后续有时间会研究一下这个文档是否应该分片？分片后是否能按所想提高效率？</p>
+</blockquote>
+<h3 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h3><ul>
+<li>你真的会用索引么？[Mongo]: <span class="exturl" data-url="aHR0cHM6Ly96aHVhbmxhbi56aGlodS5jb20vcC83Nzk3MTY4MQ==" title="https://zhuanlan.zhihu.com/p/77971681">https://zhuanlan.zhihu.com/p/77971681<i class="fa fa-external-link"></i></span></li>
+<li>MongoDB 执行计划获取: <span class="exturl" data-url="aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xlc2hhbWkvYXJ0aWNsZS9kZXRhaWxzLzUzNTIxOTkw" title="https://blog.csdn.net/leshami/article/details/53521990">https://blog.csdn.net/leshami/article/details/53521990<i class="fa fa-external-link"></i></span></li>
+<li>MongoDB 查询优化：从 10s 到 10ms: <span class="exturl" data-url="aHR0cHM6Ly9kZXZlbG9wZXIuYWxpeXVuLmNvbS9hcnRpY2xlLzc0NjM1" title="https://developer.aliyun.com/article/74635">https://developer.aliyun.com/article/74635<i class="fa fa-external-link"></i></span></li>
+</ul>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+      <div>
+        
+
+
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhaoweiguo</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    
+    <a href="http://blog.zhaoweiguo.com/2020/10/21/db-mongo-optimize-index/" title="实战-Mongo优化">http://blog.zhaoweiguo.com/2020/10/21/db-mongo-optimize-index/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/db/" rel="tag"># db</a>
+          
+            <a href="/tags/mongodb/" rel="tag"># mongodb</a>
+          
+            <a href="/tags/optimize/" rel="tag"># optimize</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/10/16/db-mongo-optimize-explain-intro/" rel="next" title="Mongo优化——explain函数的基本使用">
+                <i class="fa fa-chevron-left"></i> Mongo优化——explain函数的基本使用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div id="gitalk-container">
+    </div>
+    
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/icon.png" alt="zhaoweiguo">
+            
+              <p class="site-author-name" itemprop="name">zhaoweiguo</p>
+              <p class="site-description motion-element" itemprop="description">Just do it now.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">37</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8=" title="GitHub &rarr; https://github.com/zhaoweiguo"><i class="fa fa-fw fa-github"></i></span>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <span class="exturl" data-url="bWFpbHRvOnN1cHBvcnRAemhhb3dlaWd1by5jb20=" title="E-Mail &rarr; mailto:support@zhaoweiguo.com"><i class="fa fa-fw fa-envelope"></i></span>
+                </span>
+              
+            </div>
+          
+
+          
+             <div class="cc-license motion-element" itemprop="license">
+              
+                
+              
+              
+              
+              <span class="exturl cc-opacity" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></span>
+             </div>
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基本信息"><span class="nav-number">2.</span> <span class="nav-text">基本信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#现象分析"><span class="nav-number">3.</span> <span class="nav-text">现象分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#使用默认索引"><span class="nav-number">3.1.</span> <span class="nav-text">使用默认索引</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用指定索引-source-id-1-user-id-1-is-delete-1-is-read-1"><span class="nav-number">3.2.</span> <span class="nav-text">使用指定索引 source_id_1_user_id_1_is_delete_1_is_read_1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#结论"><span class="nav-number">3.3.</span> <span class="nav-text">结论</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优化"><span class="nav-number">4.</span> <span class="nav-text">优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#小插曲-特殊数据可能会特别快"><span class="nav-number">5.</span> <span class="nav-text">小插曲-特殊数据可能会特别快</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#query-plans分析"><span class="nav-number">5.1.</span> <span class="nav-text">query plans分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存加速现象分析"><span class="nav-number">5.2.</span> <span class="nav-text">缓存加速现象分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#真实原因"><span class="nav-number">5.3.</span> <span class="nav-text">真实原因</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用其他数据证实"><span class="nav-number">5.4.</span> <span class="nav-text">使用其他数据证实</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用正序查询证实"><span class="nav-number">5.5.</span> <span class="nav-text">使用正序查询证实</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#更深一步数据分析"><span class="nav-number">5.6.</span> <span class="nav-text">更深一步数据分析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#小插曲-排序与不排序的区别"><span class="nav-number">6.</span> <span class="nav-text">小插曲-排序与不排序的区别</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#现象"><span class="nav-number">6.1.</span> <span class="nav-text">现象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#查询计划相关知识"><span class="nav-number">6.2.</span> <span class="nav-text">查询计划相关知识</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#可能的原因"><span class="nav-number">6.3.</span> <span class="nav-text">可能的原因</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#扩展思考"><span class="nav-number">7.</span> <span class="nav-text">扩展思考</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考文档"><span class="nav-number">8.</span> <span class="nav-text">参考文档</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">  <span class="exturl" data-url="aHR0cDovL3d3dy5taWl0YmVpYW4uZ292LmNu">京ICP备16018553号 </span>&copy; 2018 – <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoweiguo</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">站点总字数：</span>
+    
+    <span title="站点总字数">157k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    
+    <span title="站点阅读时长">2:22</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <span class="exturl theme-link" data-url="aHR0cHM6Ly9oZXhvLmlv">Hexo</span> 强力驱动 v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <span class="exturl theme-link" data-url="aHR0cHM6Ly90aGVtZS1uZXh0Lm9yZw==">NexT.Gemini</span> v6.6.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.6.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.6.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+
+  
+  
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.css">
+
+  
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/js-md5@0.7.3/src/md5.min.js"></script>
+    
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '74ff30da6cc8deafe946',
+          clientSecret: '65ff50b923a60ef39f312c2014035b6285eff2d5',
+          repo: 'zhaoweiguo.github.io',
+          owner: 'zhaoweiguo',
+          admin: ['zhaoweiguo'],
+          //id: md5(location.pathname),
+          id: location.pathname,
+          createIssueManually: 'false',
+          distractionFreeMode: ''
+        })
+        gitalk.render('gitalk-container')           
+       </script>
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/exturl.js?v=6.6.0"></script>
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

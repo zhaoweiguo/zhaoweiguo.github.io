@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.zhaoweiguo.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":true,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true,"width":300,"b2t":true,"scrollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="创建Target System创建一个符合OTP架构的项目ch3: ├── LICENSE ├── README.md ├── rebar.config ├── rebar.lock └── src     ├── ch3.app.src     ├── ch3.erl     ├── ch3_app.erl     ├── ch3_sup.erl     └── target_system.er">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用Erlang原生方法对release版本升降级">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2018/09/04/erlang/erlang-release-updowngrade-normal/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="创建Target System创建一个符合OTP架构的项目ch3: ├── LICENSE ├── README.md ├── rebar.config ├── rebar.lock └── src     ├── ch3.app.src     ├── ch3.erl     ├── ch3_app.erl     ├── ch3_sup.erl     └── target_system.er">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-09-04T10:01:11.000Z">
+<meta property="article:modified_time" content="2022-03-18T06:39:03.038Z">
+<meta property="article:author" content="赵卫国">
+<meta property="article:tag" content="erlang">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.zhaoweiguo.com/2018/09/04/erlang/erlang-release-updowngrade-normal/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>使用Erlang原生方法对release版本升降级 | 新溪blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">新溪blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">新溪-gordon之胡写乱画</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="bullhorn fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档<span class="badge">37</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">13</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">42</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/09/04/erlang/erlang-release-updowngrade-normal/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.png">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用Erlang原生方法对release版本升降级
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-09-04 18:01:11" itemprop="dateCreated datePublished" datetime="2018-09-04T18:01:11+08:00">2018-09-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-18 14:39:03" itemprop="dateModified" datetime="2022-03-18T14:39:03+08:00">2022-03-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/erlang/" itemprop="url" rel="index"><span itemprop="name">erlang</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>0</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="创建Target-System"><a href="#创建Target-System" class="headerlink" title="创建Target System"></a>创建Target System</h3><p>创建一个符合OTP架构的项目ch3:</p>
+<pre><code>├── LICENSE
+├── README.md
+├── rebar.config
+├── rebar.lock
+└── src
+    ├── ch3.app.src
+    ├── ch3.erl
+    ├── ch3_app.erl
+    ├── ch3_sup.erl
+    └── target_system.er
+</code></pre>
+<p>ch_rel-1.rel文件:</p>
+<pre><code>&#123;release,
+   &#123;&quot;ch_rel&quot;, &quot;A&quot;&#125;,
+   &#123;erts, &quot;8.3.5.4&quot;&#125;,
+   [
+      &#123;kernel, &quot;5.2.0.1&quot;&#125;,
+      &#123;stdlib, &quot;3.3&quot;&#125;,
+      &#123;sasl, &quot;3.0.3&quot;&#125;,
+      &#123;ch3, &quot;0.1.0&quot;&#125;
+   ]
+&#125;.
+</code></pre>
+<span id="more"></span>
+
+<p>生成Target System:</p>
+<pre><code>os&gt; erl -pa /home/user/target_system/myapps/ch3-0.1.0/ebin
+
+% 1.这儿的ch_rel-1就是ch_rel-1.rel文件名
+% 2.target_system.erl文件在sasl项目的example中
+% 3.此命令会生成以下几个文件:
+%     plain.rel,plain.script, plain.boot
+%     ch_rel-1.script, ch_rel-1.boot
+%     ch_rel-1.tar.gz
+1&gt; target_system:create(&quot;ch_rel-1&quot;).
+</code></pre>
+<p>安装Target System:</p>
+<pre><code>% 1.会把ch_rel-1.tar.gz文件解压到目录/usr/local/erl-target中
+% 2.文件releases/start_erl.data中有erts版本
+% 3.文件releases/RELEASES中存放所有的release版本信息
+2&gt; target_system:install(&quot;ch3&quot;, &quot;/usr/local/erl-target&quot;).
+</code></pre>
+<h3 id="启动Target-System"><a href="#启动Target-System" class="headerlink" title="启动Target System"></a>启动Target System</h3><pre><code>% 使用interactive方式启动
+os&gt; /usr/local/erl-target/bin/erl -boot /usr/local/erl-target/releases/A/start
+
+run_erl: 提供日志输出从runtime system到文件系统的封装
+start_erl: 
+  需要:
+  1.The root directory (&quot;/usr/local/erl-target&quot;)
+  2.The releases directory (&quot;/usr/local/erl-target/releases&quot;
+  3.The location of the file start_erl.data
+  4.有文件releases/A/sys.config
+  功能:
+  1.读文件start_erl.data,取得runtime system version「8.3.5.4」和release version「A」
+  2.启动找到的这个runtime system
+  3.提供给标识-boot的文件releases/A/start.boot
+  4.没有releases/A/sys.config文件，会启动失败
+to_erl: attach到Erlang shell的命令
+</code></pre>
+<h3 id="创建Next-Version"><a href="#创建Next-Version" class="headerlink" title="创建Next Version"></a>创建Next Version</h3><p>ch_rel-2.rel文件:</p>
+<pre><code>&#123;release,
+ &#123;&quot;ch_rel&quot;, &quot;B&quot;&#125;,
+ &#123;erts, &quot;8.3.5.4&quot;&#125;,
+ [&#123;kernel, &quot;5.2.0.1&quot;&#125;,
+  &#123;stdlib, &quot;3.3&quot;&#125;,
+  &#123;sasl, &quot;3.0.3&quot;&#125;,
+  &#123;ch3, &quot;0.2.0&quot;&#125;]
+&#125;.
+</code></pre>
+<p>ch3.appup:</p>
+<pre><code>&#123;&quot;0.2.0&quot;,
+   [&#123;&quot;0.1.0&quot;, [&#123;load_module, ch3&#125;]&#125;],
+   [&#123;&quot;0.1.0&quot;, [&#123;load_module, ch3&#125;]&#125;]
+&#125;.
+</code></pre>
+<p>打包version 2:</p>
+<pre><code>// 在version 2上启动erlang
+os&gt; erl -pa /home/user/target_system/myapps/ch3-2.0/ebin
+
+% 生成version 2的.boot文件和.script文件
+1&gt; systools:make_relup(&quot;ch_rel-2&quot;,[&quot;ch_rel-1&quot;],[&quot;ch_rel-1&quot;],
+[&#123;path,[&quot;/home/user/target_system/myapps/ch3-1.0/ebin&quot;,
+&quot;/my/old/erlang/lib/*/ebin&quot;]&#125;]).
+
+// 创建新的release
+2&gt; target_system:create(&quot;ch_rel-2&quot;).
+% 生成文件:ch_rel-2.tar.gz
+</code></pre>
+<h3 id="更新Target-System"><a href="#更新Target-System" class="headerlink" title="更新Target System"></a>更新Target System</h3><p>修改bin/start增加-heart:</p>
+<pre><code>#!/bin/sh
+ROOTDIR=/usr/local/erl-target/
+
+if [ -z &quot;$RELDIR&quot; ]
+then
+   RELDIR=$ROOTDIR/releases
+fi
+
+START_ERL_DATA=$&#123;1:-$RELDIR/start_erl.data&#125;
+
+$ROOTDIR/bin/run_erl -daemon /tmp/ $ROOTDIR/log &quot;exec $ROOTDIR/bin/start_erl $ROOTDIR\
+$RELDIR $START_ERL_DATA -heart
+</code></pre>
+<p>假设原version 1通过以下命令启动:</p>
+<pre><code>// 启动
+os&gt; /usr/local/erl-target/bin/start
+// attach
+os&gt; /usr/local/erl-target/bin/to_erl /tmp/erlang.pipe.1
+</code></pre>
+<p>copy上面生成的ch_rel-2.tar.gz文件到version 1的releases目录中:</p>
+<pre><code>os&gt; cp ch_rel-2.tar.gz /usr/local/erl-target/releases
+</code></pre>
+<p>解压、安装:</p>
+<pre><code>% 解压
+1&gt; &#123;ok,Vsn&#125; = release_handler:unpack_release(&quot;ch_rel-2&quot;).
+
+% 安装
+% 因为有-heart选项,结点已经重启
+2&gt; release_handler:install_release(Vsn).
+  &#123;continue_after_restart,&quot;A&quot;,[]&#125;
+  heart: Tue Apr  1 12:15:10 2014: Erlang has closed.
+  heart: Tue Apr  1 12:15:11 2014: Executed &quot;/usr/local/erl-target/bin/start /usr/local/erl-target/releases/new_start_erl.data&quot; -&gt; 0. Terminating.
+  [End]
+</code></pre>
+<p>重新attach到node:</p>
+<pre><code>os&gt; /usr/local/erl-target/bin/to_erl /tmp/erlang.pipe.2
+</code></pre>
+<p>查看release:</p>
+<pre><code>1&gt; release_handler:which_releases().
+[&#123;&quot;ch_rel&quot;,&quot;B&quot;,
+  [&quot;kernel-5.2.0.1&quot;,&quot;stdlib-3.3&quot;,&quot;sasl-3.0.3&quot;,&quot;ch3-0.2.0&quot;],
+  current&#125;,
+ &#123;&quot;ch_rel&quot;,&quot;A&quot;,
+  [&quot;kernel-5.2.0.1&quot;,&quot;stdlib-3.3&quot;,&quot;sasl-3.0.3&quot;,&quot;ch3-0.1.0&quot;],
+  permanent&#125;]
+</code></pre>
+<p>Make the new release permanent:</p>
+<pre><code>2&gt; release_handler:make_permanent(&quot;SECOND&quot;).
+
+3&gt; release_handler:which_releases().
+[&#123;&quot;ch_rel&quot;,&quot;B&quot;,
+  [&quot;kernel-5.2.0.1&quot;,&quot;stdlib-3.3&quot;,&quot;sasl-3.0.3&quot;,&quot;ch3-0.2.0&quot;],
+  permanent&#125;,
+ &#123;&quot;ch_rel&quot;,&quot;A&quot;,
+  [&quot;kernel-5.2.0.1&quot;,&quot;stdlib-3.3&quot;,&quot;sasl-3.0.3&quot;,&quot;ch3-0.1.0&quot;],
+  old&#125;]
+</code></pre>
+<h3 id="target-system-erl"><a href="#target-system-erl" class="headerlink" title="target_system.erl"></a>target_system.erl</h3><pre><code>-module(target_system).
+-export([create/1, create/2, install/2]).
+
+%% Note: RelFileName below is the *stem* without trailing .rel,
+%% .script etc.
+%%
+
+%% create(RelFileName)
+%%
+create(RelFileName) -&gt;
+    create(RelFileName,[]).
+
+create(RelFileName,SystoolsOpts) -&gt;
+    RelFile = RelFileName ++ &quot;.rel&quot;, 
+    Dir = filename:dirname(RelFileName),
+    PlainRelFileName = filename:join(Dir,&quot;plain&quot;),
+    PlainRelFile = PlainRelFileName ++ &quot;.rel&quot;,
+    io:fwrite(&quot;Reading file: ~tp ...~n&quot;, [RelFile]),
+    &#123;ok, [RelSpec]&#125; = file:consult(RelFile),
+    io:fwrite(&quot;Creating file: ~tp from ~tp ...~n&quot;,
+              [PlainRelFile, RelFile]),
+    &#123;release,
+     &#123;RelName, RelVsn&#125;,
+     &#123;erts, ErtsVsn&#125;,
+     AppVsns&#125; = RelSpec,
+    PlainRelSpec = &#123;release, 
+                    &#123;RelName, RelVsn&#125;,
+                    &#123;erts, ErtsVsn&#125;,
+                    lists:filter(fun(&#123;kernel, _&#125;) -&gt; 
+                                         true;
+                                    (&#123;stdlib, _&#125;) -&gt;
+                                         true;
+                                    (_) -&gt;
+                                         false
+                                 end, AppVsns)
+                   &#125;,
+    &#123;ok, Fd&#125; = file:open(PlainRelFile, [write]),
+    io:fwrite(Fd, &quot;~p.~n&quot;, [PlainRelSpec]),
+    file:close(Fd),
+
+    io:fwrite(&quot;Making \&quot;~ts.script\&quot; and \&quot;~ts.boot\&quot; files ...~n&quot;,
+        [PlainRelFileName,PlainRelFileName]),
+    make_script(PlainRelFileName,SystoolsOpts),
+
+    io:fwrite(&quot;Making \&quot;~ts.script\&quot; and \&quot;~ts.boot\&quot; files ...~n&quot;,
+              [RelFileName, RelFileName]),
+    make_script(RelFileName,SystoolsOpts),
+
+    TarFileName = RelFileName ++ &quot;.tar.gz&quot;,
+    io:fwrite(&quot;Creating tar file ~tp ...~n&quot;, [TarFileName]),
+    make_tar(RelFileName,SystoolsOpts),
+
+    TmpDir = filename:join(Dir,&quot;tmp&quot;),
+    io:fwrite(&quot;Creating directory ~tp ...~n&quot;,[TmpDir]),
+    file:make_dir(TmpDir), 
+
+    io:fwrite(&quot;Extracting ~tp into directory ~tp ...~n&quot;, [TarFileName,TmpDir]),
+    extract_tar(TarFileName, TmpDir),
+
+    TmpBinDir = filename:join([TmpDir, &quot;bin&quot;]),
+    ErtsBinDir = filename:join([TmpDir, &quot;erts-&quot; ++ ErtsVsn, &quot;bin&quot;]),
+    io:fwrite(&quot;Deleting \&quot;erl\&quot; and \&quot;start\&quot; in directory ~tp ...~n&quot;,
+              [ErtsBinDir]),
+    file:delete(filename:join([ErtsBinDir, &quot;erl&quot;])),
+    file:delete(filename:join([ErtsBinDir, &quot;start&quot;])),
+
+    io:fwrite(&quot;Creating temporary directory ~tp ...~n&quot;, [TmpBinDir]),
+    file:make_dir(TmpBinDir),
+
+    io:fwrite(&quot;Copying file \&quot;~ts.boot\&quot; to ~tp ...~n&quot;,
+              [PlainRelFileName, filename:join([TmpBinDir, &quot;start.boot&quot;])]),
+    copy_file(PlainRelFileName++&quot;.boot&quot;,filename:join([TmpBinDir, &quot;start.boot&quot;])),
+
+    io:fwrite(&quot;Copying files \&quot;epmd\&quot;, \&quot;run_erl\&quot; and \&quot;to_erl\&quot; from \n&quot;
+              &quot;~tp to ~tp ...~n&quot;,
+              [ErtsBinDir, TmpBinDir]),
+    copy_file(filename:join([ErtsBinDir, &quot;epmd&quot;]), 
+              filename:join([TmpBinDir, &quot;epmd&quot;]), [preserve]),
+    copy_file(filename:join([ErtsBinDir, &quot;run_erl&quot;]), 
+              filename:join([TmpBinDir, &quot;run_erl&quot;]), [preserve]),
+    copy_file(filename:join([ErtsBinDir, &quot;to_erl&quot;]), 
+              filename:join([TmpBinDir, &quot;to_erl&quot;]), [preserve]),
+
+    %% This is needed if &#39;start&#39; script created from &#39;start.src&#39; shall
+    %% be used as it points out this directory as log dir for &#39;run_erl&#39;
+    TmpLogDir = filename:join([TmpDir, &quot;log&quot;]),
+    io:fwrite(&quot;Creating temporary directory ~tp ...~n&quot;, [TmpLogDir]),
+    ok = file:make_dir(TmpLogDir),
+
+    StartErlDataFile = filename:join([TmpDir, &quot;releases&quot;, &quot;start_erl.data&quot;]),
+    io:fwrite(&quot;Creating ~tp ...~n&quot;, [StartErlDataFile]),
+    StartErlData = io_lib:fwrite(&quot;~s ~s~n&quot;, [ErtsVsn, RelVsn]),
+    write_file(StartErlDataFile, StartErlData),
+    
+    io:fwrite(&quot;Recreating tar file ~tp from contents in directory ~tp ...~n&quot;,
+        [TarFileName,TmpDir]),
+    &#123;ok, Tar&#125; = erl_tar:open(TarFileName, [write, compressed]),
+    %% &#123;ok, Cwd&#125; = file:get_cwd(),
+    %% file:set_cwd(&quot;tmp&quot;),
+    ErtsDir = &quot;erts-&quot;++ErtsVsn,
+    erl_tar:add(Tar, filename:join(TmpDir,&quot;bin&quot;), &quot;bin&quot;, []),
+    erl_tar:add(Tar, filename:join(TmpDir,ErtsDir), ErtsDir, []),
+    erl_tar:add(Tar, filename:join(TmpDir,&quot;releases&quot;), &quot;releases&quot;, []),
+    erl_tar:add(Tar, filename:join(TmpDir,&quot;lib&quot;), &quot;lib&quot;, []),
+    erl_tar:add(Tar, filename:join(TmpDir,&quot;log&quot;), &quot;log&quot;, []),
+    erl_tar:close(Tar),
+    %% file:set_cwd(Cwd),
+    io:fwrite(&quot;Removing directory ~tp ...~n&quot;,[TmpDir]),
+    remove_dir_tree(TmpDir),
+    ok.
+
+
+install(RelFileName, RootDir) -&gt;
+    TarFile = RelFileName ++ &quot;.tar.gz&quot;, 
+    io:fwrite(&quot;Extracting ~tp ...~n&quot;, [TarFile]),
+    extract_tar(TarFile, RootDir),
+    StartErlDataFile = filename:join([RootDir, &quot;releases&quot;, &quot;start_erl.data&quot;]),
+    &#123;ok, StartErlData&#125; = read_txt_file(StartErlDataFile),
+    [ErlVsn, _RelVsn| _] = string:tokens(StartErlData, &quot; \n&quot;),
+    ErtsBinDir = filename:join([RootDir, &quot;erts-&quot; ++ ErlVsn, &quot;bin&quot;]),
+    BinDir = filename:join([RootDir, &quot;bin&quot;]),
+    io:fwrite(&quot;Substituting in erl.src, start.src and start_erl.src to &quot;
+              &quot;form erl, start and start_erl ...\n&quot;),
+    subst_src_scripts([&quot;erl&quot;, &quot;start&quot;, &quot;start_erl&quot;], ErtsBinDir, BinDir, 
+                      [&#123;&quot;FINAL_ROOTDIR&quot;, RootDir&#125;, &#123;&quot;EMU&quot;, &quot;beam&quot;&#125;],
+                      [preserve]),
+    %%! Workaround for pre OTP 17.0: start.src and start_erl.src did
+    %%! not have correct permissions, so the above &#39;preserve&#39; option did not help
+    ok = file:change_mode(filename:join(BinDir,&quot;start&quot;),8#0755),
+    ok = file:change_mode(filename:join(BinDir,&quot;start_erl&quot;),8#0755),
+
+    io:fwrite(&quot;Creating the RELEASES file ...\n&quot;),
+    create_RELEASES(RootDir, filename:join([RootDir, &quot;releases&quot;,
+              filename:basename(RelFileName)])).
+
+%% LOCALS 
+
+%% make_script(RelFileName,Opts)
+%%
+make_script(RelFileName,Opts) -&gt;
+    systools:make_script(RelFileName, [no_module_tests,
+               &#123;outdir,filename:dirname(RelFileName)&#125;
+               |Opts]).
+
+%% make_tar(RelFileName,Opts)
+%%
+make_tar(RelFileName,Opts) -&gt;
+    RootDir = code:root_dir(),
+    systools:make_tar(RelFileName, [&#123;erts, RootDir&#125;,
+            &#123;outdir,filename:dirname(RelFileName)&#125;
+            |Opts]).
+
+%% extract_tar(TarFile, DestDir)
+%%
+extract_tar(TarFile, DestDir) -&gt;
+    erl_tar:extract(TarFile, [&#123;cwd, DestDir&#125;, compressed]).
+
+create_RELEASES(DestDir, RelFileName) -&gt;
+    release_handler:create_RELEASES(DestDir, RelFileName ++ &quot;.rel&quot;).
+
+subst_src_scripts(Scripts, SrcDir, DestDir, Vars, Opts) -&gt; 
+    lists:foreach(fun(Script) -&gt;
+                          subst_src_script(Script, SrcDir, DestDir, 
+                                           Vars, Opts)
+                  end, Scripts).
+
+subst_src_script(Script, SrcDir, DestDir, Vars, Opts) -&gt; 
+    subst_file(filename:join([SrcDir, Script ++ &quot;.src&quot;]),
+               filename:join([DestDir, Script]),
+               Vars, Opts).
+
+subst_file(Src, Dest, Vars, Opts) -&gt;
+    &#123;ok, Conts&#125; = read_txt_file(Src),
+    NConts = subst(Conts, Vars),
+    write_file(Dest, NConts),
+    case lists:member(preserve, Opts) of
+        true -&gt;
+            &#123;ok, FileInfo&#125; = file:read_file_info(Src),
+            file:write_file_info(Dest, FileInfo);
+        false -&gt;
+            ok
+    end.
+
+%% subst(Str, Vars)
+%% Vars = [&#123;Var, Val&#125;]
+%% Var = Val = string()
+%% Substitute all occurrences of %Var% for Val in Str, using the list
+%% of variables in Vars.
+%%
+subst(Str, Vars) -&gt;
+    subst(Str, Vars, []).
+
+subst([$%, C| Rest], Vars, Result) when $A =&lt; C, C =&lt; $Z -&gt;
+    subst_var([C| Rest], Vars, Result, []);
+subst([$%, C| Rest], Vars, Result) when $a =&lt; C, C =&lt; $z -&gt;
+    subst_var([C| Rest], Vars, Result, []);
+subst([$%, C| Rest], Vars, Result) when  C == $_ -&gt;
+    subst_var([C| Rest], Vars, Result, []);
+subst([C| Rest], Vars, Result) -&gt;
+    subst(Rest, Vars, [C| Result]);
+subst([], _Vars, Result) -&gt;
+    lists:reverse(Result).
+
+subst_var([$%| Rest], Vars, Result, VarAcc) -&gt;
+    Key = lists:reverse(VarAcc),
+    case lists:keysearch(Key, 1, Vars) of
+        &#123;value, &#123;Key, Value&#125;&#125; -&gt;
+            subst(Rest, Vars, lists:reverse(Value, Result));
+        false -&gt;
+            subst(Rest, Vars, [$%| VarAcc ++ [$%| Result]])
+    end;
+subst_var([C| Rest], Vars, Result, VarAcc) -&gt;
+    subst_var(Rest, Vars, Result, [C| VarAcc]);
+subst_var([], Vars, Result, VarAcc) -&gt;
+    subst([], Vars, [VarAcc ++ [$%| Result]]).
+
+copy_file(Src, Dest) -&gt;
+    copy_file(Src, Dest, []).
+
+copy_file(Src, Dest, Opts) -&gt;
+    &#123;ok,_&#125; = file:copy(Src, Dest),
+    case lists:member(preserve, Opts) of
+        true -&gt;
+            &#123;ok, FileInfo&#125; = file:read_file_info(Src),
+            file:write_file_info(Dest, FileInfo);
+        false -&gt;
+            ok
+    end.
+       
+write_file(FName, Conts) -&gt;
+    Enc = file:native_name_encoding(),
+    &#123;ok, Fd&#125; = file:open(FName, [write]),
+    file:write(Fd, unicode:characters_to_binary(Conts,Enc,Enc)),
+    file:close(Fd).
+
+read_txt_file(File) -&gt;
+    &#123;ok, Bin&#125; = file:read_file(File),
+    &#123;ok, binary_to_list(Bin)&#125;.
+
+remove_dir_tree(Dir) -&gt;
+    remove_all_files(&quot;.&quot;, [Dir]).
+
+remove_all_files(Dir, Files) -&gt;
+    lists:foreach(fun(File) -&gt;
+                          FilePath = filename:join([Dir, File]),
+                          case filelib:is_dir(FilePath) of
+                              true -&gt;
+                                  &#123;ok, DirFiles&#125; = file:list_dir(FilePath), 
+                                  remove_all_files(FilePath, DirFiles),
+                                  file:del_dir(FilePath);
+                              _ -&gt;
+                                  file:delete(FilePath)
+                          end
+                  end, Files).
+</code></pre>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhaoweiguo
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://blog.zhaoweiguo.com/2018/09/04/erlang/erlang-release-updowngrade-normal/" title="使用Erlang原生方法对release版本升降级">http://blog.zhaoweiguo.com/2018/09/04/erlang/erlang-release-updowngrade-normal/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/erlang/" rel="tag"># erlang</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/08/23/erlang/erlang-source-analysis-lager1/" rel="prev" title="开源项目lager1-源码分析前">
+      <i class="fa fa-chevron-left"></i> 开源项目lager1-源码分析前
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/09/29/erlang/erlang-source-analysis-tsung2/" rel="next" title="源码分析基础工作">
+      源码分析基础工作 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BATarget-System"><span class="nav-number">1.</span> <span class="nav-text">创建Target System</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8Target-System"><span class="nav-number">2.</span> <span class="nav-text">启动Target System</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BANext-Version"><span class="nav-number">3.</span> <span class="nav-text">创建Next Version</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0Target-System"><span class="nav-number">4.</span> <span class="nav-text">更新Target System</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#target-system-erl"><span class="nav-number">5.</span> <span class="nav-text">target_system.erl</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhaoweiguo"
+      src="/images/icon.png">
+  <p class="site-author-name" itemprop="name">zhaoweiguo</p>
+  <div class="site-description" itemprop="description">Just do it now.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8=" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhaoweiguo"><i class="github fa-fw"></i></span>
+      </span>
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="bWFpbHRvOnN1cHBvcnRAemhhb3dlaWd1by5jb20=" title="E-Mail → mailto:support@zhaoweiguo.com"><i class="envelope fa-fw"></i></span>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <span class="exturl cc-opacity" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><span class="exturl" data-url="aHR0cHM6Ly9iZWlhbi5taWl0Lmdvdi5jbg==">京ICP备16018553号 </span>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoweiguo</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">185k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:49</span>
+</div>
+  <div class="powered-by">由 <span class="exturl theme-link" data-url="aHR0cHM6Ly9oZXhvLmlv">Hexo</span> & <span class="exturl theme-link" data-url="aHR0cHM6Ly90aGVtZS1uZXh0Lm9yZw==">NexT.Gemini</span> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '',
+      clientSecret: '',
+      repo        : 'zhaoweiguo.github.io',
+      owner       : '',
+      admin       : [''],
+      id          : 'f9ec31d87f6550b4c3ac36e81cafc4af',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

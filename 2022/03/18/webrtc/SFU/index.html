@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.zhaoweiguo.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":true,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true,"width":300,"b2t":true,"scrollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="前言前几天了解了 WebRTC 服务，并且基于 webrtc 官方的 apprtc 项目搭建一个1v1的音视频对话，参见尝鲜：如何搭建一个简单的webrtc服务器。有了1v1的实战，再来看多方音视频通信的方案，看看和1v1的方案的关系与不同。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="尝鲜：搭建一个多对多的音视频通信服务">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2022/03/18/webrtc/SFU/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="前言前几天了解了 WebRTC 服务，并且基于 webrtc 官方的 apprtc 项目搭建一个1v1的音视频对话，参见尝鲜：如何搭建一个简单的webrtc服务器。有了1v1的实战，再来看多方音视频通信的方案，看看和1v1的方案的关系与不同。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://img.zhaoweiguo.com/uPic/2022/03/multi-mesh1.png">
+<meta property="og:image" content="http://img.zhaoweiguo.com/uPic/2022/03/multi-MCU1.png">
+<meta property="og:image" content="http://img.zhaoweiguo.com/uPic/2022/03/download.png">
+<meta property="og:image" content="http://img.zhaoweiguo.com/uPic/2022/03/SFU-Simulcast1.png">
+<meta property="og:image" content="http://img.zhaoweiguo.com/uPic/2022/03/SFU-SVC1-20220318234337964.png">
+<meta property="article:published_time" content="2022-03-18T03:46:32.000Z">
+<meta property="article:modified_time" content="2022-03-21T11:44:00.332Z">
+<meta property="article:author" content="赵卫国">
+<meta property="article:tag" content="introduce">
+<meta property="article:tag" content="webrtc">
+<meta property="article:tag" content="SFU">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://img.zhaoweiguo.com/uPic/2022/03/multi-mesh1.png">
+
+<link rel="canonical" href="http://blog.zhaoweiguo.com/2022/03/18/webrtc/SFU/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>尝鲜：搭建一个多对多的音视频通信服务 | 新溪blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">新溪blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">新溪-gordon之胡写乱画</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="bullhorn fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档<span class="badge">37</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">13</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">42</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2022/03/18/webrtc/SFU/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.png">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          尝鲜：搭建一个多对多的音视频通信服务
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-03-18 11:46:32" itemprop="dateCreated datePublished" datetime="2022-03-18T11:46:32+08:00">2022-03-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-21 19:44:00" itemprop="dateModified" datetime="2022-03-21T19:44:00+08:00">2022-03-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/introduce/" itemprop="url" rel="index"><span itemprop="name">introduce</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>0</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>前几天了解了 WebRTC 服务，并且基于 webrtc 官方的 apprtc 项目搭建一个1v1的音视频对话，参见<a href="https://blog.zhaoweiguo.com/2022/03/08/webrtc/introduce/">尝鲜：如何搭建一个简单的webrtc服务器</a>。有了1v1的实战，再来看多方音视频通信的方案，看看和1v1的方案的关系与不同。</p>
+<span id="more"></span>
+
+<h1 id="多方音视频通信三种架构方案"><a href="#多方音视频通信三种架构方案" class="headerlink" title="多方音视频通信三种架构方案"></a>多方音视频通信三种架构方案</h1><h2 id="一、Mesh-方案"><a href="#一、Mesh-方案" class="headerlink" title="一、Mesh 方案"></a>一、Mesh 方案</h2><p>即多个终端之间两两进行连接，形成一个网状结构。这种方案是1v1 WebRTC 通信模型的扩展版，任何两个结点都可以看成一个1v1 WebRTC 通信模型。</p>
+<p><img data-src="http://img.zhaoweiguo.com/uPic/2022/03/multi-mesh1.png" alt="Mesh 方案架构图"></p>
+<p>优势：不需要服务器中转数据，STUN/TUTN 只是负责 NAT 穿越，这样利用现有 WebRTC 通信模型就可以实现，而不需要开发媒体服务器。</p>
+<p>劣势：需要给每一个参与人都转发一份媒体流，这样对上行带宽的占用很大。参与人越多，占用的带宽就越大。客户端的机器资源的占用与参与人数成正比，当参与人数过多时，此方案就不可用了。通过实践来看，这种方案在超过 4 个人时，就会有非常大的问题。 另外，由于STUN/TUTN 只是负责 NAT 穿越，如果有部分人不能实现 NAT 穿越，就无法连接。</p>
+<h2 id="二、MCU（Multipoint-Conferencing-Unit）方案"><a href="#二、MCU（Multipoint-Conferencing-Unit）方案" class="headerlink" title="二、MCU（Multipoint Conferencing Unit）方案"></a>二、MCU（Multipoint Conferencing Unit）方案</h2><p>该方案由一个服务器和多个终端组成一个星形结构。MCU 主要的处理逻辑是：接收每个共享端的音视频流，经过解码、与其他解码后的音视频进行混流、重新编码，之后再将混好的音视频流发送给房间里的所有人。</p>
+<p><img data-src="http://img.zhaoweiguo.com/uPic/2022/03/multi-MCU1.png" alt="MCU方案架构图"></p>
+<p>实际上服务器端就是一个音视频混合器，这种方案服务器的压力会非常大。MCU 技术在视频会议领域出现得非常早，目前技术也非常成熟，主要用在硬件视频会议领域。</p>
+<h2 id="三、SFU（Selective-Forwarding-Unit）方案"><a href="#三、SFU（Selective-Forwarding-Unit）方案" class="headerlink" title="三、SFU（Selective Forwarding Unit）方案"></a>三、SFU（Selective Forwarding Unit）方案</h2><p>该方案也是由一个服务器和多个终端组成，但与 MCU 不同的是，SFU 不对音视频进行混流，收到某个终端共享的音视频流后，就直接将该音视频流转发给房间内的其他终端。</p>
+<p><img data-src="http://img.zhaoweiguo.com/uPic/2022/03/download.png" alt="SFU 的拓扑机构和功能模型"></p>
+<p>它实际上就是一个音视频路由转发器，并且它可以根据终端下行网络状况做一些流控，可以根据当前带宽情况、网络延时情况，选择性地丢弃一些媒体数据，保证通信的连续性。下面详细介绍一下。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>相比 Mesh方案，SFU 和 MCU 都需要中转服务器。由于 MCU 方案需要将多路视频混合成一路，需要大量的运算，对 CPU 资源的消耗很大，一般需要专门的硬件进行处理。而 SFU 方案由于不需要多路视频混编，所以对 CPU 的需求没有那么大，但它可能导致在多路视频的情况下，会有在同一时刻，不同的人看到的画面不一致的问题。</p>
+<p>所以，如果你不想用中转服务器，就选择 Mesh方案；如果你对多路视频的一致性要求高，有专门硬件，建议选择 MCU 模式；其他情况建议使用 SFU 模式。</p>
+<h1 id="SFU方案"><a href="#SFU方案" class="headerlink" title="SFU方案"></a>SFU方案</h1><p>SFU 方案根据在网络延时时丢弃媒体数据的方式不同，分为 Simulcast 模式和 SVC 模式，</p>
+<h2 id="Simulcast-模式"><a href="#Simulcast-模式" class="headerlink" title="Simulcast 模式"></a>Simulcast 模式</h2><p><img data-src="http://img.zhaoweiguo.com/uPic/2022/03/SFU-Simulcast1.png" alt="Simulcast 模式"></p>
+<p>所谓 Simulcast 模式就是指视频的共享者可以同时向 SFU 发送多路不同分辨率的视频流（一般为三路，如 1080P、720P、360P）。而 SFU 可以将接收到的三路流根据各终端的情况而选择其中某一路发送出去。</p>
+<p>例如，由于 PC 端网络特别好，给 PC 端发送 1080P 分辨率的视频；而移动网络较差，就给 Phone 发送 360P 分辨率的视频。</p>
+<h2 id="SVC-模式"><a href="#SVC-模式" class="headerlink" title="SVC 模式"></a>SVC 模式</h2><p><img data-src="http://img.zhaoweiguo.com/uPic/2022/03/SFU-SVC1-20220318234337964.png" alt="SVC 模式"></p>
+<p>SVC 是可伸缩的视频编码模式。它在视频编码时将视频分成多层 —— 核心层、中间层和扩展层。上层依赖于底层，而且越上层越清晰，越底层越模糊。在带宽不好的情况下，可以只传输底层，即核心层，在带宽充足的情况下，可以将三层全部传输过去。</p>
+<h1 id="部署多方视频会议服务"><a href="#部署多方视频会议服务" class="headerlink" title="部署多方视频会议服务"></a>部署多方视频会议服务</h1><p>基于上面的分析，我们实现一个基于SFU 方案的项目。开源项目包括 <span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL2x5bmNraWEvbGljb2Rl">Licode<i class="fa fa-external-link-alt"></i></span>、<span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL21lZXRlY2hvL2phbnVzLWdhdGV3YXk=">Janus-gateway<i class="fa fa-external-link-alt"></i></span>、<span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL3ZlcnNhdGljYS9tZWRpYXNvdXAv">MediaSoup<i class="fa fa-external-link-alt"></i></span>、<span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL21lZG9vemUvbWVkaWEtc2VydmVy">Medooze<i class="fa fa-external-link-alt"></i></span>。这儿我们部署基于 Medooze的 Demo 项目<span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL21lZG9vemUvc2Z1">SFU<i class="fa fa-external-link-alt"></i></span>。</p>
+<h2 id="运行环境准备"><a href="#运行环境准备" class="headerlink" title="运行环境准备"></a>运行环境准备</h2><ul>
+<li>操作系统：Ubuntu 18.04</li>
+<li>语言环境：NodeJS</li>
+</ul>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-<span class="builtin-name">get</span> update &amp;&amp; apt-<span class="builtin-name">get</span> install -y nodejs npm git-core</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装依赖"><a href="#安装依赖" class="headerlink" title="安装依赖"></a>安装依赖</h2><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https:<span class="regexp">//gi</span>thub.com<span class="regexp">/medooze/</span>sfu.git</span><br><span class="line">cd sfu</span><br><span class="line">npm install</span><br></pre></td></tr></table></figure>
+
+<h2 id="生成证书"><a href="#生成证书" class="headerlink" title="生成证书"></a>生成证书</h2><p>生成证书这部分参考<a href="https://blog.zhaoweiguo.com/2022/03/08/webrtc/introduce/">尝鲜：如何搭建一个简单的webrtc服务器</a>。证书这块未来有时间集成整理一下。</p>
+<h2 id="启动服务"><a href="#启动服务" class="headerlink" title="启动服务"></a>启动服务</h2><figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">node</span> <span class="title">index</span>.js IP</span><br></pre></td></tr></table></figure>
+
+<h2 id="Docker-服务"><a href="#Docker-服务" class="headerlink" title="Docker 服务"></a>Docker 服务</h2><h3 id="Dockerfile-文件"><a href="#Dockerfile-文件" class="headerlink" title="Dockerfile 文件"></a>Dockerfile 文件</h3><figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> ubuntu:<span class="number">18.04</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get update &amp;&amp; apt-get upgrade &amp;&amp; apt install -y nodejs npm git-core python3 wget curl &amp;&amp; npm install -g n &amp;&amp; n stable</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> <span class="built_in">hash</span> -r &amp;&amp; npm install -g npm@8.5.5</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> git <span class="built_in">clone</span> https://github.com/medooze/sfu</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /sfu</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> npm install</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> openssl req -x509 -out ./server.cert -keyout ./server.key   -newkey rsa:2048 -nodes -sha256   -subj <span class="string">&#x27;/CN=*&#x27;</span></span></span><br><span class="line"><span class="keyword">ENTRYPOINT</span><span class="bash"> [<span class="string">&quot;node&quot;</span> <span class="string">&quot;index.js&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Docker-镜像"><a href="#Docker-镜像" class="headerlink" title="Docker 镜像"></a>Docker 镜像</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// 可以用上面的 Dockerfile 文件自己打镜像，也可用用我已经打包好的镜像</span><br><span class="line">docker pull zhaowg/sfu:v1</span><br></pre></td></tr></table></figure>
+
+<h3 id="Docker-版使用方法"><a href="#Docker-版使用方法" class="headerlink" title="Docker 版使用方法"></a>Docker 版使用方法</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it --net=host  zhaowg/sfu:v1 &lt;IP&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li>极客时间-从 0 打造音视频直播系统: https://time.geekbang.org/column/intro/100031801</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhaoweiguo
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://blog.zhaoweiguo.com/2022/03/18/webrtc/SFU/" title="尝鲜：搭建一个多对多的音视频通信服务">http://blog.zhaoweiguo.com/2022/03/18/webrtc/SFU/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/introduce/" rel="tag"># introduce</a>
+              <a href="/tags/webrtc/" rel="tag"># webrtc</a>
+              <a href="/tags/SFU/" rel="tag"># SFU</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/03/08/webrtc/introduce/" rel="prev" title="尝鲜：如何搭建一个简单的webrtc服务器">
+      <i class="fa fa-chevron-left"></i> 尝鲜：如何搭建一个简单的webrtc服务器
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%9A%E6%96%B9%E9%9F%B3%E8%A7%86%E9%A2%91%E9%80%9A%E4%BF%A1%E4%B8%89%E7%A7%8D%E6%9E%B6%E6%9E%84%E6%96%B9%E6%A1%88"><span class="nav-number">2.</span> <span class="nav-text">多方音视频通信三种架构方案</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81Mesh-%E6%96%B9%E6%A1%88"><span class="nav-number">2.1.</span> <span class="nav-text">一、Mesh 方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81MCU%EF%BC%88Multipoint-Conferencing-Unit%EF%BC%89%E6%96%B9%E6%A1%88"><span class="nav-number">2.2.</span> <span class="nav-text">二、MCU（Multipoint Conferencing Unit）方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81SFU%EF%BC%88Selective-Forwarding-Unit%EF%BC%89%E6%96%B9%E6%A1%88"><span class="nav-number">2.3.</span> <span class="nav-text">三、SFU（Selective Forwarding Unit）方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">2.4.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SFU%E6%96%B9%E6%A1%88"><span class="nav-number">3.</span> <span class="nav-text">SFU方案</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Simulcast-%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.1.</span> <span class="nav-text">Simulcast 模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SVC-%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.2.</span> <span class="nav-text">SVC 模式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2%E5%A4%9A%E6%96%B9%E8%A7%86%E9%A2%91%E4%BC%9A%E8%AE%AE%E6%9C%8D%E5%8A%A1"><span class="nav-number">4.</span> <span class="nav-text">部署多方视频会议服务</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-number">4.1.</span> <span class="nav-text">运行环境准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E4%BE%9D%E8%B5%96"><span class="nav-number">4.2.</span> <span class="nav-text">安装依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E8%AF%81%E4%B9%A6"><span class="nav-number">4.3.</span> <span class="nav-text">生成证书</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E6%9C%8D%E5%8A%A1"><span class="nav-number">4.4.</span> <span class="nav-text">启动服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker-%E6%9C%8D%E5%8A%A1"><span class="nav-number">4.5.</span> <span class="nav-text">Docker 服务</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Dockerfile-%E6%96%87%E4%BB%B6"><span class="nav-number">4.5.1.</span> <span class="nav-text">Dockerfile 文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Docker-%E9%95%9C%E5%83%8F"><span class="nav-number">4.5.2.</span> <span class="nav-text">Docker 镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Docker-%E7%89%88%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><span class="nav-number">4.5.3.</span> <span class="nav-text">Docker 版使用方法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhaoweiguo"
+      src="/images/icon.png">
+  <p class="site-author-name" itemprop="name">zhaoweiguo</p>
+  <div class="site-description" itemprop="description">Just do it now.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8=" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhaoweiguo"><i class="github fa-fw"></i></span>
+      </span>
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="bWFpbHRvOnN1cHBvcnRAemhhb3dlaWd1by5jb20=" title="E-Mail → mailto:support@zhaoweiguo.com"><i class="envelope fa-fw"></i></span>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <span class="exturl cc-opacity" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><span class="exturl" data-url="aHR0cHM6Ly9iZWlhbi5taWl0Lmdvdi5jbg==">京ICP备16018553号 </span>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoweiguo</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">185k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:49</span>
+</div>
+  <div class="powered-by">由 <span class="exturl theme-link" data-url="aHR0cHM6Ly9oZXhvLmlv">Hexo</span> & <span class="exturl theme-link" data-url="aHR0cHM6Ly90aGVtZS1uZXh0Lm9yZw==">NexT.Gemini</span> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '',
+      clientSecret: '',
+      repo        : 'zhaoweiguo.github.io',
+      owner       : '',
+      admin       : [''],
+      id          : 'c058f647896ed5d8e44c9c0bde2c9657',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.zhaoweiguo.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":true,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true,"width":300,"b2t":true,"scrollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="参考项目: https:&#x2F;&#x2F;github.com&#x2F;klarna&#x2F;brod https:&#x2F;&#x2F;github.com&#x2F;erlang-lager&#x2F;lager http:&#x2F;&#x2F;kafka.apache.org https:&#x2F;&#x2F;github.com&#x2F;newforks&#x2F;lager_kafka_backend  测试目的: 项目使用lager写日志时，如果日志量非常大，会导致消息队列堆积，进而引起更严重的问题, 于">
+<meta property="og:type" content="article">
+<meta property="og:title" content="lager实战2:写文件、写kafka的性能测试">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2018/11/21/erlang/erlang-tune-lager2/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="参考项目: https:&#x2F;&#x2F;github.com&#x2F;klarna&#x2F;brod https:&#x2F;&#x2F;github.com&#x2F;erlang-lager&#x2F;lager http:&#x2F;&#x2F;kafka.apache.org https:&#x2F;&#x2F;github.com&#x2F;newforks&#x2F;lager_kafka_backend  测试目的: 项目使用lager写日志时，如果日志量非常大，会导致消息队列堆积，进而引起更严重的问题, 于">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-11-21T05:22:09.000Z">
+<meta property="article:modified_time" content="2022-03-18T06:39:03.029Z">
+<meta property="article:author" content="赵卫国">
+<meta property="article:tag" content="erlang">
+<meta property="article:tag" content="lager">
+<meta property="article:tag" content="tune">
+<meta property="article:tag" content="kafka">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.zhaoweiguo.com/2018/11/21/erlang/erlang-tune-lager2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>lager实战2:写文件、写kafka的性能测试 | 新溪blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">新溪blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">新溪-gordon之胡写乱画</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="bullhorn fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档<span class="badge">37</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">13</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">42</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/11/21/erlang/erlang-tune-lager2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.png">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          lager实战2:写文件、写kafka的性能测试
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-11-21 13:22:09" itemprop="dateCreated datePublished" datetime="2018-11-21T13:22:09+08:00">2018-11-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-18 14:39:03" itemprop="dateModified" datetime="2022-03-18T14:39:03+08:00">2022-03-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/tune/" itemprop="url" rel="index"><span itemprop="name">tune</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>0</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>参考项目:</p>
+<pre><code>https://github.com/klarna/brod
+https://github.com/erlang-lager/lager
+http://kafka.apache.org
+https://github.com/newforks/lager_kafka_backend
+</code></pre>
+<p>测试目的:</p>
+<pre><code>项目使用lager写日志时，如果日志量非常大，会导致消息队列堆积，进而引起更严重的问题,
+于是想着增加一kafka的backend:
+  一是为了把所有日志合并在一起
+  二是为了增加写入效率
+</code></pre>
+<p>测试对比:</p>
+<pre><code>1. 测试file写入文件中带delayed_write与不带的性能对比
+2. 测试brod写kafka与file写入的性能对比
+3. 测试lager_kafka_backend与lager_file_backend的性能对比
+</code></pre>
+<p>测试内容:</p>
+<pre><code>写入数据: &lt;&lt;&quot;123456789qwertyuiopasdfghjklzxcvbnm&quot;&gt;&gt;
+执行Module:loop(Times, Num).
+其中:
+  Times: 为执行次数
+  Num: 每次执行写入数据次数
+</code></pre>
+<p>代码实例:</p>
+<pre><code>1. 普通文件写入: 
+https://github.com/zhaoweiguo/demo-erlang/blob/6829ca950f2ea16859d3be23a1396aa3d1fdaf2d/apps/demo_lager/src/speed_file.erl
+
+2. 带delayed_write文件写入:
+https://github.com/zhaoweiguo/demo-erlang/blob/6829ca950f2ea16859d3be23a1396aa3d1fdaf2d/apps/demo_lager/src/speed_delayfile.erl
+
+3. 普通写kafka(注:要本地启动kafka server)
+https://github.com/zhaoweiguo/demo-erlang/blob/6829ca950f2ea16859d3be23a1396aa3d1fdaf2d/apps/demo_lager/src/speed_brod.erl
+
+4. 通过lager写入文件
+https://github.com/zhaoweiguo/demo-erlang/blob/6829ca950f2ea16859d3be23a1396aa3d1fdaf2d/apps/demo_lager/src/speed_lager_file.erl
+
+5. 通过lager写入kafka
+https://github.com/zhaoweiguo/demo-erlang/blob/6829ca950f2ea16859d3be23a1396aa3d1fdaf2d/apps/demo_lager/src/speed_lager_kafka.erl
+</code></pre>
+<p>测试结果:</p>
+<p>(demo_lager@127.0.0.1)3&gt; speed_file:loop(20, 20).</p>
+<pre><code>% 测试过程中文件写入不稳定,有时写入数据差10倍以上，原因不明
+time:384 | &#123;0,0,384&#125;
+time:833 | &#123;0,0,833&#125;
+time:2734 | &#123;0,2,734&#125;
+time:484 | &#123;0,0,484&#125;
+time:642 | &#123;0,0,642&#125;
+time:483 | &#123;0,0,483&#125;
+time:609 | &#123;0,0,609&#125;
+time:582 | &#123;0,0,582&#125;
+time:844 | &#123;0,0,844&#125;
+time:795 | &#123;0,0,795&#125;
+time:506 | &#123;0,0,506&#125;
+time:1125 | &#123;0,1,125&#125;
+time:490 | &#123;0,0,490&#125;
+time:599 | &#123;0,0,599&#125;
+time:605 | &#123;0,0,605&#125;
+time:444 | &#123;0,0,444&#125;
+time:479 | &#123;0,0,479&#125;
+time:415 | &#123;0,0,415&#125;
+time:421 | &#123;0,0,421&#125;
+time:577 | &#123;0,0,577&#125;
+</code></pre>
+<p>(demo_lager@127.0.0.1)4&gt; speed_delayfile:loop(20, 20).</p>
+<pre><code>time:39 | &#123;0,0,39&#125;
+time:98 | &#123;0,0,98&#125;
+time:78 | &#123;0,0,78&#125;
+time:86 | &#123;0,0,86&#125;
+time:83 | &#123;0,0,83&#125;
+time:149 | &#123;0,0,149&#125;
+time:51 | &#123;0,0,51&#125;
+time:461 | &#123;0,0,461&#125;
+time:85 | &#123;0,0,85&#125;
+time:58 | &#123;0,0,58&#125;
+time:56 | &#123;0,0,56&#125;
+time:108 | &#123;0,0,108&#125;
+time:60 | &#123;0,0,60&#125;
+time:87 | &#123;0,0,87&#125;
+time:62 | &#123;0,0,62&#125;
+time:58 | &#123;0,0,58&#125;
+time:151 | &#123;0,0,151&#125;
+time:417 | &#123;0,0,417&#125;
+time:75 | &#123;0,0,75&#125;
+time:109 | &#123;0,0,109&#125;
+</code></pre>
+<p>(demo_lager@127.0.0.1)14&gt; speed_brod:loop(20, 20).</p>
+<pre><code>time:2900 | &#123;0,2,900&#125;
+time:229 | &#123;0,0,229&#125;
+time:243 | &#123;0,0,243&#125;
+time:293 | &#123;0,0,293&#125;
+time:971 | &#123;0,0,971&#125;
+time:191 | &#123;0,0,191&#125;
+time:183 | &#123;0,0,183&#125;
+time:607 | &#123;0,0,607&#125;
+time:253 | &#123;0,0,253&#125;
+time:256 | &#123;0,0,256&#125;
+time:233 | &#123;0,0,233&#125;
+time:257 | &#123;0,0,257&#125;
+time:145 | &#123;0,0,145&#125;
+time:195 | &#123;0,0,195&#125;
+time:175 | &#123;0,0,175&#125;
+time:135 | &#123;0,0,135&#125;
+time:197 | &#123;0,0,197&#125;
+time:189 | &#123;0,0,189&#125;
+time:166 | &#123;0,0,166&#125;
+time:200 | &#123;0,0,200&#125;
+</code></pre>
+<p>(demo_lager@127.0.0.1)15&gt; speed_lager_kafka:loop(20, 20).</p>
+<pre><code>time:136 | &#123;0,0,136&#125;
+time:176 | &#123;0,0,176&#125;
+time:203 | &#123;0,0,203&#125;
+time:198 | &#123;0,0,198&#125;
+time:161 | &#123;0,0,161&#125;
+time:161 | &#123;0,0,161&#125;
+time:192 | &#123;0,0,192&#125;
+time:141 | &#123;0,0,141&#125;
+time:229 | &#123;0,0,229&#125;
+time:235 | &#123;0,0,235&#125;
+time:253 | &#123;0,0,253&#125;
+time:247 | &#123;0,0,247&#125;
+time:189 | &#123;0,0,189&#125;
+time:201 | &#123;0,0,201&#125;
+time:150 | &#123;0,0,150&#125;
+time:189 | &#123;0,0,189&#125;
+time:153 | &#123;0,0,153&#125;
+time:235 | &#123;0,0,235&#125;
+time:161 | &#123;0,0,161&#125;
+time:176 | &#123;0,0,176&#125;
+</code></pre>
+<p>(demo_lager@127.0.0.1)18&gt; speed_lager_file:loop(20, 20).</p>
+<pre><code>time:189 | &#123;0,0,189&#125;
+time:192 | &#123;0,0,192&#125;
+time:233 | &#123;0,0,233&#125;
+time:277 | &#123;0,0,277&#125;
+time:177 | &#123;0,0,177&#125;
+time:183 | &#123;0,0,183&#125;
+time:179 | &#123;0,0,179&#125;
+time:290 | &#123;0,0,290&#125;
+time:218 | &#123;0,0,218&#125;
+time:208 | &#123;0,0,208&#125;
+time:215 | &#123;0,0,215&#125;
+time:256 | &#123;0,0,256&#125;
+time:263 | &#123;0,0,263&#125;
+time:287 | &#123;0,0,287&#125;
+time:238 | &#123;0,0,238&#125;
+time:294 | &#123;0,0,294&#125;
+time:226 | &#123;0,0,226&#125;
+time:276 | &#123;0,0,276&#125;
+time:195 | &#123;0,0,195&#125;
+time:332 | &#123;0,0,332&#125;
+</code></pre>
+<p>结论:</p>
+<pre><code>1.直接写文件，加不加buffer影响很大
+2.直接写kafka，比不加buffer的快，但比加buffer的慢
+3.通过lager_file_backend与通过lager_kafka_backend性能差别不大
+4.通过lager_file_backend加不加buffer，影响不大
+5.可能是虚拟机原因，磁盘写入不稳定
+</code></pre>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhaoweiguo
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://blog.zhaoweiguo.com/2018/11/21/erlang/erlang-tune-lager2/" title="lager实战2:写文件、写kafka的性能测试">http://blog.zhaoweiguo.com/2018/11/21/erlang/erlang-tune-lager2/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/erlang/" rel="tag"># erlang</a>
+              <a href="/tags/lager/" rel="tag"># lager</a>
+              <a href="/tags/tune/" rel="tag"># tune</a>
+              <a href="/tags/kafka/" rel="tag"># kafka</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/11/09/erlang/erlang-source-analysis-lager6/" rel="prev" title="开源项目lager6-写一个lager的kafka插件">
+      <i class="fa fa-chevron-left"></i> 开源项目lager6-写一个lager的kafka插件
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/01/12/question-certificate-expired/" rel="next" title="网站证书过期导致的一系列问题">
+      网站证书过期导致的一系列问题 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhaoweiguo"
+      src="/images/icon.png">
+  <p class="site-author-name" itemprop="name">zhaoweiguo</p>
+  <div class="site-description" itemprop="description">Just do it now.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8=" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhaoweiguo"><i class="github fa-fw"></i></span>
+      </span>
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="bWFpbHRvOnN1cHBvcnRAemhhb3dlaWd1by5jb20=" title="E-Mail → mailto:support@zhaoweiguo.com"><i class="envelope fa-fw"></i></span>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <span class="exturl cc-opacity" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><span class="exturl" data-url="aHR0cHM6Ly9iZWlhbi5taWl0Lmdvdi5jbg==">京ICP备16018553号 </span>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoweiguo</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">185k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:49</span>
+</div>
+  <div class="powered-by">由 <span class="exturl theme-link" data-url="aHR0cHM6Ly9oZXhvLmlv">Hexo</span> & <span class="exturl theme-link" data-url="aHR0cHM6Ly90aGVtZS1uZXh0Lm9yZw==">NexT.Gemini</span> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '',
+      clientSecret: '',
+      repo        : 'zhaoweiguo.github.io',
+      owner       : '',
+      admin       : [''],
+      id          : 'c76de80e7577b8065ac3deaca81d839b',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

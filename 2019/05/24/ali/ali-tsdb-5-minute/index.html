@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.zhaoweiguo.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":true,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true,"width":300,"b2t":true,"scrollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="简介时序时空数据库（Time Series &amp; Spatial Temporal Database，简称 TSDB）是一种高性能、低成本、稳定可靠的在线时序时空数据库服务，提供高效读写、高压缩比存储、时序数据插值及聚合计算等服务，广泛应用于物联网（IoT）设备监控系统、企业能源管理系统（EMS）、生产安全监控系统和电力检测系统等行业场景；除此以外，还提供时空场景的查询和分析的能力。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="5分钟了解阿里时序时空数据库">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2019/05/24/ali/ali-tsdb-5-minute/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="简介时序时空数据库（Time Series &amp; Spatial Temporal Database，简称 TSDB）是一种高性能、低成本、稳定可靠的在线时序时空数据库服务，提供高效读写、高压缩比存储、时序数据插值及聚合计算等服务，广泛应用于物联网（IoT）设备监控系统、企业能源管理系统（EMS）、生产安全监控系统和电力检测系统等行业场景；除此以外，还提供时空场景的查询和分析的能力。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-05-24T03:19:13.000Z">
+<meta property="article:modified_time" content="2022-03-18T06:39:03.090Z">
+<meta property="article:author" content="赵卫国">
+<meta property="article:tag" content="aliyun">
+<meta property="article:tag" content="tsdb">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.zhaoweiguo.com/2019/05/24/ali/ali-tsdb-5-minute/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>5分钟了解阿里时序时空数据库 | 新溪blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">新溪blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">新溪-gordon之胡写乱画</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="bullhorn fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档<span class="badge">37</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">13</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">42</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2019/05/24/ali/ali-tsdb-5-minute/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.png">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          5分钟了解阿里时序时空数据库
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-05-24 11:19:13" itemprop="dateCreated datePublished" datetime="2019-05-24T11:19:13+08:00">2019-05-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-18 14:39:03" itemprop="dateModified" datetime="2022-03-18T14:39:03+08:00">2022-03-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/aliyun/" itemprop="url" rel="index"><span itemprop="name">aliyun</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>0</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>时序时空数据库（Time Series &amp; Spatial Temporal Database，简称 TSDB）是一种高性能、低成本、稳定可靠的在线时序时空数据库服务，提供高效读写、高压缩比存储、时序数据插值及聚合计算等服务，广泛应用于物联网（IoT）设备监控系统、企业能源管理系统（EMS）、生产安全监控系统和电力检测系统等行业场景；除此以外，还提供时空场景的查询和分析的能力。</p>
+<span id="more"></span>
+
+<h3 id="三个数据库"><a href="#三个数据库" class="headerlink" title="三个数据库"></a>三个数据库</h3><p>时序时空数据库文档最近经过几次大的变动，有点乱，看的时候注意一下。</p>
+<h5 id="时序数据库TSDB版"><a href="#时序数据库TSDB版" class="headerlink" title="时序数据库TSDB版"></a>时序数据库TSDB版</h5><p>经过阿里集团大规模验证的时序数据库，支持分布式集群架构水平扩展，支持千万物联网设备接入，基于自研压缩算法，具备高效压缩比。</p>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">- </span>针对时序数据优化，包括存储模型，多值数据模型，时序数据压缩、聚合、采样，高效压缩算法，列存，边缘一体化；</span><br><span class="line"><span class="bullet">- </span>具备高性能，内存优先数据处理，分布式MPP SQL并行计算，动态schema，实时流式数据计算引擎，海量时间线自适应索引；</span><br><span class="line"><span class="bullet">- </span>高可扩展，数据动态分区，水平扩展，动态弹性扩容，动态升降配规格；高可靠性，自动集群控制，线程级读写分离，多层数据备份，分级存储；</span><br><span class="line"><span class="bullet">- </span>瞄准的是大规模指标数据，事件数据场景</span><br></pre></td></tr></table></figure>
+
+<p>协议兼容OpenTSDB，但后面内核实现是阿里自研的。但还是完全可以把它当作OpenTSDB的阿里云版，参见 <span class="exturl" data-url="aHR0cHM6Ly9oZWxwLmFsaXl1bi5jb20vZG9jdW1lbnRfZGV0YWlsLzExMzM2OC5odG1s">相比OpenTSDB优势<i class="fa fa-external-link-alt"></i></span></p>
+<h5 id="InfluxDB®"><a href="#InfluxDB®" class="headerlink" title="InfluxDB®"></a>InfluxDB®</h5><p>不仅仅是一个数据库，更是一个监控系统，围绕采集，可视化，分析服务，事件和指标存储和计算系统；走的是tick生态，瞄准指标，事件，trace，日志，实时分析场景。</p>
+<p>InfluxDB®刚上线不久，现在还处在公测阶段。写入速度经测试，每次500条数据，每秒可以执行26次左右，平均速度达到1万/s，增加每次写入数据条数应该还能提高速度。另外，请求地址是外网，如果使用vpc网络速度应该还会加快不少。</p>
+<p>注意：InfluxDB在阿里云上有时间线限制(数据库级别最高1万)，时间线的定义参见后面简介。</p>
+<h5 id="时空数据库"><a href="#时空数据库" class="headerlink" title="时空数据库"></a>时空数据库</h5><p>时空数据库能够存储、管理包括时间序列以及空间地理位置相关的数据。时空数据是一种高维数据，具有时空数据模型、时空索引和时空算子，完全兼容SQL及SQL/MM标准，支持时空数据同业务数据一体化存储、无缝衔接，易于集成使用。</p>
+<p>时空数据库主要是空间相关的场景，比如热力图，店铺选址等等。</p>
+<h3 id="时序数据库简介-主要是InfluxDB"><a href="#时序数据库简介-主要是InfluxDB" class="headerlink" title="时序数据库简介(主要是InfluxDB)"></a>时序数据库简介(主要是InfluxDB)</h3><p>时序数据库英文全称为 Time Series Database，提供高效存取时序数据和统计分析功能的数据管理系统。主要的时序数据库包括OpenTSDB、Druid、InfluxDB以及Beringei这四个。本人主要了解一点OpenTSDB和InfluxDB，不过时序数据库有很多共性。</p>
+<h5 id="基本名词"><a href="#基本名词" class="headerlink" title="基本名词"></a>基本名词</h5><p>measurement:</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tag，field和<span class="type">time</span>列的容器</span><br><span class="line">对InfluxDB: measurement在概念上类似于传统DB的<span class="keyword">table</span>（表格）</span><br><span class="line">  从原理上讲更像<span class="keyword">SQL</span>中表的概念，这和其他很多时序数据库有些不同</span><br><span class="line">对其他时序DB: Measurement与Metric等同</span><br></pre></td></tr></table></figure>
+
+<p>field(数值列):</p>
+<figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">TSDB</span> For InfluxDB®中不能没有<span class="meta">field</span>。</span><br><span class="line">注意:<span class="meta">field</span>是没有索引的</span><br><span class="line">在某种程度上，可以把<span class="meta">field</span>理解为k/v表的value</span><br></pre></td></tr></table></figure>
+
+<p>tag(维度列):</p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">tag</span>不是必须要有的字段</span><br><span class="line"><span class="keyword">tag</span>是被索引的，这意味着以<span class="keyword">tag</span>作为过滤条件的查询会更快</span><br><span class="line">在某种程度上，可以把field理解为k/v表的key</span><br></pre></td></tr></table></figure>
+
+<p>timestamp(时间戳):</p>
+<figure class="highlight subunit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">默认使用服务器的本地时间戳</span><br><span class="line">时间戳是UNIX时间戳,单位:纳秒</span><br><span class="line">最小的有效时间戳是<span class="string">-9223372036854775806</span>或1677<span class="string">-09</span><span class="string">-21</span>T00:12:43.145224194Z</span><br><span class="line">最大的有效时间戳是9223372036854775806或2262<span class="string">-04</span><span class="string">-11</span>T23:47:16.854775806Z</span><br></pre></td></tr></table></figure>
+
+<p>point（数据点）:</p>
+<figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">由时间线（series）中包含的<span class="meta">field</span>组成。每个数据点由它的时间线和时间戳（timestamp）唯一标识</span><br><span class="line">您不能在同一时间线存储多个有相同时间戳的数据点</span><br></pre></td></tr></table></figure>
+
+
+<h5 id="Series-时间线"><a href="#Series-时间线" class="headerlink" title="Series(时间线)"></a>Series(时间线)</h5><p>Series是InfluxDB中最重要的概念，时序数据的时间线就是:一个数据源采集的一个指标随着时间的流逝而源源不断地吐出数据这样形成的一条数据线称之为时间线。</p>
+<p>下图中有两个数据源，每个数据源会采集两种指标:</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Series由Measurement和Tags组合而成，</span><br><span class="line">Tags组合用来唯一标识Measurement</span><br><span class="line">就是说:</span><br><span class="line"><span class="bullet">1.</span> Measurement不同，就是不同的时间线</span><br><span class="line"><span class="bullet">2.</span> Measurement相同，Tags不同也是不同的时间线</span><br></pre></td></tr></table></figure>
+
+<h5 id="retention-policy（保留策略，简称RP）"><a href="#retention-policy（保留策略，简称RP）" class="headerlink" title="retention policy（保留策略，简称RP）"></a>retention policy（保留策略，简称RP）</h5><p>一个保留策略描述了:</p>
+<figure class="highlight excel"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">  <span class="number">1</span>.InfluxDB保存数据的时间（<span class="built_in">DURATION</span>）</span><br><span class="line">  <span class="number">2</span>.以及存储在集群中数据的副本数量（REPLICATION）</span><br><span class="line">  <span class="number">3</span>.指定ShardGroup <span class="built_in">Duration</span></span><br><span class="line">注<span class="symbol">:</span>复本系数（replication factors）不适用于单节点实例。</span><br><span class="line">autog<span class="symbol">en:</span>无限的存储时间并且复制系数设为<span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>RP创建语句如下:</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> RETENTION <span class="keyword">POLICY</span> <span class="keyword">ON</span> &lt;retention_policy_name&gt; <span class="keyword">ON</span> &lt;database_name&gt;</span><br><span class="line">DURATION &lt;duration&gt; <span class="keyword">REPLICATION</span> &lt;n&gt; [SHARD DURATION &lt;duration&gt; ] [<span class="keyword">DEFAULT</span>]</span><br><span class="line">实例:</span><br><span class="line"><span class="keyword">CREATE</span> RETENTION <span class="keyword">POLICY</span> &quot;one_day_only&quot; <span class="keyword">ON</span> &quot;water_database&quot;</span><br><span class="line">DURATION <span class="number">1</span>d <span class="keyword">REPLICATION</span> <span class="number">1</span> SHARD DURATION <span class="number">1</span>h <span class="keyword">DEFAULT</span></span><br></pre></td></tr></table></figure>
+<p>写入时指定rp进行写入:</p>
+<figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">% 如果没有指定任何RP，则使用默认的RP</span><br><span class="line">curl -X POST &#x27;http://localhost:<span class="number">8086</span>/write?db=mydb&amp;rp=six_month_rollup&#x27;</span><br><span class="line">    --data-binary &#x27;disk,host=server01 value=<span class="number">442221834240</span>i <span class="number">14353621895756</span><span class="number">9218</span>2&#x27;</span><br></pre></td></tr></table></figure>
+
+<h5 id="Shard-Group"><a href="#Shard-Group" class="headerlink" title="Shard Group"></a>Shard Group</h5><p>Shard Group是InfluxDB中一个重要的逻辑概念:</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Shard <span class="keyword">Group</span>会包含多个Shard，每个Shard <span class="keyword">Group</span>只存储指定时间段的数据</span><br><span class="line">不同Shard <span class="keyword">Group</span>对应的时间段不会重合</span><br></pre></td></tr></table></figure>
+
+<p>每个Shard Group对应多长时间是通过Retention Policy中字段”SHARD DURATION”指定的:</p>
+<figure class="highlight excel"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">如果没有指定，也可以通过Retention <span class="built_in">Duration</span>（数据过期时间）计算出来，两者的对应关系为<span class="symbol">:</span></span><br><span class="line"></span><br><span class="line">Retention <span class="built_in">Duration</span>              SHARD <span class="built_in">DURATION</span></span><br><span class="line">&lt;<span class="number">2</span> <span class="built_in">days</span>                             <span class="number">1</span>h</span><br><span class="line">&gt;=<span class="number">2</span><span class="built_in">days</span> <span class="built_in">and</span> &lt;=<span class="number">6</span><span class="built_in">month</span>                <span class="number">1</span><span class="built_in">day</span></span><br><span class="line">&gt;<span class="number">6</span><span class="built_in">month</span>                             <span class="number">7</span><span class="built_in">day</span></span><br></pre></td></tr></table></figure>
+
+<p>Shard:</p>
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">类似于<span class="variable">HBase</span>中<span class="built_in">Region</span>，<span class="variable">Kudu</span>中<span class="variable">Tablet</span>的概念</span><br><span class="line"><span class="number">1.</span> <span class="variable">Shard</span>是<span class="variable">InfluxDB</span>的存储引擎实现，具体称之为<span class="variable">TSM</span><span class="punctuation">(</span><span class="variable">Time</span> <span class="built_in">Sort</span> <span class="built_in">Merge</span> <span class="variable">Tree</span><span class="punctuation">)</span> <span class="variable">Engine</span></span><br><span class="line">    负责数据的编码存储、读写服务等。</span><br><span class="line"><span class="variable">TSM</span>类似于<span class="variable">LSM</span>，因此<span class="variable">Shard</span>和<span class="variable">HBase</span> <span class="built_in">Region</span>一样包含<span class="variable">Cache</span>、<span class="variable">WAL</span>以及<span class="variable">Data</span> <span class="built_in">File</span>等各个组件，</span><br><span class="line">    也会有<span class="variable">flush</span>、<span class="variable">compaction</span>等这类数据操作</span><br><span class="line"><span class="number">2.</span> <span class="variable">Shard</span> <span class="variable">Group</span>对数据按时间进行了分区</span><br><span class="line">    <span class="variable">InfluxDB</span>采用了<span class="built_in">Hash</span>分区的方法将落到同一个<span class="variable">Shard</span> <span class="variable">Group</span>中的数据再次进行了一次分区</span><br><span class="line">    <span class="variable">InfluxDB</span>是根据<span class="variable">hash</span><span class="punctuation">(</span><span class="built_in">Series</span><span class="punctuation">)</span>将数据映射到不同的<span class="variable">Shard</span><span class="operator">,</span>而非根据<span class="variable">Measurement</span>进行<span class="variable">hash</span>映射</span><br></pre></td></tr></table></figure>
+
+<h3 id="InfluxQL"><a href="#InfluxQL" class="headerlink" title="InfluxQL"></a>InfluxQL</h3><h5 id="行协议"><a href="#行协议" class="headerlink" title="行协议"></a>行协议</h5><p>格式:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">measurement</span>&gt;</span>[,<span class="tag">&lt;<span class="name">tag_key</span>&gt;</span>=<span class="tag">&lt;<span class="name">tag_value</span>&gt;</span>[,<span class="tag">&lt;<span class="name">tag_key</span>&gt;</span>=<span class="tag">&lt;<span class="name">tag_value</span>&gt;</span>]] </span><br><span class="line">  <span class="tag">&lt;<span class="name">field_key</span>&gt;</span>=<span class="tag">&lt;<span class="name">field_value</span>&gt;</span>[,<span class="tag">&lt;<span class="name">field_key</span>&gt;</span>=<span class="tag">&lt;<span class="name">field_value</span>&gt;</span>] [<span class="tag">&lt;<span class="name">timestamp</span>&gt;</span>]</span><br></pre></td></tr></table></figure>
+
+<p>以下是符合格式的数据写入TSDB For InfluxDB®的示例：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1. cpu,<span class="attribute">host</span>=serverA,region=us_west <span class="attribute">value</span>=0.64</span><br><span class="line">2. payment,<span class="attribute">device</span>=mobile,product=Notepad,method=credit <span class="attribute">billed</span>=33,licenses=3i 1434067467100293230</span><br><span class="line">3. stock,<span class="attribute">symbol</span>=AAPL <span class="attribute">bid</span>=127.46,ask=127.48</span><br><span class="line">4. temperature,<span class="attribute">machine</span>=unit42,type=assembly <span class="attribute">external</span>=25,internal=37 1434067467000000000</span><br></pre></td></tr></table></figure>
+
+<h5 id="登录"><a href="#登录" class="headerlink" title="登录"></a>登录</h5><figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// 登录</span><br><span class="line">$&gt; influx -ssl -username &lt;账号名称&gt; -<span class="keyword">password</span> &lt;密码&gt; -host &lt;网络地址&gt; -port <span class="number">3242</span></span><br><span class="line">// 创建用户</span><br><span class="line">&gt; <span class="keyword">create</span> <span class="keyword">user</span> gordon <span class="keyword">with</span> <span class="keyword">password</span> <span class="string">&#x27;1QAZ2wsx&#x27;</span></span><br><span class="line">// 赋值权限</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">all</span> <span class="keyword">privileges</span> <span class="keyword">to</span> gordon</span><br><span class="line">// 创建数据库</span><br><span class="line"><span class="keyword">create</span> <span class="keyword">database</span> testdb</span><br></pre></td></tr></table></figure>
+
+<h5 id="基本QL"><a href="#基本QL" class="headerlink" title="基本QL"></a>基本QL</h5><figure class="highlight gauss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span> <span class="meta"># 显示时间线</span></span><br><span class="line"><span class="keyword">show</span> series</span><br><span class="line"><span class="number">2.</span> <span class="meta"># 显示度量</span></span><br><span class="line"><span class="keyword">show</span> measurements</span><br><span class="line"><span class="number">3.</span> <span class="meta"># 显示Tag的Key</span></span><br><span class="line"><span class="keyword">show</span> tag keys</span><br><span class="line"><span class="number">4.</span> <span class="meta"># 显示数据字段的Key</span></span><br><span class="line"><span class="keyword">show</span> field keys</span><br></pre></td></tr></table></figure>
+
+<p>查询:</p>
+<figure class="highlight axapta"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span> <span class="keyword">select</span> * <span class="keyword">from</span> metrics</span><br><span class="line"><span class="number">2.</span> show tag keys <span class="keyword">from</span> metrics</span><br><span class="line"><span class="number">3.</span> show field keys <span class="keyword">from</span> metrics</span><br><span class="line"></span><br><span class="line"><span class="meta"># 查看自定度量的数据, 里面的相关字段，官方建议使用“双引号”标注出来</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="string">&quot;CPU&quot;</span> <span class="keyword">order</span> <span class="keyword">by</span> time <span class="keyword">desc</span></span><br><span class="line"></span><br><span class="line"><span class="meta"># 查看指定的Field和Tag</span></span><br><span class="line"><span class="keyword">select</span> <span class="string">&quot;load1&quot;</span>,<span class="string">&quot;role&quot;</span> <span class="keyword">from</span> <span class="string">&quot;CPU&quot;</span> <span class="keyword">order</span> <span class="keyword">by</span> time <span class="keyword">desc</span></span><br><span class="line"></span><br><span class="line"><span class="meta"># 只查看Field</span></span><br><span class="line"><span class="keyword">select</span> *::field <span class="keyword">from</span> <span class="string">&quot;CPU&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="meta"># 查询指定Tag的数据，注意，Where子句的字符串值要使用“单引号”，字符串值</span></span><br><span class="line"><span class="meta"># 如果没有使用引号或者使用了双引号，都不会有任何值的返回</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="string">&quot;CPU&quot;</span> <span class="keyword">where</span> role = <span class="string">&#x27;FrontServer&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="meta"># 查询Field中，load1 &gt; 20 的所有数据</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="string">&quot;CPU&quot;</span> <span class="keyword">where</span> <span class="string">&quot;load1&quot;</span> &gt; <span class="number">20</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>插入:</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INSERT weather,<span class="attribute">location</span>=us-midwest <span class="attribute">temperature</span>=82 1465839830100400200</span><br></pre></td></tr></table></figure>
+
+<p>基本运算:</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># 执行基本的运算</span><br><span class="line"><span class="keyword">select</span> (&quot;load1&quot; * <span class="number">2</span>) + <span class="number">0.5</span> <span class="keyword">from</span> &quot;CPU&quot;</span><br><span class="line"></span><br><span class="line">// <span class="keyword">SELECT</span>语句支持使用基本的数学运算符，例如，+、-、/、*和()等等。</span><br><span class="line"><span class="keyword">SELECT</span> field_key1 + field_key2 <span class="keyword">AS</span> &quot;field_key_sum&quot;</span><br><span class="line">  <span class="keyword">FROM</span> &quot;measurement_name&quot; <span class="keyword">WHERE</span> <span class="type">time</span> &lt; now() - <span class="number">15</span>m</span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span> (key1 + key2) - (key3 + key4) <span class="keyword">AS</span> &quot;some_calculation&quot;</span><br><span class="line">  <span class="keyword">FROM</span> &quot;measurement_name&quot; <span class="keyword">WHERE</span> <span class="type">time</span> &lt; now() - <span class="number">15</span>m</span><br><span class="line"></span><br><span class="line">// 使用聚合函数计算百分比:</span><br><span class="line"><span class="keyword">SELECT</span> (sum(field_key1) / sum(field_key2)) * <span class="number">100</span> <span class="keyword">AS</span> &quot;calculated_percentage&quot;</span><br><span class="line">  <span class="keyword">FROM</span> &quot;measurement_name&quot; <span class="keyword">WHERE</span> <span class="type">time</span> &lt; now() - <span class="number">15</span>m <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="type">time</span>(<span class="number">1</span>m)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhaoweiguo
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://blog.zhaoweiguo.com/2019/05/24/ali/ali-tsdb-5-minute/" title="5分钟了解阿里时序时空数据库">http://blog.zhaoweiguo.com/2019/05/24/ali/ali-tsdb-5-minute/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/aliyun/" rel="tag"># aliyun</a>
+              <a href="/tags/tsdb/" rel="tag"># tsdb</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/05/05/ali/ali-log-5-minute/" rel="prev" title="5分钟了解阿里云日志平台">
+      <i class="fa fa-chevron-left"></i> 5分钟了解阿里云日志平台
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/07/24/k8s/k8s-usage1-simple/" rel="next" title="kubenates 项目初体验1——最简单项目">
+      kubenates 项目初体验1——最简单项目 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%89%E4%B8%AA%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">2.</span> <span class="nav-text">三个数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%97%B6%E5%BA%8F%E6%95%B0%E6%8D%AE%E5%BA%93TSDB%E7%89%88"><span class="nav-number">2.0.1.</span> <span class="nav-text">时序数据库TSDB版</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#InfluxDB%C2%AE"><span class="nav-number">2.0.2.</span> <span class="nav-text">InfluxDB®</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%97%B6%E7%A9%BA%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">2.0.3.</span> <span class="nav-text">时空数据库</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%B6%E5%BA%8F%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AE%80%E4%BB%8B-%E4%B8%BB%E8%A6%81%E6%98%AFInfluxDB"><span class="nav-number">3.</span> <span class="nav-text">时序数据库简介(主要是InfluxDB)</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E5%90%8D%E8%AF%8D"><span class="nav-number">3.0.1.</span> <span class="nav-text">基本名词</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Series-%E6%97%B6%E9%97%B4%E7%BA%BF"><span class="nav-number">3.0.2.</span> <span class="nav-text">Series(时间线)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#retention-policy%EF%BC%88%E4%BF%9D%E7%95%99%E7%AD%96%E7%95%A5%EF%BC%8C%E7%AE%80%E7%A7%B0RP%EF%BC%89"><span class="nav-number">3.0.3.</span> <span class="nav-text">retention policy（保留策略，简称RP）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Shard-Group"><span class="nav-number">3.0.4.</span> <span class="nav-text">Shard Group</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#InfluxQL"><span class="nav-number">4.</span> <span class="nav-text">InfluxQL</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%A1%8C%E5%8D%8F%E8%AE%AE"><span class="nav-number">4.0.1.</span> <span class="nav-text">行协议</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%99%BB%E5%BD%95"><span class="nav-number">4.0.2.</span> <span class="nav-text">登录</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%9F%BA%E6%9C%ACQL"><span class="nav-number">4.0.3.</span> <span class="nav-text">基本QL</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhaoweiguo"
+      src="/images/icon.png">
+  <p class="site-author-name" itemprop="name">zhaoweiguo</p>
+  <div class="site-description" itemprop="description">Just do it now.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8=" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhaoweiguo"><i class="github fa-fw"></i></span>
+      </span>
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="bWFpbHRvOnN1cHBvcnRAemhhb3dlaWd1by5jb20=" title="E-Mail → mailto:support@zhaoweiguo.com"><i class="envelope fa-fw"></i></span>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <span class="exturl cc-opacity" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><span class="exturl" data-url="aHR0cHM6Ly9iZWlhbi5taWl0Lmdvdi5jbg==">京ICP备16018553号 </span>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoweiguo</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">185k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:49</span>
+</div>
+  <div class="powered-by">由 <span class="exturl theme-link" data-url="aHR0cHM6Ly9oZXhvLmlv">Hexo</span> & <span class="exturl theme-link" data-url="aHR0cHM6Ly90aGVtZS1uZXh0Lm9yZw==">NexT.Gemini</span> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '',
+      clientSecret: '',
+      repo        : 'zhaoweiguo.github.io',
+      owner       : '',
+      admin       : [''],
+      id          : '4738196c80d683e62926a57bdabcbd74',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

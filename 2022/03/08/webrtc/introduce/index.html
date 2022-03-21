@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.zhaoweiguo.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":true,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true,"width":300,"b2t":true,"scrollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="前言前几天我一朋友问我有关webrtc的事，简单了解了下相关知识，搭建了一个webrtc的服务，以及经历的各种踩坑事件，感觉踩坑主要是Python、Node、OpenSSL等版本问题和证书问题导致。本来以为很简单的搭建，但在搭建的过程中遇到各种阻碍，写一篇文章梳理一下。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="尝鲜：如何搭建一个简单的webrtc服务器">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2022/03/08/webrtc/introduce/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="前言前几天我一朋友问我有关webrtc的事，简单了解了下相关知识，搭建了一个webrtc的服务，以及经历的各种踩坑事件，感觉踩坑主要是Python、Node、OpenSSL等版本问题和证书问题导致。本来以为很简单的搭建，但在搭建的过程中遇到各种阻碍，写一篇文章梳理一下。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img.zhaoweiguo.com/blog/webrtcs/architect1.png">
+<meta property="og:image" content="https://img.zhaoweiguo.com/blog/webrtcs/web-show1.png">
+<meta property="og:image" content="https://img.zhaoweiguo.com/blog/webrtcs/web-show2.png">
+<meta property="og:image" content="https://img.zhaoweiguo.com/blog/webrtcs/web-show4.jpg">
+<meta property="og:image" content="https://img.zhaoweiguo.com/blog/webrtcs/web-show5.jpg">
+<meta property="article:published_time" content="2022-03-08T03:46:32.000Z">
+<meta property="article:modified_time" content="2022-03-21T11:41:12.426Z">
+<meta property="article:author" content="赵卫国">
+<meta property="article:tag" content="introduce">
+<meta property="article:tag" content="webrtc">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img.zhaoweiguo.com/blog/webrtcs/architect1.png">
+
+<link rel="canonical" href="http://blog.zhaoweiguo.com/2022/03/08/webrtc/introduce/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>尝鲜：如何搭建一个简单的webrtc服务器 | 新溪blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">新溪blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">新溪-gordon之胡写乱画</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="bullhorn fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档<span class="badge">37</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">13</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">42</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2022/03/08/webrtc/introduce/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.png">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          尝鲜：如何搭建一个简单的webrtc服务器
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-03-08 11:46:32" itemprop="dateCreated datePublished" datetime="2022-03-08T11:46:32+08:00">2022-03-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-21 19:41:12" itemprop="dateModified" datetime="2022-03-21T19:41:12+08:00">2022-03-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/introduce/" itemprop="url" rel="index"><span itemprop="name">introduce</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>0</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>前几天我一朋友问我有关webrtc的事，简单了解了下相关知识，搭建了一个webrtc的服务，以及经历的各种踩坑事件，感觉踩坑主要是Python、Node、OpenSSL等版本问题和证书问题导致。本来以为很简单的搭建，但在搭建的过程中遇到各种阻碍，写一篇文章梳理一下。</p>
+<span id="more"></span>
+
+<h1 id="WebRTC-简介"><a href="#WebRTC-简介" class="headerlink" title="WebRTC 简介"></a>WebRTC 简介</h1><p>WebRTC，名称源自网页即时通信（英语： Web Real-Time Communication ）的缩写，是一个支持网页浏览器进行实时语音对话或视频对话的 API。2010 年 5 月，Google 以 6820 万美元收购 VoIP 软件开发商 Global IP Solutions 的 GIPS 引擎，并改为名为 “WebRTC”。在 2011 年 6 月 1 日开源 WebRTC 并在 Google、Mozilla、Opera 支持下被纳入万维网联盟的 W3C 推荐标准。</p>
+<p>WebRTC的Demo项目: https://github.com/webrtc/apprtc</p>
+<h1 id="基于-WebRTC-的-1v1-视频实时通话架构"><a href="#基于-WebRTC-的-1v1-视频实时通话架构" class="headerlink" title="基于 WebRTC 的 1v1 视频实时通话架构"></a>基于 WebRTC 的 1v1 视频实时通话架构</h1><p>从大的方面可以分为 3 部分:</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1. WebRTC 终端</span><br><span class="line">    负责音视频采集、编解码、NAT 穿越、音视频数据传输</span><br><span class="line">2. Signal 服务器</span><br><span class="line">    负责信令处理，如加入房间、离开房间、媒体协商消息的传递等</span><br><span class="line">3. STUN/TURN 服务器</span><br><span class="line">    负责获取 WebRTC 终端在公网的<span class="built_in"> IP </span>地址，以及<span class="built_in"> NAT </span>穿越失败后的数据中转</span><br></pre></td></tr></table></figure>
+
+<p>架构图：<br><img data-src="https://img.zhaoweiguo.com/blog/webrtcs/architect1.png" alt="WebRTC 1 对 1 音视频实时通话过程示意图"></p>
+<h1 id="安装-WebRTC-服务器"><a href="#安装-WebRTC-服务器" class="headerlink" title="安装 WebRTC 服务器"></a>安装 WebRTC 服务器</h1><h2 id="运行环境准备"><a href="#运行环境准备" class="headerlink" title="运行环境准备"></a>运行环境准备</h2><ul>
+<li>操作系统：Ubuntu 16.04</li>
+<li>语言环境：NodeJS、Python、Golang</li>
+<li>其他软件：git、tar、wget、unzip</li>
+</ul>
+<p>命令安装:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">apt-get update </span><br><span class="line">apt-get upgrade</span><br><span class="line">apt install -y nodejs-legacy npm python python-webtest golang-go unzip git-core tar wget</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装依赖服务"><a href="#安装依赖服务" class="headerlink" title="安装依赖服务"></a>安装依赖服务</h2><p>安装google_appengine：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd /root/webrtc</span><br><span class="line">wget https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.40.zip</span><br><span class="line">unzip google_appengine_1.9.40.zip</span><br><span class="line">echo &quot;export PATH=$PATH:/root/webrtc/google_appengine&quot; &gt;&gt; /etc/profile</span><br></pre></td></tr></table></figure>
+
+<p>安装libevent：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/downloads/libevent/libevent/libevent-2.0.21-stable.tar.gz</span><br><span class="line">tar xvf libevent-2.0.21-stable.tar.gz</span><br><span class="line">cd libevent-2.0.21-stable</span><br><span class="line">./configure</span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装信令-Signal-服务"><a href="#安装信令-Signal-服务" class="headerlink" title="安装信令(Signal)服务"></a>安装信令(Signal)服务</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /root/webrtc/goWorkspace/src</span><br><span class="line">echo &quot;export GOPATH=/root/webrtc/goWorkspace&quot; &gt;&gt; /etc/profile</span><br><span class="line">source /etc/profile</span><br><span class="line">cd /root/webrtc</span><br><span class="line">git clone git://github.com/webrtc/apprtc.git</span><br><span class="line">ln -s /root/webrtc/apprtc/src/collider/collider $GOPATH/src</span><br><span class="line">ln -s /root/webrtc/apprtc/src/collider/collidermain $GOPATH/src</span><br><span class="line">ln -s /root/webrtc/apprtc/src/collider/collidertest $GOPATH/src</span><br><span class="line">go get collidermain</span><br><span class="line">go install collidermain</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装STUN-TURN服务"><a href="#安装STUN-TURN服务" class="headerlink" title="安装STUN/TURN服务"></a>安装STUN/TURN服务</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd /root/webrtc</span><br><span class="line">wget http://coturn.net/turnserver/v4.5.0.7/turnserver-4.5.0.7.tar.gz</span><br><span class="line">tar xvfz turnserver-4.5.0.7.tar.gz</span><br><span class="line">cd turnserver-4.5.0.7</span><br><span class="line">./configure</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装WebRTC-终端服务"><a href="#安装WebRTC-终端服务" class="headerlink" title="安装WebRTC 终端服务"></a>安装WebRTC 终端服务</h2><p>通过修改配置文件 <code>/root/webrtc/apprtc/src/app_engine/constants.py</code>来设备好ICE配置（与STUN/TURN服务交互）和WebSocket配置（与信令服务交互）。然后再</p>
+<h3 id="配置好ICE"><a href="#配置好ICE" class="headerlink" title="配置好ICE"></a>配置好ICE</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">ICE_SERVER_OVERRIDE</span>  <span class="string">=</span> [</span><br><span class="line">   &#123;</span><br><span class="line">     <span class="attr">&quot;urls&quot;:</span> [</span><br><span class="line">      <span class="comment"># 这儿要改成你自己启动STUN/TURN服务的外网IP</span></span><br><span class="line">       <span class="string">&quot;turn:47.105.214.21:3478?transport=udp&quot;</span>,</span><br><span class="line">       <span class="string">&quot;turn:47.105.214.21:3478?transport=tcp&quot;</span></span><br><span class="line">     ],</span><br><span class="line">      <span class="comment"># 这儿要改成你设备的STUN/TURN服务的用户名和凭证</span></span><br><span class="line">     <span class="attr">&quot;username&quot;:</span> <span class="string">&quot;flyer&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;credential&quot;:</span> <span class="string">&quot;123456&quot;</span></span><br><span class="line">   &#125;,</span><br><span class="line">   &#123;</span><br><span class="line">      <span class="comment"># 这儿要改成你自己启动STUN/TURN服务的外网IP</span></span><br><span class="line">     <span class="attr">&quot;urls&quot;:</span> [</span><br><span class="line">       <span class="string">&quot;stun:47.105.214.21:3478&quot;</span></span><br><span class="line">     ]</span><br><span class="line">   &#125;</span><br><span class="line"> ]</span><br><span class="line"><span class="comment"># 这儿要改成WebRTC 终端服务的请求地址</span></span><br><span class="line"><span class="string">ICE_SERVER_BASE_URL</span> <span class="string">=</span> <span class="string">&#x27;https://webrtc.zhaoweiguo.com&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="配置好信令服务"><a href="#配置好信令服务" class="headerlink" title="配置好信令服务"></a>配置好信令服务</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 这儿建议设置和WebRTC 终端服务同样的域名，否则要申请两个证书</span></span><br><span class="line"><span class="string">WSS_INSTANCE_HOST_KEY</span> <span class="string">=</span> <span class="string">&#x27;webrtc.zhaoweiguo.com:8089&#x27;</span></span><br><span class="line"><span class="string">WSS_INSTANCE_NAME_KEY</span> <span class="string">=</span> <span class="string">&#x27;vm_name&#x27;</span></span><br><span class="line"><span class="string">WSS_INSTANCE_ZONE_KEY</span> <span class="string">=</span> <span class="string">&#x27;zone&#x27;</span></span><br><span class="line"><span class="string">WSS_INSTANCES</span> <span class="string">=</span> [&#123;</span><br><span class="line">    <span class="attr">WSS_INSTANCE_HOST_KEY:</span> <span class="string">&#x27;webrtc.zhaoweiguo.com:8089&#x27;</span>,</span><br><span class="line">    <span class="attr">WSS_INSTANCE_NAME_KEY:</span> <span class="string">&#x27;wsserver-std&#x27;</span>,</span><br><span class="line">    <span class="attr">WSS_INSTANCE_ZONE_KEY:</span> <span class="string">&#x27;us-central1-a&#x27;</span></span><br><span class="line">&#125;]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="安装相关依赖"><a href="#安装相关依赖" class="headerlink" title="安装相关依赖"></a>安装相关依赖</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 1. 升级npm</span></span><br><span class="line">npm install -g n</span><br><span class="line">n stable</span><br><span class="line">hash -r  #   (for bash, zsh, ash, dash, and ksh)</span><br><span class="line"><span class="meta">#</span><span class="bash"> or <span class="built_in">rehash</span>   (<span class="keyword">for</span> csh and tcsh)</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 2. 安装node构建工具：grunt</span></span><br><span class="line">npm -g install grunt-cli@1.3.2</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 3. 安装 coffeescript</span></span><br><span class="line">npm install --dev coffeescript</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装apprtc"><a href="#安装apprtc" class="headerlink" title="安装apprtc"></a>安装apprtc</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd /root/webrtc/apprtc</span><br><span class="line">npm install --no-fund</span><br><span class="line">grunt build</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="证书生成"><a href="#证书生成" class="headerlink" title="证书生成"></a>证书生成</h1><h2 id="生成私有证书"><a href="#生成私有证书" class="headerlink" title="生成私有证书"></a>生成私有证书</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">openssl req -x509 -out /cert/cert.crt -keyout /cert/key.pem \</span><br><span class="line">  -newkey rsa:2048 -nodes -sha256 \</span><br><span class="line">  -subj &#x27;/CN=webrtc.zhaoweiguo.com&#x27; \</span><br><span class="line">  &amp;&amp; cat /cert/key.pem &gt; /cert/cert.pem \</span><br><span class="line">  &amp;&amp; cat /cert/cert.crt &gt;&gt; /cert/cert.pem \</span><br><span class="line">  &amp;&amp; chmod 600 /cert/cert.pem /cert/key.pem /cert/cert.crt</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 注意：把-subj <span class="string">&#x27;/CN=webrtc.zhaoweiguo.com&#x27;</span>中的域名改成你自己的域名</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="使用certbot生成免费的Let’s-Encrypt证书"><a href="#使用certbot生成免费的Let’s-Encrypt证书" class="headerlink" title="使用certbot生成免费的Let’s Encrypt证书"></a>使用certbot生成免费的Let’s Encrypt证书</h2><p>安装certbot：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> Debian</span></span><br><span class="line">apt-get install certbot</span><br><span class="line"><span class="meta">#</span><span class="bash"> Docker</span></span><br><span class="line">docker pull certbot/certbot</span><br></pre></td></tr></table></figure>
+<p>前提：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">1.</span> 执行此命令必须使用 root 用户获得文件夹的权限</span><br><span class="line"><span class="bullet">2.</span> 域名能访问并且有绑定的公网 IP</span><br><span class="line"><span class="bullet">3.</span> 必须在此域名绑定的服务器上运行</span><br></pre></td></tr></table></figure>
+<p>基于 Nginx 生成证书：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">安装插件:</span><br><span class="line">apt-get install python-certbot-nginx</span><br><span class="line">执行命令:</span><br><span class="line"><span class="meta">$</span><span class="bash"> sudo certbot certonly --nginx</span></span><br><span class="line">  Saving debug log to /var/log/letsencrypt/letsencrypt.log</span><br><span class="line">  Plugins selected: Authenticator nginx, Installer nginx</span><br><span class="line"></span><br><span class="line">  Which names would you like to activate HTTPS for?</span><br><span class="line">  - - - - - - - - - - - - - - - - - - - - - - - -</span><br><span class="line">  1: zhaoweiguo.com</span><br><span class="line">  2: knowledge.zhaoweiguo.com</span><br><span class="line">  3: www.zhaoweiguo.com</span><br><span class="line">  - - - - - - - - - - - - - - - - - - - - - - - -</span><br><span class="line"></span><br><span class="line">选择你要生成证书的域名，根据提示一步步执行就好了</span><br></pre></td></tr></table></figure>
+
+<p>不基于webserver直接生成证书</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1. 直接命令执行</span><br><span class="line">certbot certonly --standalone --email admin@zhaoweiguo.com -d webrtc.zhaoweiguo.com</span><br><span class="line">2. 使用Docker执行</span><br><span class="line">docker run -it -p 80:80 --rm --name certbot \</span><br><span class="line">    -v &quot;/etc/letsencrypt:/etc/letsencrypt&quot; \</span><br><span class="line">    -v &quot;/var/lib/letsencrypt:/var/lib/letsencrypt&quot; \</span><br><span class="line">    certbot/certbot certonly --standalone \</span><br><span class="line">    --email admin@zhaoweiguo.com -d webrtc.zhaoweiguo.com</span><br><span class="line"></span><br><span class="line">注意：80端口不可被占用，它会启动80端口的一个服务用于验证你的合法性</span><br></pre></td></tr></table></figure>
+<p>证书生成成功界面</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">- Congratulations! Your certificate and chain have been saved at:</span><br><span class="line"> <span class="regexp">/etc/</span>letsencrypt<span class="regexp">/live/</span>webrtc.zhaoweiguo.com/fullchain.pem</span><br><span class="line"> Your key <span class="keyword">file</span> has been saved at:</span><br><span class="line"> <span class="regexp">/etc/</span>letsencrypt<span class="regexp">/live/</span>webrtc.zhaoweiguo.com/privkey.pem</span><br><span class="line"> Your cert will expire on <span class="number">2023</span>-<span class="number">03</span>-<span class="number">19</span>. To obtain a <span class="keyword">new</span> or tweaked</span><br><span class="line"> version of <span class="keyword">this</span> certificate in the future, simply run certbot</span><br><span class="line"> again. To non-interactively renew *all* of your certificates, run</span><br><span class="line"> <span class="string">&quot;certbot renew&quot;</span></span><br><span class="line">- <span class="keyword">If</span> you like Certbot, please consider supporting our work by:</span><br><span class="line"> Donating to ISRG <span class="regexp">/ Let&#x27;s Encrypt:   https:/</span><span class="regexp">/letsencrypt.org/</span>donate</span><br><span class="line"> Donating to EFF:                    https:<span class="comment">//eff.org/donate-le</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="启动服务"><a href="#启动服务" class="headerlink" title="启动服务"></a>启动服务</h1><h2 id="设定环境变量"><a href="#设定环境变量" class="headerlink" title="设定环境变量"></a>设定环境变量</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 本地IP地址</span></span><br><span class="line">export LOCAL_IP=xx.xx.xx.xx</span><br><span class="line"><span class="meta">#</span><span class="bash"> 外网IP地址</span></span><br><span class="line">export SERVER_IP=xx.xx.xx.xx</span><br></pre></td></tr></table></figure>
+
+<h2 id="启动STUN-TURN服务"><a href="#启动STUN-TURN服务" class="headerlink" title="启动STUN/TURN服务"></a>启动STUN/TURN服务</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup turnserver -L $LOCAL_IP -a -u flyer:123456 -v -f -r nort.gov &amp;</span><br></pre></td></tr></table></figure>
+<p>检查是否启动成功：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">lsof -i:3478</span><br><span class="line"><span class="meta">#</span><span class="bash"> 出现如下信息即为成功：</span></span><br><span class="line">COMMAND     PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME</span><br><span class="line">turnserve 14754 root   16u  IPv4 112232      0t0  UDP instance-5i00bk4l:3478 </span><br><span class="line">turnserve 14754 root   17u  IPv4 112233      0t0  UDP instance-5i00bk4l:3478 </span><br><span class="line">turnserve 14754 root   32u  IPv4 112263      0t0  TCP instance-5i00bk4l:3478 (LISTEN)</span><br><span class="line">turnserve 14754 root   33u  IPv4 112267      0t0  TCP instance-5i00bk4l:3478 (LISTEN)</span><br></pre></td></tr></table></figure>
+<h2 id="启动信令服务"><a href="#启动信令服务" class="headerlink" title="启动信令服务"></a>启动信令服务</h2><p>启动命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /cert    # 这个目录里面有前面生成的域名证书和密钥</span><br><span class="line">nohup $GOPATH/bin/collidermain -port=8089 -tls=true  -room-server=&quot;https://$SERVER_IP:8080&quot; &amp;</span><br></pre></td></tr></table></figure>
+<p>检查是否启动成功：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">lsof -i:8089</span><br><span class="line"><span class="meta">#</span><span class="bash"> 出现如下信息即为成功：</span></span><br><span class="line">COMMAND     PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME</span><br><span class="line">colliderm 14817 root    3u  IPv6 112969      0t0  TCP *:8089 (LISTEN)</span><br></pre></td></tr></table></figure>
+<p>出现如下打印日志即为启动成功：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">2022</span>/<span class="number">03</span>/<span class="number">11</span> <span class="number">02</span>:<span class="number">09</span>:<span class="number">00</span> Starting collider: tls = true, port = <span class="number">8089</span>, room-server=https://<span class="number">47.253.204.204:8080</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="启动WebRTC-终端服务"><a href="#启动WebRTC-终端服务" class="headerlink" title="启动WebRTC 终端服务"></a>启动WebRTC 终端服务</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup dev_appserver.py --host=$LOCAL_IP /root/webrtc/apprtc/out/app_engine --skip_sdk_update_check &amp;</span><br></pre></td></tr></table></figure>
+<p>这时候在你的浏览器输入 http://服务器公网IP:8080/ 如果能顺利打开，那么恭喜你环境算是基本搭建成功啦！！！</p>
+<h2 id="配置Nginx"><a href="#配置Nginx" class="headerlink" title="配置Nginx"></a>配置Nginx</h2><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">upstream</span> roomserver &#123;</span><br><span class="line">    <span class="attribute">server</span> 本机ip:<span class="number">8080</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">    <span class="attribute">root</span> /usr/share/nginx/html;</span><br><span class="line">    <span class="attribute">index</span> index.php index.html index.htm;</span><br><span class="line">    <span class="attribute">listen</span>      <span class="number">443</span> ssl;</span><br><span class="line">    <span class="attribute">ssl_certificate</span> /cert/cert.pem;</span><br><span class="line">    <span class="attribute">ssl_certificate_key</span> /cert/key.pem;</span><br><span class="line">    <span class="attribute">server_name</span> webrtc.zhaoweiguo.com;   // 改成你自己的域名</span><br><span class="line">    <span class="attribute">location</span> / &#123;</span><br><span class="line">        <span class="attribute">proxy_pass</span> http://roomserver$request_uri;</span><br><span class="line">        <span class="attribute">proxy_set_header</span> Host $host;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>加载Nginx:</p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">nginx -s reload</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="运行效果"><a href="#运行效果" class="headerlink" title="运行效果"></a>运行效果</h1><p>打开浏览器，输入 <code>https://webrtc.zhaoweiguo.com</code> ，页面显示如下：</p>
+<p><img data-src="https://img.zhaoweiguo.com/blog/webrtcs/web-show1.png" alt="首页"></p>
+<p>点击连接(JOIN)，后</p>
+<p><img data-src="https://img.zhaoweiguo.com/blog/webrtcs/web-show2.png" alt="等待对方连接页面"></p>
+<p>可以看到下面等待其他人加入的链接。使用另一台电脑（手机）浏览器打开这个链接（如图我自己手机打开）</p>
+<p><img data-src="https://img.zhaoweiguo.com/blog/webrtcs/web-show4.jpg" alt="准备连接页面"></p>
+<p>点击「JOIN」后，显示连接成功页面</p>
+<p><img data-src="https://img.zhaoweiguo.com/blog/webrtcs/web-show5.jpg" alt="连接成功页面"></p>
+<h1 id="Docker版实现"><a href="#Docker版实现" class="headerlink" title="Docker版实现"></a>Docker版实现</h1><p>如果你只想快速验证使用，最简单的方法是使用Docker方式，我已经把大部分的工作封装到 镜像<code>zhaowg/webrtc:new2</code> 中了，可以直接使用，不过使用时注意网络要使用Docker的<code>宿主网络模式(host)</code>:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 注：使用--net=host使用宿主网络模式，如果使用默认的bridge模式会多一层Nat转换</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   在使用STUN/TRUN时会有问题</span></span><br><span class="line">docker run -e &quot;SERVER_IP=xx.xx.xx.xx&quot; -e &quot;LOCAL_IP=172.17.0.2&quot; --net=host  -it zhaowg/webrtc:new2 bash</span><br></pre></td></tr></table></figure>
+<p>按上面文档说明修改成你自己的的域名、证书、ip等信息，然后执行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./start.sh</span><br></pre></td></tr></table></figure>
+
+<h1 id="踩坑记录"><a href="#踩坑记录" class="headerlink" title="踩坑记录"></a>踩坑记录</h1><ol>
+<li><p>WebSocket connection failed</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">打开连接页面点击「<span class="keyword">JOIN</span>」时报下面错</span><br><span class="line">WebSocket connection to <span class="string">&#x27;wss://webrtc.zhaoweiguo.com:8089/ws&#x27;</span> failed: </span><br><span class="line">  Error in connection establishment: net::ERR_CERT_AUTHORITY_INVALID</span><br><span class="line">这时，「信令服务」日志报：</span><br><span class="line"><span class="number">2022</span><span class="regexp">/03/</span><span class="number">11</span> <span class="number">02</span>:<span class="number">13</span>:<span class="number">22</span> http: TLS handshake error <span class="keyword">from</span> <span class="number">111.205</span>.<span class="number">43.248</span>:<span class="number">15029</span>: remote error: unknown certificate</span><br><span class="line">解决方案：</span><br><span class="line">修改AppRTC服务的配置中的WSS_INSTANCE_HOST_KEY选项</span><br><span class="line">即修改文件<span class="regexp">/root/</span>webrtc<span class="regexp">/apprtc/</span>src<span class="regexp">/app_engine/</span>constants.py</span><br><span class="line">把WSS_INSTANCE_HOST_KEY选项的值设置为对应证书的域名（而不是用IP）</span><br></pre></td></tr></table></figure></li>
+<li><p>各种OpenSSL问题</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">这种问题我的解决方案是使用指定的OS版本</span><br><span class="line">比如这儿用Ubuntu 16.04</span><br></pre></td></tr></table></figure></li>
+<li><p>Failed to execute &#39;pushState&#39; on &#39;History&#39; </p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">运行都成功，但就是在点击连接时报错</span><br><span class="line">解决方法是:</span><br><span class="line">修改文件 ``.<span class="regexp">/src/</span>web_app<span class="regexp">/js/</span>appcontroller.js`` 中的 ``AppController.prototype.pushCallNavigation_`` 函数</span><br><span class="line">在此函数最开始增加一句代码：</span><br><span class="line">roomLink = roomLink.replace(<span class="string">&quot;http&quot;</span>, <span class="string">&quot;https&quot;</span>);</span><br><span class="line">参考自：https:<span class="regexp">//gi</span>thub.com<span class="regexp">/ISBX/</span>apprtc-node-server<span class="regexp">/issues/</span><span class="number">7</span></span><br></pre></td></tr></table></figure></li>
+<li><p>grunt build报错</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">原因：</span><br><span class="line">  主要是<span class="built_in">npm</span>、grunt版本问题</span><br><span class="line">解决方法：</span><br><span class="line">  升级<span class="built_in">npm</span>，使用指定的grunt版本</span><br></pre></td></tr></table></figure></li>
+<li><p>go get collidermain命令失败</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">原因：</span><br><span class="line">collidermain依赖项目golang.org<span class="regexp">/x/</span>net/websocket</span><br><span class="line">而执行go get collidermain命令时，会请求golang.org<span class="regexp">/x/</span>net/websocket</span><br><span class="line">而这个请求在国内默认不可访问</span><br><span class="line">解决方案：</span><br><span class="line"><span class="number">1</span>. 解决请求golang.org网站的问题</span><br><span class="line"><span class="number">2</span>. 执行如下命令</span><br><span class="line">mkdir -p <span class="variable">$GOPATH</span><span class="regexp">/src/g</span>olang.org<span class="regexp">/x/</span></span><br><span class="line">cd <span class="variable">$GOPATH</span><span class="regexp">/src/g</span>olang.org<span class="regexp">/x/</span></span><br><span class="line">git clone git:<span class="regexp">//gi</span>thub.com<span class="regexp">/golang/</span>net.git net </span><br><span class="line">go install net</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h1 id="附录：Dockerfile文件内容"><a href="#附录：Dockerfile文件内容" class="headerlink" title="附录：Dockerfile文件内容"></a>附录：Dockerfile文件内容</h1><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">FROM ubuntu:<span class="number">16.04</span></span><br><span class="line"></span><br><span class="line">RUN apt-get update &amp;&amp; apt-get upgrade &amp;&amp; apt install -y nodejs-legacy npm python python-webtest golang-go unzip wget git-core</span><br><span class="line">RUN npm -g install grunt-cli@<span class="number">1.3</span>.<span class="number">2</span></span><br><span class="line">RUN mkdir -p <span class="regexp">/root/</span>webrtc<span class="regexp">/goWorkspace/</span>src &amp;&amp; cd <span class="regexp">/root/</span>webrtc &amp;&amp; wget https:<span class="regexp">//</span>storage.googleapis.com<span class="regexp">/appengine-sdks/</span>featured/google_appengine_1.<span class="number">9.40</span>.zip &amp;&amp; unzip google_appengine_1.<span class="number">9.40</span>.zip</span><br><span class="line">RUN wget https:<span class="regexp">//gi</span>thub.com<span class="regexp">/downloads/</span>libevent<span class="regexp">/libevent/</span>libevent-<span class="number">2.0</span>.<span class="number">21</span>-stable.tar.gz &amp;&amp; tar xvf libevent-<span class="number">2.0</span>.<span class="number">21</span>-stable.tar.gz &amp;&amp; cd libevent-<span class="number">2.0</span>.<span class="number">21</span>-stable &amp;&amp; ./configure &amp;&amp; make &amp;&amp; make install</span><br><span class="line"></span><br><span class="line">ENV GOPATH=<span class="regexp">/root/</span>webrtc/goWorkspace</span><br><span class="line">ENV PATH=<span class="variable">$PATH</span>:<span class="regexp">/root/</span>webrtc/google_appengine</span><br><span class="line"></span><br><span class="line">WORKDIR <span class="regexp">/root/</span>webrtc</span><br><span class="line">RUN git clone git:<span class="regexp">//gi</span>thub.com<span class="regexp">/webrtc/</span>apprtc.git &amp;&amp; ln -s <span class="regexp">/root/</span>webrtc<span class="regexp">/apprtc/</span>src<span class="regexp">/collider/</span>collider <span class="variable">$GOPATH</span><span class="regexp">/src &amp;&amp; ln -s /</span>root<span class="regexp">/webrtc/</span>apprtc<span class="regexp">/src/</span>collider<span class="regexp">/collidermain $GOPATH/</span>src &amp;&amp; ln -s <span class="regexp">/root/</span>webrtc<span class="regexp">/apprtc/</span>src<span class="regexp">/collider/</span>collidertest <span class="variable">$GOPATH</span>/src &amp;&amp; go get collidermain &amp;&amp; go install collidermain</span><br><span class="line"></span><br><span class="line">RUN wget http:<span class="regexp">//</span>coturn.net<span class="regexp">/turnserver/</span>v4.<span class="number">5.0</span>.<span class="number">7</span><span class="regexp">/turnserver-4.5.0.7.tar.gz &amp;&amp; tar xvfz turnserver-4.5.0.7.tar.gz &amp;&amp; cd turnserver-4.5.0.7 &amp;&amp; ./</span>configure &amp;&amp; make install</span><br><span class="line"></span><br><span class="line">WORKDIR <span class="regexp">/root/</span>webrtc/apprtc</span><br><span class="line"></span><br><span class="line">RUN npm install -g n &amp;&amp; n stable &amp;&amp; </span><br><span class="line">RUN npm install --no-fund &amp;&amp; npm install --dev coffeescript &amp;&amp;  grunt build</span><br><span class="line"></span><br><span class="line">WORKDIR <span class="regexp">/root/</span>webrtc</span><br><span class="line"></span><br><span class="line">RUN echo <span class="string">&quot;nohup turnserver -L $LOCAL_IP -a -u flyer:123456 -v -f -r nort.gov &amp;&quot;</span> &gt;&gt; .<span class="regexp">/start.sh &amp;&amp; echo &#x27;nohup $GOPATH/</span>bin<span class="regexp">/collidermain -port=8089 -tls=true  -room-server=&quot;https:/</span><span class="regexp">/$SERVER_IP:8080&quot; &amp;&#x27; &gt;&gt; ./</span>start.sh &amp;&amp; echo <span class="string">&quot;nohup dev_appserver.py --host=$LOCAL_IP /root/webrtc/apprtc/out/app_engine --skip_sdk_update_check &amp;&quot;</span> &gt;&gt; start.sh &amp;&amp; chmod +x start.sh</span><br></pre></td></tr></table></figure>
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li>极客时间-从 0 打造音视频直播系统: https://time.geekbang.org/column/intro/100031801</li>
+<li>维基百科-WebRTC: https://zh.wikipedia.org/wiki/WebRTC</li>
+<li>博客-WebRTC 之服务器搭建: https://www.jianshu.com/p/df300071d8d6</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhaoweiguo
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://blog.zhaoweiguo.com/2022/03/08/webrtc/introduce/" title="尝鲜：如何搭建一个简单的webrtc服务器">http://blog.zhaoweiguo.com/2022/03/08/webrtc/introduce/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/introduce/" rel="tag"># introduce</a>
+              <a href="/tags/webrtc/" rel="tag"># webrtc</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/12/learning/how-to-learn-english/" rel="prev" title="程序员如何在繁忙的工作中高效学英语">
+      <i class="fa fa-chevron-left"></i> 程序员如何在繁忙的工作中高效学英语
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/03/18/webrtc/SFU/" rel="next" title="尝鲜：搭建一个多对多的音视频通信服务">
+      尝鲜：搭建一个多对多的音视频通信服务 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#WebRTC-%E7%AE%80%E4%BB%8B"><span class="nav-number">2.</span> <span class="nav-text">WebRTC 简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E-WebRTC-%E7%9A%84-1v1-%E8%A7%86%E9%A2%91%E5%AE%9E%E6%97%B6%E9%80%9A%E8%AF%9D%E6%9E%B6%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">基于 WebRTC 的 1v1 视频实时通话架构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-WebRTC-%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">4.</span> <span class="nav-text">安装 WebRTC 服务器</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-number">4.1.</span> <span class="nav-text">运行环境准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E4%BE%9D%E8%B5%96%E6%9C%8D%E5%8A%A1"><span class="nav-number">4.2.</span> <span class="nav-text">安装依赖服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E4%BF%A1%E4%BB%A4-Signal-%E6%9C%8D%E5%8A%A1"><span class="nav-number">4.3.</span> <span class="nav-text">安装信令(Signal)服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85STUN-TURN%E6%9C%8D%E5%8A%A1"><span class="nav-number">4.4.</span> <span class="nav-text">安装STUN&#x2F;TURN服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85WebRTC-%E7%BB%88%E7%AB%AF%E6%9C%8D%E5%8A%A1"><span class="nav-number">4.5.</span> <span class="nav-text">安装WebRTC 终端服务</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E5%A5%BDICE"><span class="nav-number">4.5.1.</span> <span class="nav-text">配置好ICE</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E5%A5%BD%E4%BF%A1%E4%BB%A4%E6%9C%8D%E5%8A%A1"><span class="nav-number">4.5.2.</span> <span class="nav-text">配置好信令服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E7%9B%B8%E5%85%B3%E4%BE%9D%E8%B5%96"><span class="nav-number">4.5.3.</span> <span class="nav-text">安装相关依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85apprtc"><span class="nav-number">4.5.4.</span> <span class="nav-text">安装apprtc</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%81%E4%B9%A6%E7%94%9F%E6%88%90"><span class="nav-number">5.</span> <span class="nav-text">证书生成</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E7%A7%81%E6%9C%89%E8%AF%81%E4%B9%A6"><span class="nav-number">5.1.</span> <span class="nav-text">生成私有证书</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8certbot%E7%94%9F%E6%88%90%E5%85%8D%E8%B4%B9%E7%9A%84Let%E2%80%99s-Encrypt%E8%AF%81%E4%B9%A6"><span class="nav-number">5.2.</span> <span class="nav-text">使用certbot生成免费的Let’s Encrypt证书</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E6%9C%8D%E5%8A%A1"><span class="nav-number">6.</span> <span class="nav-text">启动服务</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E5%AE%9A%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-number">6.1.</span> <span class="nav-text">设定环境变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8STUN-TURN%E6%9C%8D%E5%8A%A1"><span class="nav-number">6.2.</span> <span class="nav-text">启动STUN&#x2F;TURN服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E4%BF%A1%E4%BB%A4%E6%9C%8D%E5%8A%A1"><span class="nav-number">6.3.</span> <span class="nav-text">启动信令服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8WebRTC-%E7%BB%88%E7%AB%AF%E6%9C%8D%E5%8A%A1"><span class="nav-number">6.4.</span> <span class="nav-text">启动WebRTC 终端服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AENginx"><span class="nav-number">6.5.</span> <span class="nav-text">配置Nginx</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%95%88%E6%9E%9C"><span class="nav-number">7.</span> <span class="nav-text">运行效果</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Docker%E7%89%88%E5%AE%9E%E7%8E%B0"><span class="nav-number">8.</span> <span class="nav-text">Docker版实现</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95"><span class="nav-number">9.</span> <span class="nav-text">踩坑记录</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%99%84%E5%BD%95%EF%BC%9ADockerfile%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9"><span class="nav-number">10.</span> <span class="nav-text">附录：Dockerfile文件内容</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">11.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhaoweiguo"
+      src="/images/icon.png">
+  <p class="site-author-name" itemprop="name">zhaoweiguo</p>
+  <div class="site-description" itemprop="description">Just do it now.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8=" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhaoweiguo"><i class="github fa-fw"></i></span>
+      </span>
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="bWFpbHRvOnN1cHBvcnRAemhhb3dlaWd1by5jb20=" title="E-Mail → mailto:support@zhaoweiguo.com"><i class="envelope fa-fw"></i></span>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <span class="exturl cc-opacity" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><span class="exturl" data-url="aHR0cHM6Ly9iZWlhbi5taWl0Lmdvdi5jbg==">京ICP备16018553号 </span>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoweiguo</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">185k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:49</span>
+</div>
+  <div class="powered-by">由 <span class="exturl theme-link" data-url="aHR0cHM6Ly9oZXhvLmlv">Hexo</span> & <span class="exturl theme-link" data-url="aHR0cHM6Ly90aGVtZS1uZXh0Lm9yZw==">NexT.Gemini</span> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '',
+      clientSecret: '',
+      repo        : 'zhaoweiguo.github.io',
+      owner       : '',
+      admin       : [''],
+      id          : '8e4a1b8fe42a8d5ddc46411c62b6ba3d',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

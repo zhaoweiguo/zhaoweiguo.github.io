@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.zhaoweiguo.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":true,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true,"width":300,"b2t":true,"scrollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="简介前段时间grafana监控出问题，定位发现磁盘满了。今天grafana监控又出问题了，是去一看磁盘又满了。肯定是某一个服务在不停的吃磁盘，才7天时间，就吃掉了近200G。 问题定位定位到哪个文件在吃磁盘通过df和du命令一点点定位找到真凶:&#x2F;var&#x2F;lib&#x2F;grafana.db。此文件已经占用486G了。 定位是哪个表数据量大我们grafana用的是sqlite存储配置相关信息，grafana">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【常见问题】Grafana一个bug导致磁盘占用近500G">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="简介前段时间grafana监控出问题，定位发现磁盘满了。今天grafana监控又出问题了，是去一看磁盘又满了。肯定是某一个服务在不停的吃磁盘，才7天时间，就吃掉了近200G。 问题定位定位到哪个文件在吃磁盘通过df和du命令一点点定位找到真凶:&#x2F;var&#x2F;lib&#x2F;grafana.db。此文件已经占用486G了。 定位是哪个表数据量大我们grafana用的是sqlite存储配置相关信息，grafana">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-02-11T05:22:09.000Z">
+<meta property="article:modified_time" content="2022-03-18T06:39:03.073Z">
+<meta property="article:author" content="赵卫国">
+<meta property="article:tag" content="question">
+<meta property="article:tag" content="grafana">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>【常见问题】Grafana一个bug导致磁盘占用近500G | 新溪blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">新溪blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">新溪-gordon之胡写乱画</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="bullhorn fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档<span class="badge">37</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">13</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">42</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.png">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【常见问题】Grafana一个bug导致磁盘占用近500G
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-02-11 13:22:09" itemprop="dateCreated datePublished" datetime="2020-02-11T13:22:09+08:00">2020-02-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-18 14:39:03" itemprop="dateModified" datetime="2022-03-18T14:39:03+08:00">2022-03-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/question/" itemprop="url" rel="index"><span itemprop="name">question</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>0</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>前段时间grafana监控出问题，定位发现磁盘满了。今天grafana监控又出问题了，是去一看磁盘又满了。肯定是某一个服务在不停的吃磁盘，才7天时间，就吃掉了近200G。</p>
+<h1 id="问题定位"><a href="#问题定位" class="headerlink" title="问题定位"></a>问题定位</h1><h3 id="定位到哪个文件在吃磁盘"><a href="#定位到哪个文件在吃磁盘" class="headerlink" title="定位到哪个文件在吃磁盘"></a>定位到哪个文件在吃磁盘</h3><p>通过df和du命令一点点定位找到真凶:/var/lib/grafana.db。此文件已经占用486G了。</p>
+<h3 id="定位是哪个表数据量大"><a href="#定位是哪个表数据量大" class="headerlink" title="定位是哪个表数据量大"></a>定位是哪个表数据量大</h3><p>我们grafana用的是sqlite存储配置相关信息，grafana.db文件就是sqlite的数据文件，登录sqlite:</p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$&gt; sqlite3 /var/lib/grafana.db</span><br><span class="line">sqlite&gt; .table</span><br><span class="line">alert                   dashboard_version       quota</span><br><span class="line">alert_notification      data_source             session</span><br><span class="line">annotation              login_attempt           star</span><br><span class="line">annotation_tag          migration_log           <span class="keyword">tag</span></span><br><span class="line"><span class="title">api_key</span>                 org                     team</span><br><span class="line">dashboard               org_user                team_member</span><br><span class="line">dashboard_acl           playlist                temp_user</span><br><span class="line">dashboard_provisioning  playlist_item           test_data</span><br><span class="line">dashboard_snapshot      plugin_setting          <span class="keyword">user</span></span><br><span class="line"><span class="title">dashboard_tag</span>           preferences             user_auth</span><br><span class="line">$&gt; select count(*) from dashboard_version;</span><br><span class="line"><span class="number">4462809</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="为啥这个表这么多数据"><a href="#为啥这个表这么多数据" class="headerlink" title="为啥这个表这么多数据"></a>为啥这个表这么多数据</h3><p>Google、百度各种关键词都查不到相关问题，没办法，只好去github上看Issues了。搜索grafana.db和dashboard_version找到原因。这是grafana的一个bug，5.2.2、5.3.0都有这个问题，我们的版本是5.1.4也有这个问题。这个问题在今年1月份由bergquist提供了解决方案。</p>
+<h5 id="原因"><a href="#原因" class="headerlink" title="原因:"></a>原因:</h5><p>dashboards的来源中2个不同的文件夹下有一个相同的json文件</p>
+<h5 id="原文-from"><a href="#原文-from" class="headerlink" title="原文:from"></a>原文:<span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL2dyYWZhbmEvZ3JhZmFuYS9pc3N1ZXMvMTI4NjQ=">from<i class="fa fa-external-link-alt"></i></span></h5><p>By mistake, I put twice the same JSON file in two different folders, which are used as a source of provisioned dashboards. And after some time I noticed, that MySQL databases were growing infinitely. After some quick check, I found, that the table &quot;dashboard_version&quot; was the biggest (with millions of &quot;revisions&quot; for &quot;duplicated&quot; dashboard).</p>
+<h5 id="bergquist提供的解决方案"><a href="#bergquist提供的解决方案" class="headerlink" title="bergquist提供的解决方案"></a>bergquist提供的解决方案</h5><p>在文件devenv/dashboards.yaml中增加一句:</p>
+<figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// <span class="keyword">https</span>://github.com/bergquist/grafana/commit/<span class="number">2</span>ea46fa925013abbf92871c3aec17250250a9250</span><br><span class="line">解决说明:</span><br><span class="line">avoid infinite loop <span class="keyword">in</span> <span class="keyword">the</span> dashboard provisioner:</span><br><span class="line"><span class="keyword">if</span> <span class="literal">one</span> dashboard <span class="keyword">with</span> <span class="keyword">an</span> uid is refered <span class="built_in">to</span> <span class="keyword">by</span> <span class="literal">two</span></span><br><span class="line">provsioners <span class="keyword">each</span> provsioner overwrite <span class="keyword">each</span> other.</span><br><span class="line">filling up dashboard_versions quite fast <span class="keyword">if</span> <span class="keyword">using</span></span><br><span class="line">default settings.</span><br></pre></td></tr></table></figure>
+
+<p>这个问题在新版本已经解决了，原因是dashboard的json配置文件中的uid有相同的，导致相互间覆盖。但我验证时，导出所有的dashboard的配置文件，没有发现有相同uid的配置，这个难道是我之前对各配置文件分组引起的？我删除了几个不常用的dashboard，把所有配置都合并到一个文件夹中，没办法证实了。</p>
+<h5 id="本问题解决方案"><a href="#本问题解决方案" class="headerlink" title="本问题解决方案"></a>本问题解决方案</h5><p>但现在的问题是，已经有400多G数据，需要先解决这个问题再使用新版本。首先想到的是迁移到一个新的服务器上，但有个问题，配置文件的导出只能一个个导出dashboard，而且还不能导出类似数据源这类数据。本来这种配置数据迁移可以通过直接迁移数据库解决，但现在本来就是解决数据库太大的问题。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhaoweiguo
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/" title="【常见问题】Grafana一个bug导致磁盘占用近500G">http://blog.zhaoweiguo.com/2020/02/11/question-grafana-disk-is-full/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/question/" rel="tag"># question</a>
+              <a href="/tags/grafana/" rel="tag"># grafana</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/05/ali/ali-UAT-asm/" rel="prev" title="阿里产品ASM用户验收测试初体验">
+      <i class="fa fa-chevron-left"></i> 阿里产品ASM用户验收测试初体验
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/07/22/ali/ali-cloudnative-whitepaper/" rel="next" title="浅析阿里《云原生架构白皮书》">
+      浅析阿里《云原生架构白皮书》 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E5%AE%9A%E4%BD%8D"><span class="nav-number">2.</span> <span class="nav-text">问题定位</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%BD%8D%E5%88%B0%E5%93%AA%E4%B8%AA%E6%96%87%E4%BB%B6%E5%9C%A8%E5%90%83%E7%A3%81%E7%9B%98"><span class="nav-number">2.0.1.</span> <span class="nav-text">定位到哪个文件在吃磁盘</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%BD%8D%E6%98%AF%E5%93%AA%E4%B8%AA%E8%A1%A8%E6%95%B0%E6%8D%AE%E9%87%8F%E5%A4%A7"><span class="nav-number">2.0.2.</span> <span class="nav-text">定位是哪个表数据量大</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E5%95%A5%E8%BF%99%E4%B8%AA%E8%A1%A8%E8%BF%99%E4%B9%88%E5%A4%9A%E6%95%B0%E6%8D%AE"><span class="nav-number">2.0.3.</span> <span class="nav-text">为啥这个表这么多数据</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8E%9F%E5%9B%A0"><span class="nav-number">2.0.3.0.1.</span> <span class="nav-text">原因:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8E%9F%E6%96%87-from"><span class="nav-number">2.0.3.0.2.</span> <span class="nav-text">原文:from</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#bergquist%E6%8F%90%E4%BE%9B%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">2.0.3.0.3.</span> <span class="nav-text">bergquist提供的解决方案</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9C%AC%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">2.0.3.0.4.</span> <span class="nav-text">本问题解决方案</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhaoweiguo"
+      src="/images/icon.png">
+  <p class="site-author-name" itemprop="name">zhaoweiguo</p>
+  <div class="site-description" itemprop="description">Just do it now.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8=" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhaoweiguo"><i class="github fa-fw"></i></span>
+      </span>
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="bWFpbHRvOnN1cHBvcnRAemhhb3dlaWd1by5jb20=" title="E-Mail → mailto:support@zhaoweiguo.com"><i class="envelope fa-fw"></i></span>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <span class="exturl cc-opacity" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><span class="exturl" data-url="aHR0cHM6Ly9iZWlhbi5taWl0Lmdvdi5jbg==">京ICP备16018553号 </span>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoweiguo</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">185k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:49</span>
+</div>
+  <div class="powered-by">由 <span class="exturl theme-link" data-url="aHR0cHM6Ly9oZXhvLmlv">Hexo</span> & <span class="exturl theme-link" data-url="aHR0cHM6Ly90aGVtZS1uZXh0Lm9yZw==">NexT.Gemini</span> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '',
+      clientSecret: '',
+      repo        : 'zhaoweiguo.github.io',
+      owner       : '',
+      admin       : [''],
+      id          : '96d82ec76732c1a2704d6b4d9f243aac',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

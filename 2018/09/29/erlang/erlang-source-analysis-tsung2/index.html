@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.zhaoweiguo.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":true,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true,"width":300,"b2t":true,"scrollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="执行application:start(tsung_controller)时: &amp;#123;start_phases, [&amp;#123;load_config, []&amp;#125;,&amp;#123;start_os_monitoring,[&amp;#123;timeout,30000&amp;#125;]&amp;#125;,                 &amp;#123;start_clients,[]&amp;#125;]&amp;#125">
+<meta property="og:type" content="article">
+<meta property="og:title" content="源码分析基础工作">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2018/09/29/erlang/erlang-source-analysis-tsung2/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="执行application:start(tsung_controller)时: &amp;#123;start_phases, [&amp;#123;load_config, []&amp;#125;,&amp;#123;start_os_monitoring,[&amp;#123;timeout,30000&amp;#125;]&amp;#125;,                 &amp;#123;start_clients,[]&amp;#125;]&amp;#125">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-09-29T03:46:03.000Z">
+<meta property="article:modified_time" content="2022-03-18T06:39:03.034Z">
+<meta property="article:author" content="赵卫国">
+<meta property="article:tag" content="erlang">
+<meta property="article:tag" content="source-analysis">
+<meta property="article:tag" content="tsung">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.zhaoweiguo.com/2018/09/29/erlang/erlang-source-analysis-tsung2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>源码分析基础工作 | 新溪blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">新溪blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">新溪-gordon之胡写乱画</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="bullhorn fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档<span class="badge">37</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">13</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">42</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/09/29/erlang/erlang-source-analysis-tsung2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.png">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          源码分析基础工作
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-09-29 11:46:03" itemprop="dateCreated datePublished" datetime="2018-09-29T11:46:03+08:00">2018-09-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-18 14:39:03" itemprop="dateModified" datetime="2022-03-18T14:39:03+08:00">2022-03-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>0</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>执行application:start(tsung_controller)时:</p>
+<pre><code>&#123;start_phases, [&#123;load_config, []&#125;,&#123;start_os_monitoring,[&#123;timeout,30000&#125;]&#125;,
+                &#123;start_clients,[]&#125;]&#125;
+&#123;mod,          &#123;tsung_controller, []&#125;&#125;
+</code></pre>
+<h3 id="应用启动相关"><a href="#应用启动相关" class="headerlink" title="应用启动相关"></a>应用启动相关</h3><p>ts_config_server相关::</p>
+<pre><code>global
+-record(state, &#123;
+  config,
+  logdir,   % 日志文件目录
+  curcfg = 0,       % number of configured launchers
+  client_static_users = 0, % number of clients that already have their static users
+  static_users = 0, % static users not yet given to a client
+  ports,            % dict, used if we need to choose the client port
+  users=1,          % userid (incremental counter)
+  start_date,       %
+  hostname,         % controller的hostname
+  last_beam_id = 0, % last tsung beam id (used to set nodenames)
+  ending_beams = 0, % number of beams with no new users to start
+  lastips,          % store next ip to choose for each client host
+  total_weight      % total weight of client machines
+&#125;
+</code></pre>
+<span id="more"></span>
+
+<p>ts_mon::</p>
+<pre><code>global
+-record(state, &#123;
+  log,          % 日志文件的fd
+  backend,      % type of backend: text|...
+  log_dir,      % 
+  fullstats,    % fullstats fd
+  dump_interval,% 从配置文件中取值:10000
+  dumpfile,     % file used when dumptrafic is set light or full
+  client=0,     % number of clients currently running
+  maxclient=0,  % max of simultaneous clients
+  stats,        % 下面的record:Stats
+  stop = false, % true if we should stop
+  laststats,    % 下面的record:Stats
+  lastdate,     % 时间
+  type,         % type of logging (none, light, full)
+  launchers=0,  % number of launchers started
+  timer_ref,    % timer reference (for dumpstats)
+  wait_gui=false% wait gui before stopping
+&#125;).
+
+-record(stats, &#123;
+  users_count         = 0,
+  finish_users_count  = 0,
+  os_mon,   % dict:new():[Mean, Var, Max, Min, Count, MeanFB,CountFB,Last]
+  session             = []
+&#125;).
+</code></pre>
+<p>ts_stats_mon::</p>
+<pre><code>global
+% connect,page,request
+-record(state, &#123;
+  log,          % log fd
+  backend,      % type of backend: text|rrdtool|fullstats
+  dump_interval,% 从配置文件中取值:10000
+  type = connect,page,request
+  fullstats,    % fullstats fd
+  stats,        % [0,0,0,0,0,0,0,0]:
+  laststats     % values of last printed stats
+&#125;).
+
+% [id]
+-record(state, &#123;
+  log,          % log fd
+  backend,      % type of backend: text|rrdtool|fullstats
+  dump_interval,% 从配置文件中取值:10000
+  type = ts_stats_mon,
+  fullstats,    % fullstats fd
+  stats,        % 字典:dict:new()
+  laststats     % values of last printed stats
+&#125;).
+</code></pre>
+<p>ts_match_logger:</p>
+<pre><code>global
+-record(state, &#123;
+  filename,     % &quot;mach.log&quot;
+  level,        % type of backend: text|rrdtool|fullstats
+  dumpid=1,     % current dump id
+  logdir,
+  fd            % &quot;mach.log&quot;的fd
+&#125;).
+</code></pre>
+<p>ts_os_mon_sup:</p>
+<pre><code>local，监控专用，【参数】monitor
+ts_os_mon_erlang
+ts_os_mon_munin
+ts_os_mon_snmp
+
+ts_os_mon_erlang:
+% monitor在同一机器上
+#state&#123;node=node(),mon=MonServer, host=Host, interval=Interval, options=Options&#125;
+% 不在同一机器
+#state&#123;host=Host, mon=MonServer, interval=Interval, options=Options&#125;
+</code></pre>
+<p>ts_timer:</p>
+<pre><code>global,fsm
+-record(state, &#123;
+  nclient    = 0, % number of unacked clients
+  maxclients = 0, % total number of clients to ack
+  pidlist = [],
+  timeout=3600000
+&#125;).
+</code></pre>
+<p>ts_msg_server:</p>
+<pre><code>global
+-record(state, &#123;number=0&#125;).
+</code></pre>
+<p>ts_user_server_sup:</p>
+<pre><code>simple_one_for_one
+
+ts_user_server:
+-record(state, &#123;
+  offline,        %ets table
+  last_offline,
+  connected,      %ets table
+  last_connected,
+  online,         %ets table
+  last_online,
+  first_client,   % id (integer)
+  random_server_id,  % file_server id for random users
+  offline_server_id, % file_server id for initial offline users
+  delimiter = &lt;&lt; &quot;;&quot; &gt;&gt;,   % delimiter for file_server id username
+  userid_max      % max number of ids (starts at 1)
+&#125;).
+</code></pre>
+<p>ts_job_notify:</p>
+<p>ts_interaction_server:</p>
+<pre><code>#state&#123;
+  to=ets:new(to, []), 
+  notify=ets:new(notify, [bag])
+&#125;
+</code></pre>
+<h3 id="start-phases相关-load-config"><a href="#start-phases相关-load-config" class="headerlink" title="start_phases相关{load_config, []}"></a>start_phases相关{load_config, []}</h3><p>作用:</p>
+<pre><code>1.读tsung.xml文件
+设定ts_config_server的status的
+</code></pre>
+<p>config:</p>
+<pre><code>-record(config, &#123;
+      name,
+      duration, % 超时时间,单位秒.超时会往ts_config_server发送end_tsung的timeout消息
+      loglevel = ?WARN,   % 【xml】loglevel
+      dump = none,    % 【xml】dumptraffic：
+               &quot;false&quot; -&gt; none;
+               &quot;true&quot;  -&gt; full;
+               &quot;light&quot; -&gt; light;
+               &quot;protocol&quot; -&gt; protocol;
+               &quot;protocol_local&quot; -&gt; protocol_local
+      stats_backend,    % 【xml】backend:text
+      controller,         % controller machine
+      clients = [],       %  [&#123;client,&quot;localhost&quot;,10.0,200000,
+                                [&#123;10,140,2,245&#125;,
+                                 &#123;10,140,2,244&#125;,
+                                 &#123;10,140,2,241&#125;,
+                                 &#123;10,140,2,5&#125;],
+                                undefined&#125;]
+      servers = [],       % [#server&#123;host  = Server,
+                                   port  = Port,
+                                   weight= Weight,
+                                   type  = Type
+                                 &#125;|ServerList]
+                          % [&#123;server,&quot;idc-iot-pr-server-2&quot;,443,ts_tcp,10&#125;],
+      ports_range,        % client ports range
+      monitor_hosts = [], % [&#123;&quot;idc-iot-pr-server-4&quot;,&#123;erlang,[]&#125;&#125;],
+      arrivalphases = [], % [&#123;arrivalphase,1,6000000,undefined,0.001,infinity,6000,[],
+                          false,1&#125;],
+      thinktime,          % default thinktime specs
+      subst    = false,   % Substitution should be applied on the request
+      match,              % Match regexp in response
+      dynvar   = [],
+      main_sess_type , % main type of session
+      sessions = [], %  [&#123;session,1,100,ts_http,&quot;http-example&quot;,true,false,10000,
+                     &#123;proto_opts,negotiate,negotiate,&quot;/http-bind/&quot;,false,
+                                 false,false,&quot;/chat&quot;,&quot;binary&quot;,[],10,3,
+                                 600000,infinity,infinity,32768,32768,
+                                 32768,32768,[],true,true&#125;,
+                     undefined,10,undefined,undefined,undefined,undefined,
+                     undefined&#125;]
+      static_users=[],
+      session_tab,  % 表:ets:new(sessiontable, [ordered_set, protected]),
+      use_controller_vm = false, % if true, start the first launcher in the
+                                 % same vm as the controller if possible
+      curthink,  % temporary var (current request think)
+      curid = 0, % temporary var (current request id (can be transaction))
+      cur_req_id  = 0,   % temporary var (current real request id)
+      file_server = [],  % filenames for file_server
+      load_loop,         % loop phases if &gt; 0
+      hibernate = 10000, % hibernate timeout (millisec) 10sec by default
+      proto_opts,        % tcp/udp buffer sizes，参见后面的proto_opts
+      seed = now,        % random seed: (default= current time)
+      vhost_file = none, % file server user for virtual host jabber testing
+      user_server_maxuid = none, % user_id max
+      oids=[],  % [&#123;OID,Name,Type,Fun&#125;| OIDS]
+      rate_limit,
+      total_popularity = 0, % should be 100 if we use probabilites; sum of all weights if we use weights
+      use_weights      , % true if we use weights instead of probabilities
+      total_server_weights=0, % 总weights
+      job_notify_port,
+      max_ssh_startup = 20,
+      tag
+     &#125;).
+
+-record(proto_opts,
+    &#123;ssl_ciphers   = negotiate, % for ssl only
+     ssl_versions  = negotiate, % for ssl only
+     bosh_path = &quot;/http-bind/&quot;,  % for bash only
+     tcp_reuseaddr  = false,  % for tcp reuseaddr
+     tcp_reuseport  = false,  % for tcp reuseport
+     ip_transparent = false,  % set IP_TRANSPARENT option on the socket
+     websocket_path = &quot;/chat&quot;,  % for websocket only
+     websocket_frame = &quot;binary&quot;,  % for websocket only
+     websocket_subprotocols = [],     % for websocket only
+     retry_timeout = 10,        % retry sending in milliseconds
+     max_retries = 3,           % maximum number of retries
+     idle_timeout  = 600000,    % timeout for local ack
+     connect_timeout  = infinity,   % timeout for gen_tcp:connect/4 (infinity OR time in milliseconds)
+     global_ack_timeout = infinity, % timeout for global ack
+     tcp_rcv_size  = 32768,     % tcp buffers size
+     tcp_snd_size  = 32768,
+     udp_rcv_size  = 32768,     % udp buffers size
+     udp_snd_size  = 32768,
+     certificate = [],          % for ssl
+     reuse_sessions = true,     % for ssl
+     is_first_connect = true   % whether it&#39;s the first connection
+    &#125;).
+</code></pre>
+<h3 id="start-phases相关-start-os-monitoring-timeout-30000"><a href="#start-phases相关-start-os-monitoring-timeout-30000" class="headerlink" title="start_phases相关{start_os_monitoring,[{timeout,30000}]}"></a>start_phases相关{start_os_monitoring,[{timeout,30000}]}</h3><p>  ts_os_mon_sup启动子<br>  启动monitor,把要监控的server中的cpu,内存,load等信息</p>
+<h3 id="start-phases相关-start-clients"><a href="#start-phases相关-start-clients" class="headerlink" title="start_phases相关{start_clients,[]}]}"></a>start_phases相关{start_clients,[]}]}</h3><p>  ts_mon启动子<br>  加载tsung,并启动<br>  % ts_launcher_static:<br>  gen_fsm:send_event({?MODULE, Node}, {launch, Sessions, atom_to_list(Host)}).<br>  % ts_launcher:<br>  gen_fsm:send_event({?MODULE, Node}, {launch, Arrivals, atom_to_list(Host), Seed}).</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhaoweiguo
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://blog.zhaoweiguo.com/2018/09/29/erlang/erlang-source-analysis-tsung2/" title="源码分析基础工作">http://blog.zhaoweiguo.com/2018/09/29/erlang/erlang-source-analysis-tsung2/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/erlang/" rel="tag"># erlang</a>
+              <a href="/tags/source-analysis/" rel="tag"># source-analysis</a>
+              <a href="/tags/tsung/" rel="tag"># tsung</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/09/04/erlang/erlang-release-updowngrade-normal/" rel="prev" title="使用Erlang原生方法对release版本升降级">
+      <i class="fa fa-chevron-left"></i> 使用Erlang原生方法对release版本升降级
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/09/29/erlang/erlang-source-analysis-tsung1/" rel="next" title="看源码前准备工作">
+      看源码前准备工作 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%90%AF%E5%8A%A8%E7%9B%B8%E5%85%B3"><span class="nav-number">1.</span> <span class="nav-text">应用启动相关</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#start-phases%E7%9B%B8%E5%85%B3-load-config"><span class="nav-number">2.</span> <span class="nav-text">start_phases相关{load_config, []}</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#start-phases%E7%9B%B8%E5%85%B3-start-os-monitoring-timeout-30000"><span class="nav-number">3.</span> <span class="nav-text">start_phases相关{start_os_monitoring,[{timeout,30000}]}</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#start-phases%E7%9B%B8%E5%85%B3-start-clients"><span class="nav-number">4.</span> <span class="nav-text">start_phases相关{start_clients,[]}]}</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhaoweiguo"
+      src="/images/icon.png">
+  <p class="site-author-name" itemprop="name">zhaoweiguo</p>
+  <div class="site-description" itemprop="description">Just do it now.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8=" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhaoweiguo"><i class="github fa-fw"></i></span>
+      </span>
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="bWFpbHRvOnN1cHBvcnRAemhhb3dlaWd1by5jb20=" title="E-Mail → mailto:support@zhaoweiguo.com"><i class="envelope fa-fw"></i></span>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <span class="exturl cc-opacity" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><span class="exturl" data-url="aHR0cHM6Ly9iZWlhbi5taWl0Lmdvdi5jbg==">京ICP备16018553号 </span>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoweiguo</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">185k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:49</span>
+</div>
+  <div class="powered-by">由 <span class="exturl theme-link" data-url="aHR0cHM6Ly9oZXhvLmlv">Hexo</span> & <span class="exturl theme-link" data-url="aHR0cHM6Ly90aGVtZS1uZXh0Lm9yZw==">NexT.Gemini</span> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '',
+      clientSecret: '',
+      repo        : 'zhaoweiguo.github.io',
+      owner       : '',
+      admin       : [''],
+      id          : 'a7bce5e3b69b8d83528d21f951862b16',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

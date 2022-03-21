@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.zhaoweiguo.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":true,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true,"width":300,"b2t":true,"scrollpercent":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="tsung start真实执行命令查看&#x2F;usr&#x2F;local&#x2F;bin&#x2F;tsung文件: 此文件是sh文件，tsung start实际执行的是start方法  当我们执行tsung -f fetch_user_key.xml start时,我们实际执行: &#x2F;usr&#x2F;local&#x2F;lib&#x2F;erlang&#x2F;erts-8.3.5.4&#x2F;bin&#x2F;beam.smp -A 8 -K true -P 250000  --">
+<meta property="og:type" content="article">
+<meta property="og:title" content="看源码前准备工作">
+<meta property="og:url" content="http://blog.zhaoweiguo.com/2018/09/29/erlang/erlang-source-analysis-tsung1/index.html">
+<meta property="og:site_name" content="新溪blog">
+<meta property="og:description" content="tsung start真实执行命令查看&#x2F;usr&#x2F;local&#x2F;bin&#x2F;tsung文件: 此文件是sh文件，tsung start实际执行的是start方法  当我们执行tsung -f fetch_user_key.xml start时,我们实际执行: &#x2F;usr&#x2F;local&#x2F;lib&#x2F;erlang&#x2F;erts-8.3.5.4&#x2F;bin&#x2F;beam.smp -A 8 -K true -P 250000  --">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-09-29T03:46:03.000Z">
+<meta property="article:modified_time" content="2022-03-18T06:39:02.988Z">
+<meta property="article:author" content="赵卫国">
+<meta property="article:tag" content="erlang">
+<meta property="article:tag" content="source-analysis">
+<meta property="article:tag" content="tsung">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.zhaoweiguo.com/2018/09/29/erlang/erlang-source-analysis-tsung1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>看源码前准备工作 | 新溪blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">新溪blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">新溪-gordon之胡写乱画</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="bullhorn fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档<span class="badge">37</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类<span class="badge">13</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签<span class="badge">42</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://blog.zhaoweiguo.com/2018/09/29/erlang/erlang-source-analysis-tsung1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.png">
+      <meta itemprop="name" content="zhaoweiguo">
+      <meta itemprop="description" content="Just do it now.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="新溪blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          看源码前准备工作
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-09-29 11:46:03" itemprop="dateCreated datePublished" datetime="2018-09-29T11:46:03+08:00">2018-09-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-18 14:39:02" itemprop="dateModified" datetime="2022-03-18T14:39:02+08:00">2022-03-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/source-analysis/" itemprop="url" rel="index"><span itemprop="name">source-analysis</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>0</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="tsung-start真实执行命令"><a href="#tsung-start真实执行命令" class="headerlink" title="tsung start真实执行命令"></a>tsung start真实执行命令</h3><p>查看/usr/local/bin/tsung文件:</p>
+<pre><code>此文件是sh文件，tsung start实际执行的是start方法
+</code></pre>
+<p>当我们执行tsung -f fetch_user_key.xml start时,我们实际执行:</p>
+<pre><code>/usr/local/lib/erlang/erts-8.3.5.4/bin/beam.smp -A 8 -K true -P 250000 
+-- -root /usr/local/lib/erlang -progname erl 
+-- -home /root 
+-- -smp auto -rsh ssh -noshell -proto_dist inet_tcp 
+
+-sname tsung_controller 
+-setcookie tsung 
+
+-kernel inet_dist_listen_min 64000 
+-kernel inet_dist_listen_max 65500 
+
+-s tsung_controller
+
+-pa /usr/local/lib/tsung/tsung-1.7.0/ebin 
+-pa /usr/local/lib/tsung/tsung_controller-1.7.0/ebin 
+
+-ssl session_cb ts_ssl_session_cache 
+-ssl session_lifetime 600 
+-sasl sasl_error_logger false 
+
+-tsung_controller web_gui true 
+-tsung_controller keep_web_gui false 
+-tsung_controller smp_disable true 
+-tsung_controller debug_level 5 
+-tsung_controller warm_time 1 
+-tsung_controller exclude_tag &quot;&quot; 
+-tsung_controller config_file &quot;fetch_user_key.xml&quot; 
+-tsung_controller log_dir &quot;/root/.tsung/log/&quot; 
+-tsung_controller mon_file &quot;tsung.log&quot;
+</code></pre>
+<span id="more"></span>
+
+<h5 id="配置选项"><a href="#配置选项" class="headerlink" title="配置选项"></a>配置选项</h5><p>tsung_controller.app:</p>
+<pre><code>&#123;debug_level, 6&#125;,
+&#123;smp_disable, true&#125;, % disable smp on clients
+&#123;ts_cookie, &quot;humhum&quot;&#125;,
+&#123;clients_timeout, 60000&#125;,    % timeout for global synchro
+&#123;file_server_timeout, 30000&#125;,% timeout for reading file
+&#123;warm_time, 1&#125;, % (seconds) initial waiting time when launching clients
+
+&#123;thinktime_value, &quot;5&quot;&#125;, % default value = 5sec
+&#123;thinktime_override, &quot;false&quot;&#125;,
+&#123;thinktime_random, &quot;false&quot;&#125;,
+
+&#123;global_number, 100&#125;,
+&#123;global_ack_timeout, 3600000&#125;, %in msec
+
+&#123;munin_port, 4949&#125;,
+
+&#123;snmp_port, 161&#125;,
+&#123;snmp_version, v2&#125;,
+&#123;snmp_community, &quot;public&quot;&#125;,
+
+&#123;mysql_port, 3306&#125;,
+&#123;mysql_user, &quot;root&quot;&#125;,
+&#123;mysql_password, false&#125;,
+
+&#123;dumpstats_interval, 10000&#125;,
+&#123;dump, none&#125;,          %% full or light or none
+&#123;stats_backend, none&#125;, %% text|rrdtool
+
+&#123;nclients, 10&#125;,        %% number of clients
+&#123;nclients_deb, 1&#125;,     %% beginning of interval
+&#123;nclients_fin, 2000&#125;,     %% end of interval
+&#123;config_file, &quot;./tsung.xml&quot;&#125;,
+&#123;log_file, &quot;./tsung.log&quot;&#125;,
+&#123;match_log_file, &quot;./match.log&quot;&#125;,
+&#123;exclude_tag, &quot;&quot;&#125;,
+&#123;template_path, beam_relative&#125;
+</code></pre>
+<p>tsung.app:</p>
+<pre><code>&#123;debug_level, 2&#125;,
+&#123;snd_size, 32768&#125;,      % send buffer size
+&#123;rcv_size, 32768&#125;,      % receive buffer size
+&#123;idle_timeout, 600000&#125;,  % 10min timeout
+&#123;global_ack_timeout, infinity&#125;, % global ack timeout
+&#123;connect_timeout, 30000&#125;,
+&#123;max_warm_delay, 15000&#125;,
+&#123;dump, full&#125;,           % full or light
+&#123;parse_type, noparse&#125;,
+&#123;persistent, true&#125;,  % persistent connection: true or false
+&#123;mes_type, dynamic&#125;, % dynamic or static
+&#123;nclients, 10&#125;,      % number of client to connect
+&#123;log_file, &quot;./tsung.log&quot;&#125;, % log file name
+%% use for IMS GET :
+&#123;http_modified_since_date, &quot;Fri, 14 Nov 2003 02:43:31 GMT&quot;&#125;,
+&#123;client_retry_timeout, 10&#125;, % retry sending (in microsec.)
+&#123;max_retries, 3&#125;,        % number of max retries
+&#123;ssl_ciphers, negotiate&#125;,
+&#123;ssl_versions, negotiate&#125;,
+
+&#123;jabber_users, 2000000&#125;,
+&#123;jabber_username, &quot;c&quot;&#125;,
+&#123;jabber_password, &quot;pas&quot;&#125;,
+&#123;jabber_domain, &quot;mydomain.com&quot;&#125;,
+
+&#123;websocket_path, &quot;/chat&quot;&#125;
+</code></pre>
+<p>表:</p>
+<pre><code>2&gt; ets:i().
+ id              name              type  size   mem      owner
+ ----------------------------------------------------------------------------
+ 1                         code                       set   411    25810    code_server
+ 4098                      code_names                 set   51     6739     code_server
+ 8206                      cookies                    set   0      298      auth
+ 12305                     shell_records              ordered_set 0      88       &lt;0.58.0&gt;
+ 20499                     ssl_otp_cacertificate_db   set   0      298      ssl_manager
+ 24596                     ssl_otp_ca_file_ref        set   0      298      ssl_manager
+ 28693                     ssl_otp_ca_ref_file_mapping set   0      298      ssl_manager
+ 32790                     ssl_otp_crl_cache          set   0      298      ssl_manager
+ 36887                     ssl_otp_crl_issuer_mapping bag   0      298      ssl_manager
+ 40984                     ts_ssl_session_cache       set   0      298      ssl_manager
+ 45081                     ts_ssl_session_cache       set   0      298      ssl_manager
+ 49180                     httpc_manager__session_cookie_db bag   0      298      httpc_manager
+ 53279                     jobs                       set   0      298      &lt;0.116.0&gt;
+ 57376                     to                         set   0      298      &lt;0.117.0&gt;
+ 61473                     notify                     bag   0      298      &lt;0.117.0&gt;
+ 69666                     sessiontable               ordered_set 12     1564     &lt;0.104.0&gt;
+ 73763                     ign_requests               set   0      298      inet_gethost_native
+ 77860                     ign_req_index              set   0      298      inet_gethost_native
+ 81959                     sessiontable               set   4      1087     ts_session_cache
+ ac_tab                    ac_tab                     set   98     3859     application_controller
+ file_io_servers           file_io_servers            set   5      789      file_server_2
+ global_locks              global_locks               set   0      298      global_name_server
+ global_names              global_names               set   14     578      global_name_server
+ global_names_ext          global_names_ext           set   0      298      global_name_server
+ global_pid_ids            global_pid_ids             bag   0      298      global_name_server
+ global_pid_names          global_pid_names           bag   28     536      global_name_server
+ httpc_manager__handler_db httpc_manager__handler_db  set   0      298      httpc_manager
+ httpc_manager__session_db httpc_manager__session_db  set   0      298      httpc_manager
+ httpd_conf_8091default    httpd_conf_8091default     bag   11     576      httpd_8091default
+ httpd_mime_8091           httpd_mime_8091            set   6      526      httpd_8091default
+ inet_cache                inet_cache                 bag   0      298      inet_db
+ inet_db                   inet_db                    set   29     595      inet_db
+ inet_hosts_byaddr         inet_hosts_byaddr          bag   0      298      inet_db
+ inet_hosts_byname         inet_hosts_byname          bag   0      298      inet_db
+ inet_hosts_file_byaddr    inet_hosts_file_byaddr     bag   0      298      inet_db
+ inet_hosts_file_byname    inet_hosts_file_byname     bag   0      298      inet_db
+ ssl_pem_cache             ssl_pem_cache              set   0      298      ssl_pem_cache
+ sys_dist                  sys_dist                   set   1      363      net_kernel
+ timer_interval_tab        timer_interval_tab         set   1      318      timer_server
+ timer_tab                 timer_tab                  ordered_set 2      134      timer_server
+</code></pre>
+<p>表sessiontable::</p>
+<pre><code>[&#123;&#123;1,1&#125;,&#123;setdynvars,server,&#123;&#125;,[host,port]&#125;&#125;,
+ &#123;&#123;1,2&#125;,&#123;setdynvars,value,&#123;string,"30000000000"&#125;,[startnum]&#125;&#125;,
+ &#123;&#123;1,3&#125;,
+      &#123;ts_request,parse,true,[],
+                  [&#123;jsonpath,userid,"user.user_id"&#125;,
+                   &#123;jsonpath,sessionid,"user.session_id"&#125;],
+                  &#123;http_request,"/v2.0/fetch/user_key","1.1",
+                                "idc-iot-pr-server-2:443",undefined,[],post,
+                                "application/x-www-form-urlencoded",
+                                [&#123;"Content-Type","application/json"&#125;],
+                                <<"%%fetch_user_key:getmessage%%">>,0,undefined,undefined,
+                                undefined,undefined,undefined,undefined,undefined,...&#125;,
+                  true,"idc-iot-pr-server-2",443,ts_tcp&#125;&#125;,
+ &#123;&#123;1,4&#125;,
+      &#123;change_type,ts_websocket,"%%_host%%","%%_port%%",ts_tcp,
+                   true,true,true&#125;&#125;,
+ &#123;&#123;1,5&#125;,
+      &#123;ts_request,parse,true,[],[],
+                  &#123;websocket_request,"13",connect,
+                                     "/client/comet?user_id=%%_userid%%&mac=%%_userid%%&locale=zh&ver=v2.0",
+                                     "binary",[],[],"\n"&#125;,
+                  false,undefined,undefined,undefined&#125;&#125;,
+ &#123;&#123;1,6&#125;,
+      &#123;ts_request,parse,true,[],[],
+                  &#123;websocket_request,"13",message,"/","text",[],[],
+                                     "&#123;\"msg_type\":\"check_sid\",\"version\":\"v1.0.1\",\"qos\":1,\"sequence_id\": \"123445\",\"request\":&#123;\"sid\":\"%%_sessionid%%\"&#125;&#125;&quot;&#125;,
+              true,undefined,undefined,undefined&#125;&#125;,
+ &#123;&#123;1,7&#125;,&#123;ctrl_struct,&#123;for_start,1,counter&#125;&#125;&#125;,
+ &#123;&#123;1,8&#125;,
+      &#123;ts_request,parse,true,[],[],
+                  &#123;websocket_request,"13",message,"/","text",[],[],
+                                     "&#123;\"mt\":\"k\"&#125;"&#125;,
+                  true,undefined,undefined,undefined&#125;&#125;,
+ &#123;&#123;1,9&#125;,&#123;thinktime,30000&#125;&#125;,
+ &#123;&#123;1,10&#125;,&#123;ctrl_struct,&#123;for_end,counter,20000,1,8&#125;&#125;&#125;,
+ &#123;&#123;http_server,1&#125;,&#123;"idc-iot-pr-server-2:443",http&#125;&#125;,
+ &#123;&#123;http_user_agent,value&#125;,
+  [&#123;20,
+    &quot;Mozilla/5.0 (Windows; U; Windows NT 5.2; fr-FR; rv:1.7.8) Gecko/20050511 Firefox/1.0.4&quot;&#125;,
+   &#123;80,
+    &quot;Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050513 Galeon/1.3.21&quot;&#125;]&#125;]
+</code></pre>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhaoweiguo
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://blog.zhaoweiguo.com/2018/09/29/erlang/erlang-source-analysis-tsung1/" title="看源码前准备工作">http://blog.zhaoweiguo.com/2018/09/29/erlang/erlang-source-analysis-tsung1/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/erlang/" rel="tag"># erlang</a>
+              <a href="/tags/source-analysis/" rel="tag"># source-analysis</a>
+              <a href="/tags/tsung/" rel="tag"># tsung</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/09/29/erlang/erlang-source-analysis-tsung2/" rel="prev" title="源码分析基础工作">
+      <i class="fa fa-chevron-left"></i> 源码分析基础工作
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/11/02/erlang/erlang-source-analysis-lager2/" rel="next" title="开源项目lager2-application启动">
+      开源项目lager2-application启动 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#tsung-start%E7%9C%9F%E5%AE%9E%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4"><span class="nav-number">1.</span> <span class="nav-text">tsung start真实执行命令</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E9%80%89%E9%A1%B9"><span class="nav-number">1.0.1.</span> <span class="nav-text">配置选项</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhaoweiguo"
+      src="/images/icon.png">
+  <p class="site-author-name" itemprop="name">zhaoweiguo</p>
+  <div class="site-description" itemprop="description">Just do it now.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL3poYW93ZWlndW8=" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhaoweiguo"><i class="github fa-fw"></i></span>
+      </span>
+      <span class="links-of-author-item">
+        <span class="exturl" data-url="bWFpbHRvOnN1cHBvcnRAemhhb3dlaWd1by5jb20=" title="E-Mail → mailto:support@zhaoweiguo.com"><i class="envelope fa-fw"></i></span>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <span class="exturl cc-opacity" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC8="><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><span class="exturl" data-url="aHR0cHM6Ly9iZWlhbi5taWl0Lmdvdi5jbg==">京ICP备16018553号 </span>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoweiguo</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">185k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:49</span>
+</div>
+  <div class="powered-by">由 <span class="exturl theme-link" data-url="aHR0cHM6Ly9oZXhvLmlv">Hexo</span> & <span class="exturl theme-link" data-url="aHR0cHM6Ly90aGVtZS1uZXh0Lm9yZw==">NexT.Gemini</span> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '',
+      clientSecret: '',
+      repo        : 'zhaoweiguo.github.io',
+      owner       : '',
+      admin       : [''],
+      id          : '05e134d5bfbf7b83de978b07e7952346',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
